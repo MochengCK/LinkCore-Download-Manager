@@ -1,7 +1,7 @@
 # LinkCore Download Manager
 
 <p align="center">
-  <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="800" alt="LinkCore Download Manager Logo" />
+  <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
 </p>
 
 <p align="center">
