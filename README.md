@@ -1,139 +1,236 @@
-# LinkCore Download Manager (联芯下载管理器)
+# LinkCore Download Manager
 
-<p>
-  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager">
-    <img src="./static/512x512.png" width="256" alt="LinkCore Download Manager Icon" />
+<p align="center">
+  <img src="./static/512x512.png" width="200" alt="LinkCore Download Manager Logo" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/v/release/HuanXinStudio/-LinkCore-Download-Manager.svg" alt="GitHub release" />
+  </a>
+  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/downloads/HuanXinStudio/-LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
+  </a>
+  <a href="#platforms">
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
+  </a>
+  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/HuanXinStudio/-LinkCore-Download-Manager.svg" alt="License" />
   </a>
 </p>
 
-## 基于 Motrix 二次开发的全功能下载管理器
+<p align="center">
+  English | <a href="./README-CN.md">简体中文</a>
+</p>
 
-[![GitHub release](https://img.shields.io/github/v/release/HuanXinStudio/-LinkCore-Download-Manager.svg)](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) ![Total Downloads](https://img.shields.io/github/downloads/HuanXinStudio/-LinkCore-Download-Manager/total.svg) ![Support Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+## 📖 Overview
 
-English | [简体中文](./README-CN.md)
+LinkCore Download Manager is a powerful, cross-platform download manager built with modern web technologies. It provides a clean, intuitive interface while supporting a wide range of download protocols, making it an ideal choice for all your downloading needs.
 
-**LinkCore Download Manager**（中文名：联芯下载管理器）是基于 [Motrix](https://github.com/agalwood/Motrix) 开源项目二次开发的全功能下载管理器，支持 HTTP、FTP、BitTorrent、磁力链接等多种下载协议。
+Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, LinkCore has been enhanced with improved performance, a refined user interface, and additional features to deliver an exceptional downloading experience.
 
-联芯下载管理器拥有简洁易用的界面，旨在为用户提供稳定高效的下载体验。🚀
+## ✨ Key Features
 
-## ✨ 项目特色
+### 🚀 Performance & Reliability
+- **High-Speed Downloads**: Optimized for maximum download performance
+- **Multi-Threading**: Support for up to 64 threads per task
+- **Concurrent Downloads**: Manage up to 10 simultaneous download tasks
+- **Stable Connections**: Robust error handling and automatic retry mechanisms
 
-- 🎯 **基于 Motrix 二次开发** - 在成熟的 Motrix 项目基础上进行优化和改进
-- 🚀 **性能优化** - 针对下载速度和稳定性进行了专门优化
-- 🎨 **界面美化** - 改进了用户界面，提供更好的视觉体验
-- 🔧 **功能增强** - 在原有功能基础上增加了实用特性
-- 🌍 **多语言支持** - 完整支持中文界面
+### � Protocol Support
+- **HTTP/HTTPS**: Direct downloads from web servers
+- **FTP/SFTP**: File transfers from FTP servers
+- **BitTorrent**: Full torrent file support with selective downloading
+- **Magnet Links**: Instant torrent downloads without .torrent files
 
-## ✨ 主要功能
+### 🎨 User Experience
+- **Clean Interface**: Modern, intuitive design with dark mode support
+- **System Tray Integration**: Quick access and status monitoring
+- **Download Notifications**: Real-time alerts when downloads complete
+- **Speed Control**: Set upload and download speed limits
+- **File Management**: Organize downloads by category and location
 
-- 🕹 简洁明了的用户界面
-- 🦄 支持 BitTorrent 和磁力链接下载
-- ☑️ BitTorrent 选择性下载
-- 📡 每日自动更新 Tracker 列表
-- 🔌 UPnP & NAT-PMP 端口映射
-- 🎛 最多支持 10 个并发下载任务
-- 🚀 单个任务最多支持 64 线程下载
-- 🚥 支持下载速度限制
-- 🕶 模拟 User-Agent
-- 🔔 下载完成通知
-- 🤖 系统托盘快速操作
-- 🌑 深色模式支持
-- 🗑 删除任务时可选择删除相关文件
-- 🌍 国际化支持
+### 🔧 Advanced Features
+- **Tracker Updates**: Daily automatic tracker list updates for improved torrent performance
+- **UPnP/NAT-PMP**: Automatic port mapping for better connectivity
+- **User-Agent Spoofing**: Customize user-agent strings for compatibility
+- **Task Scheduling**: Set download times and priorities
+- **Batch Downloads**: Import and export download lists
 
-## 💽 安装
+## 🖥️ Platforms
+
+LinkCore Download Manager is available for:
+- **Windows** (7, 8, 10, 11)
+- **macOS** (10.13+)
+- **Linux** (Ubuntu, Fedora, Debian, Arch, etc.)
+
+## � Installation
 
 ### Windows
 
-下载最新版本的安装包进行安装：
-
-1. 前往 [GitHub Releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) 页面
-2. 下载 `LinkCore-Download-Manager-Setup-x.y.z.exe`
-3. 运行安装程序完成安装
+1. Visit the [GitHub Releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) page
+2. Download the latest `LinkCore-Download-Manager-Setup-x.y.z.exe` installer
+3. Run the installer and follow the on-screen instructions
 
 ### macOS
 
-使用 Homebrew 安装：
-
+#### Homebrew (Recommended)
 ```bash
 brew install linkcore-download-manager
 ```
 
+#### DMG File
+1. Download the latest `LinkCore-Download-Manager-x.y.z.dmg` from [releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases)
+2. Open the DMG file and drag LinkCore to your Applications folder
+
 ### Linux
 
 #### AppImage
-下载 AppImage 文件并赋予执行权限：
-
-```bash
-chmod +x LinkCore-Download-Manager-x.y.z.AppImage
-./LinkCore-Download-Manager-x.y.z.AppImage
-```
+1. Download the latest `LinkCore-Download-Manager-x.y.z.AppImage` from [releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases)
+2. Make the file executable:
+   ```bash
+   chmod +x LinkCore-Download-Manager-x.y.z.AppImage
+   ```
+3. Run the AppImage:
+   ```bash
+   ./LinkCore-Download-Manager-x.y.z.AppImage
+   ```
 
 #### Snap
 ```bash
 sudo snap install linkcore-download-manager
 ```
 
-## 🖥 界面预览
-
-![linkcore-screenshot-task.png](./screenshots/linkcore-screenshot-task.png)
-
-## 🛠 开发与构建
-
-### 克隆代码
-
+#### Debian/Ubuntu (DEB)
 ```bash
-git clone https://github.com/HuanXinStudio/-LinkCore-Download-Manager.git
-cd LinkCore-Download-Manager
+sudo dpkg -i linkcore-download-manager_x.y.z_amd64.deb
+sudo apt-get install -f
 ```
 
-### 安装依赖
+## �️ Screenshots
 
-```bash
-npm install
-# 或
-yarn install
+<p align="center">
+  <img src="./screenshots/linkcore-screenshot-task.png" alt="Task Management Interface" width="600" />
+  <br>
+  <em>Task Management Interface</em>
+</p>
+
+## �🚀 Quick Start
+
+### Basic Usage
+
+1. **Add a Download Task**:
+   - Click the "+ New Download" button
+   - Enter the download URL or upload a torrent file
+   - Configure download settings (optional)
+   - Click "OK" to start downloading
+
+2. **Manage Downloads**:
+   - Pause/resume downloads with a single click
+   - Monitor download progress in real-time
+   - View detailed information about each task
+
+3. **Torrent Downloads**:
+   - Select specific files to download from a torrent
+   - View peer and seed information
+   - Adjust torrent-specific settings
+
+### Keyboard Shortcuts
+
+- `Ctrl/Cmd + N`: New download task
+- `Ctrl/Cmd + R`: Resume selected task(s)
+- `Ctrl/Cmd + P`: Pause selected task(s)
+- `Ctrl/Cmd + D`: Delete selected task(s)
+- `Ctrl/Cmd + Q`: Quit the application
+
+## 🛠️ Development
+
+### Prerequisites
+
+- Node.js (v16.0.0 or higher)
+- npm or yarn
+- Git
+
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/HuanXinStudio/-LinkCore-Download-Manager.git
+   cd LinkCore-Download-Manager
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Build for production:
+   ```bash
+   npm run build
+   ```
+
+### Project Structure
+
+```
+LinkCore-Download-Manager/
+├── src/                  # Main source code
+│   ├── main/             # Electron main process
+│   ├── renderer/         # Electron renderer process (Vue.js)
+│   └── shared/           # Shared utilities
+├── static/               # Static assets
+├── .electron-vue/        # Electron-Vue configuration
+├── screenshots/          # Screenshots for documentation
+├── package.json          # Project configuration
+└── README.md             # This file
 ```
 
-### 开发模式
+## 🤝 Contributing
 
-```bash
-npm run dev
-# 或
-yarn run dev
-```
+Contributions are welcome! Whether you're fixing bugs, adding new features, or improving documentation, your help is appreciated.
 
-### 构建发布版本
+### How to Contribute
 
-```bash
-npm run build
-# 或
-yarn run build
-```
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some feature'`)
+5. Push to the branch (`git push origin feature/your-feature`)
+6. Create a Pull Request
 
-## 🛠 技术栈
+### Development Guidelines
 
-- [Electron](https://electronjs.org/) - 跨平台桌面应用框架
-- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
-- [VueX](https://vuex.vuejs.org/) - 状态管理
-- [Element UI](https://element.eleme.io) - UI 组件库
-- [Aria2](https://aria2.github.io/) - 轻量级多协议命令行下载工具
+- Follow the existing code style
+- Write clear, concise commit messages
+- Include tests for new features
+- Update documentation as needed
 
-## 🤝 参与贡献
+## � License
 
-欢迎提交 Pull Request 和 Issue！如果您对项目有任何建议或发现了问题，请随时联系我们。
+LinkCore Download Manager is licensed under the [MIT License](LICENSE).
 
-## 📜 许可证
+## 🙏 Credits
 
-本项目基于 [MIT 许可证](LICENSE) 开源。
+- **Original Project**: [Motrix](https://github.com/agalwood/Motrix) by Dr_rOot
+- **UI Framework**: [Vue.js](https://vuejs.org/)
+- **Desktop Framework**: [Electron](https://www.electronjs.org/)
+- **Torrent Library**: [WebTorrent](https://webtorrent.io/)
 
-**特别声明**：本项目基于 [Motrix](https://github.com/agalwood/Motrix) 项目进行二次开发，遵循原项目的开源协议。
+## 📞 Support
 
-## 📞 联系我们
+If you encounter any issues or have questions:
 
-- 项目主页：https://github.com/HuanXinStudio/-LinkCore-Download-Manager
-- 问题反馈：https://github.com/HuanXinStudio/-LinkCore-Download-Manager/issues
+- Open an [issue](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/issues) on GitHub
+- Join our community for discussions and support
 
 ---
 
-*LinkCore Download Manager - 让下载更简单、更高效*
+<p align="center">
+  Made with ❤️ by HuanXinStudio
+</p>
