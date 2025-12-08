@@ -1,7 +1,7 @@
 # LinkCore Download Manager（联芯下载管理器）
 
 <p align="center">
-  <img src="./static/512x512.png" width="200" alt="LinkCore Download Manager Logo" />
+  <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="300" alt="LinkCore Download Manager Logo" />
 </p>
 
 <p align="center">
