@@ -2,7 +2,7 @@
   "name": "linkcore-download-manager",
   "version": "1.0.0",
   "description": "LinkCore Download Manager (联芯下载管理器) - A full-featured download manager based on Motrix",
-  "homepage": "https://github.com/HuanXinStudio/-LinkCore-Download-Manager",
+  "homepage": "https://github.com/HuanXinStudio/LinkCore-Download-Manager",
   "author": {
     "name": "HuanXinStudio",
     "email": "huanxin@example.com"
@@ -16,7 +16,7 @@
   "main": "./dist/electron/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HuanXinStudio/-LinkCore-Download-Manager.git"
+    "url": "https://github.com/HuanXinStudio/LinkCore-Download-Manager.git"
   },
   "scripts": {
     "release": "npm run build --publish onTagOrDraft",

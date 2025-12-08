@@ -5,17 +5,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/-LinkCore-Download-Manager.svg" alt="GitHub release" />
+  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" />
   </a>
-  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/-LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
+  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
     <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
   </a>
-  <a href="https://github.com/HuanXinStudio/-LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/-LinkCore-Download-Manager.svg" alt="License" />
+  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
   </a>
 </p>
 
@@ -68,7 +68,7 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 
 ### Windows
 
-1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) 页面
+1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
 2. 下载最新版本的 `LinkCore-Download-Manager-Setup-x.y.z.exe` 安装程序
 3. 运行安装程序并按照屏幕提示完成安装
 
@@ -80,13 +80,13 @@ brew install linkcore-download-manager
 ```
 
 #### DMG文件
-1. 从 [releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.dmg` 文件
+1. 从 [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.dmg` 文件
 2. 打开DMG文件，将LinkCore拖动到应用程序文件夹
 
 ### Linux
 
 #### AppImage
-1. 从 [releases](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.AppImage` 文件
+1. 从 [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.AppImage` 文件
 2. 赋予文件执行权限：
    ```bash
    chmod +x LinkCore-Download-Manager-x.y.z.AppImage
@@ -155,7 +155,7 @@ sudo apt-get install -f
 
 1. 克隆仓库：
    ```bash
-   git clone https://github.com/HuanXinStudio/-LinkCore-Download-Manager.git
+   git clone https://github.com/HuanXinStudio/LinkCore-Download-Manager.git
    cd LinkCore-Download-Manager
    ```
 
@@ -226,7 +226,7 @@ LinkCore-Download-Manager/
 
 如果您遇到任何问题或有疑问：
 
-- 在GitHub上 [提交issue](https://github.com/HuanXinStudio/-LinkCore-Download-Manager/issues)
+- 在GitHub上 [提交issue](https://github.com/HuanXinStudio/LinkCore-Download-Manager/issues)
 - 加入我们的社区进行讨论和获取支持
 
 ---
