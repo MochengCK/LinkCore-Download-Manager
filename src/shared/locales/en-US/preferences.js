@@ -91,5 +91,13 @@ export default {
   'last-check-update-time': 'Last checked for an update',
   'not-saved': 'Preferences not saved',
   'not-saved-confirm': 'The modified preferences will be lost, are you sure you want to leave?',
-  'undo-change': 'Undo Change'
+  'undo-change': 'Undo Change',
+  'engine': 'Engine',
+  'engine-version': 'Engine Version',
+  'engine-architecture': 'Architecture',
+  'engine-features': 'Supported Features',
+  'engine-dependencies': 'Dependencies',
+  'engine-compile-info': 'Compile Information',
+  'engine-refresh': 'Refresh Engine Info',
+  'engine-refreshing': 'Fetching engine information...'
 }

@@ -1,6 +1,7 @@
 import { ADD_TASK_TYPE } from '@shared/constants'
 import api from '@/api'
 import { getSystemTheme } from '@/utils/native'
+import { ipcRenderer } from 'electron'
 
 const BASE_INTERVAL = 1000
 const PER_INTERVAL = 100
@@ -13,7 +14,12 @@ const state = {
   currentPage: '/task',
   engineInfo: {
     version: '',
-    enabledFeatures: []
+    enabledFeatures: [],
+    architecture: '',
+    features: [],
+    dependencies: [],
+    compileInfo: '',
+    binPath: ''
   },
   engineOptions: {},
   interval: BASE_INTERVAL,
@@ -47,7 +53,22 @@ const mutations = {
     state.currentPage = page
   },
   UPDATE_ENGINE_INFO (state, engineInfo) {
-    state.engineInfo = { ...state.engineInfo, ...engineInfo }
+    // 正确处理后端返回的数据结构
+    const { version, architecture, features, dependencies, compileInfo, binPath } = engineInfo
+
+    // 如果version是对象，提取version字段和enabledFeatures
+    const versionStr = version && typeof version === 'object' ? version.version : version
+    const enabledFeatures = version && typeof version === 'object' ? version.enabledFeatures : []
+
+    state.engineInfo = {
+      version: versionStr || '',
+      enabledFeatures: enabledFeatures || [],
+      architecture: architecture || '',
+      features: features || [],
+      dependencies: dependencies || [],
+      compileInfo: compileInfo || '',
+      binPath: binPath || ''
+    }
   },
   UPDATE_ENGINE_OPTIONS (state, engineOptions) {
     state.engineOptions = { ...state.engineOptions, ...engineOptions }
@@ -114,10 +135,38 @@ const actions = {
     commit('UPDATE_CURRENT_PAGE', page)
   },
   fetchEngineInfo ({ commit }) {
-    api.getVersion()
-      .then((data) => {
-        commit('UPDATE_ENGINE_INFO', data)
-      })
+    return new Promise((resolve, reject) => {
+      // 通过IPC调用后端获取完整的引擎信息
+      ipcRenderer.send('command', 'engine:get-version-info')
+
+      // 监听引擎信息返回事件
+      const handleEngineInfo = (event, command, engineInfo) => {
+        if (command !== 'engine-version-info') {
+          return
+        }
+
+        ipcRenderer.removeListener('command', handleEngineInfo)
+        clearTimeout(timeoutId)
+
+        if (engineInfo && engineInfo.error) {
+          console.error('[Motrix] Failed to fetch engine info:', engineInfo.error)
+          reject(new Error(engineInfo.error))
+          return
+        }
+
+        commit('UPDATE_ENGINE_INFO', engineInfo)
+        resolve(engineInfo)
+      }
+
+      // 设置超时处理
+      const timeoutId = setTimeout(() => {
+        ipcRenderer.removeListener('command', handleEngineInfo)
+        console.warn('[Motrix] Timeout fetching engine info')
+        reject(new Error('Timeout fetching engine info'))
+      }, 5000)
+
+      ipcRenderer.on('command', handleEngineInfo)
+    })
   },
   fetchEngineOptions ({ commit }) {
     return new Promise((resolve) => {

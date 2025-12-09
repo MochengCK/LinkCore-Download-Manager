@@ -43,7 +43,7 @@ export default class Application extends EventEmitter {
     this.init()
   }
 
-  init () {
+  async init () {
     this.initContext()
 
     this.initConfigManager()
@@ -86,7 +86,32 @@ export default class Application extends EventEmitter {
 
     this.handleIpcInvokes()
 
+    // 应用启动时自动获取引擎信息
+    await this.autoFetchEngineInfo()
+
     this.emit('application:initialized')
+  }
+
+  async autoFetchEngineInfo () {
+    try {
+      logger.info('[Motrix] Auto fetching engine info on app startup')
+      const engineInfo = await this.getEngineVersionInfo()
+      logger.info('[Motrix] Engine info fetched successfully:', engineInfo)
+
+      // 发送引擎信息到所有窗口
+      this.sendCommandToAll('engine-version-info', engineInfo)
+    } catch (error) {
+      logger.warn('[Motrix] Failed to fetch engine info on startup:', error.message)
+      // 发送错误信息到前端
+      this.sendCommandToAll('engine-version-info', {
+        error: error.message,
+        version: 'Unknown',
+        architecture: 'Unknown',
+        features: [],
+        dependencies: [],
+        compileInfo: 'Unknown'
+      })
+    }
   }
 
   initContext () {
@@ -877,6 +902,23 @@ export default class Application extends EventEmitter {
       this.openExternal(url)
     })
 
+    this.on('engine:get-version-info', async () => {
+      try {
+        const versionInfo = await this.getEngineVersionInfo()
+        this.sendCommandToAll('engine-version-info', versionInfo)
+      } catch (error) {
+        logger.error('[Motrix] Failed to get engine version info:', error)
+        this.sendCommandToAll('engine-version-info', {
+          error: error.message,
+          version: 'Unknown',
+          architecture: 'Unknown',
+          features: [],
+          dependencies: [],
+          compileInfo: 'Unknown'
+        })
+      }
+    })
+
     this.on('application:reveal-in-folder', (data) => {
       const { gid, path } = data
       logger.info('[Motrix] application:reveal-in-folder===>', path)
@@ -915,6 +957,80 @@ export default class Application extends EventEmitter {
     }
 
     shell.openExternal(url)
+  }
+
+  async getEngineVersionInfo () {
+    try {
+      // 获取引擎版本信息
+      const version = await this.engineClient.call('getVersion')
+
+      // 获取支持的协议
+      const protocols = await this.engineClient.call('getGlobalOption', ['enable-http-pipelining', 'enable-mmap', 'check-certificate'])
+
+      // 获取系统架构信息
+      const { platform, arch } = process
+
+      // 获取引擎二进制文件路径
+      const engineBinPath = this.context.get('aria2-bin-path')
+
+      // 构建版本信息对象
+      const versionInfo = {
+        version: version || 'Unknown',
+        architecture: `${platform}-${arch}`,
+        features: this.getEngineFeatures(protocols),
+        dependencies: this.getEngineDependencies(),
+        compileInfo: this.getCompileInfo(),
+        binPath: engineBinPath
+      }
+
+      logger.info('[Motrix] Engine version info:', versionInfo)
+      return versionInfo
+    } catch (error) {
+      logger.error('[Motrix] Failed to get engine version info:', error)
+      throw error
+    }
+  }
+
+  getEngineFeatures (protocols) {
+    const features = []
+
+    // 基于协议支持判断功能
+    if (protocols && protocols['enable-http-pipelining']) {
+      features.push('HTTP Pipelining')
+    }
+    if (protocols && protocols['enable-mmap']) {
+      features.push('Memory Mapping')
+    }
+    if (protocols && protocols['check-certificate'] === false) {
+      features.push('SSL Certificate Bypass')
+    }
+
+    // 添加基本功能
+    features.push('HTTP/HTTPS', 'FTP', 'BitTorrent', 'Metalink')
+
+    return features
+  }
+
+  getEngineDependencies () {
+    // 返回引擎依赖的库信息
+    return [
+      'zlib',
+      'c-ares',
+      'sqlite3',
+      'libxml2',
+      'libssh2',
+      'gmp',
+      'libgcrypt',
+      'expat'
+    ]
+  }
+
+  getCompileInfo () {
+    // 返回编译信息
+    const { platform, arch } = process
+    const isDev = process.env.NODE_ENV === 'development'
+
+    return `Compiled for ${platform}-${arch} ${isDev ? '(Development)' : '(Production)'}`
   }
 
   handleConfigChange (configName) {

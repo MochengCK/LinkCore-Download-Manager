@@ -353,6 +353,39 @@
           </el-form-item>
         </div>
 
+        <!-- 引擎信息卡片 -->
+        <div class="preference-card">
+          <h3 class="card-title">{{ $t('preferences.engine') }}</h3>
+          <el-form-item size="mini">
+            <el-col class="form-item-sub" :span="24">
+              <el-row :gutter="16" style="margin-bottom: 12px;">
+                <el-col :span="8">
+                  <strong>{{ $t('preferences.engine-version') }}:</strong>
+                  <div>{{ storeEngineInfo.version || '--' }}</div>
+                </el-col>
+                <el-col :span="8">
+                  <strong>{{ $t('preferences.engine-architecture') }}:</strong>
+                  <div>{{ storeEngineInfo.architecture || '--' }}</div>
+                </el-col>
+                <el-col :span="8">
+                  <strong>{{ $t('preferences.engine-features') }}:</strong>
+                  <div>{{ storeEngineInfo.features ? storeEngineInfo.features.join(', ') : '--' }}</div>
+                </el-col>
+              </el-row>
+              <el-row :gutter="16" style="margin-bottom: 12px;">
+                <el-col :span="12">
+                  <strong>{{ $t('preferences.engine-dependencies') }}:</strong>
+                  <div>{{ storeEngineInfo.dependencies ? storeEngineInfo.dependencies.join(', ') : '--' }}</div>
+                </el-col>
+                <el-col :span="12">
+                  <strong>{{ $t('preferences.engine-compile-info') }}:</strong>
+                  <div>{{ storeEngineInfo.compileInfo || '--' }}</div>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-form-item>
+        </div>
+
         <!-- 用户代理设置卡片 -->
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.user-agent') }}</h3>
@@ -540,6 +573,12 @@
     },
     computed: {
       ...mapState('app', ['isCheckingUpdate']),
+      ...mapState('app', {
+        storeEngineInfo: state => state.engineInfo
+      }),
+      engineInfo () {
+        return this.storeEngineInfo
+      },
       isRenderer: () => is.renderer(),
       title () {
         return this.$t('preferences.advanced')

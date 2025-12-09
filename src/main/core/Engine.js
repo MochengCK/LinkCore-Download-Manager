@@ -107,6 +107,10 @@ export default class Engine {
     const extraConfig = {
       ...this.systemConfig
     }
+
+    // 强制设置最大连接数为16，符合aria2的允许范围
+    extraConfig['max-connection-per-server'] = 16
+
     const keepSeeding = this.userConfig['keep-seeding']
     const seedRatio = this.systemConfig['seed-ratio']
     if (keepSeeding || seedRatio === 0) {

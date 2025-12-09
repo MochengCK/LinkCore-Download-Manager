@@ -91,5 +91,13 @@ export default {
   'last-check-update-time': '마지막 업데이트 확인 시간',
   'not-saved': '설정이 저장되지 않았습니다',
   'not-saved-confirm': '수정된 설정이 손실됩니다. 나가시겠습니까?',
-  'undo-change': '변경 취소'
+  'undo-change': '변경 취소',
+  'engine': '엔진',
+  'engine-version': '엔진 버전',
+  'engine-architecture': '아키텍처',
+  'engine-features': '지원 기능',
+  'engine-dependencies': '의존 라이브러리',
+  'engine-compile-info': '컴파일 정보',
+  'engine-refresh': '엔진 정보 새로고침',
+  'engine-refreshing': '엔진 정보를 가져오는 중...'
 }

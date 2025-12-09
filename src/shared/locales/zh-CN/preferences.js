@@ -93,5 +93,13 @@ export default {
   'follow-torrent': '种子下载完后自动下载种子内容',
   'not-saved': '设置未保存',
   'not-saved-confirm': '已修改的设置将会丢失，确定要离开吗?',
-  'undo-change': '撤回更改'
+  'undo-change': '撤回更改',
+  'engine': '引擎',
+  'engine-version': '引擎版本',
+  'engine-architecture': '架构',
+  'engine-features': '支持功能',
+  'engine-dependencies': '依赖库',
+  'engine-compile-info': '编译信息',
+  'engine-refresh': '刷新引擎信息',
+  'engine-refreshing': '正在获取引擎信息...'
 }
