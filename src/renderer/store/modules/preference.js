@@ -11,7 +11,11 @@ import { MAX_NUM_OF_DIRECTORIES } from '@shared/constants'
 
 const state = {
   engineMode: 'MAX',
-  config: {}
+  config: {},
+  // 版本更新状态持久化存储
+  updateAvailable: false,
+  newVersion: '',
+  lastCheckUpdateTime: 0
 }
 
 const getters = {
@@ -23,6 +27,15 @@ const getters = {
 const mutations = {
   UPDATE_PREFERENCE_DATA (state, config) {
     state.config = { ...state.config, ...config }
+  },
+  UPDATE_UPDATE_AVAILABLE (state, updateAvailable) {
+    state.updateAvailable = updateAvailable
+  },
+  UPDATE_NEW_VERSION (state, newVersion) {
+    state.newVersion = newVersion
+  },
+  UPDATE_LAST_CHECK_UPDATE_TIME (state, lastCheckUpdateTime) {
+    state.lastCheckUpdateTime = lastCheckUpdateTime
   }
 }
 
@@ -122,6 +135,15 @@ const actions = {
   },
   updatePreference  ({ commit }, config) {
     commit('UPDATE_PREFERENCE_DATA', config)
+  },
+  updateUpdateAvailable ({ commit }, updateAvailable) {
+    commit('UPDATE_UPDATE_AVAILABLE', updateAvailable)
+  },
+  updateNewVersion ({ commit }, newVersion) {
+    commit('UPDATE_NEW_VERSION', newVersion)
+  },
+  updateLastCheckUpdateTime ({ commit }, lastCheckUpdateTime) {
+    commit('UPDATE_LAST_CHECK_UPDATE_TIME', lastCheckUpdateTime)
   },
   fetchBtTracker (_, trackerSource = []) {
     const { proxy = { enable: false } } = state.config

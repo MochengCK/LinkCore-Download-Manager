@@ -728,6 +728,11 @@ export default class Application extends EventEmitter {
     this.updateManager.on('download-progress', (event) => {
       const win = this.windowManager.getWindow('index')
       win.setProgressBar(event.percent / 100)
+      // 向所有窗口发送下载进度事件
+      const windows = this.windowManager.getWindowList() || []
+      windows.forEach(window => {
+        window.webContents.send('download-progress', event)
+      })
     })
 
     this.updateManager.on('update-not-available', (event) => {
@@ -752,6 +757,8 @@ export default class Application extends EventEmitter {
     this.updateManager.on('will-updated', async (event) => {
       this.windowManager.setWillQuit(true)
       await this.stopAllSettled()
+      // 自动安装更新并重启应用
+      this.updateManager.updater.quitAndInstall()
     })
 
     this.updateManager.on('update-error', (event) => {
@@ -829,6 +836,10 @@ export default class Application extends EventEmitter {
 
     this.on('application:check-for-updates', () => {
       this.updateManager.check()
+    })
+
+    this.on('application:download-update', () => {
+      this.updateManager.downloadUpdate()
     })
 
     this.on('application:change-theme', (theme) => {
@@ -1044,6 +1055,17 @@ export default class Application extends EventEmitter {
       this.autoResumeTask()
 
       this.adjustMenu()
+
+      // 监听主窗口加载完成事件，确保前端组件已挂载后再发送更新状态
+      const mainWindow = this.windowManager.getWindow('index')
+      if (mainWindow) {
+        mainWindow.webContents.once('did-finish-load', () => {
+          // 延迟发送更新状态，确保前端组件已完全初始化
+          setTimeout(() => {
+            this.loadAndSendUpdateStatus()
+          }, 500)
+        })
+      }
     })
 
     this.configManager.userConfig.onDidAnyChange(() => this.handleConfigChange('user'))
@@ -1140,5 +1162,41 @@ export default class Application extends EventEmitter {
       }
       return result
     })
+  }
+
+  /**
+   * 加载保存的更新状态并发送给前端
+   */
+  loadAndSendUpdateStatus () {
+    try {
+      // 从用户配置中加载保存的更新状态
+      const updateAvailable = this.configManager.getUserConfig('update-available') || false
+      const newVersion = this.configManager.getUserConfig('new-version') || ''
+      const lastCheckUpdateTime = this.configManager.getUserConfig('last-check-update-time') || 0
+
+      logger.info('[Motrix] Loading saved update status:', {
+        updateAvailable,
+        newVersion,
+        lastCheckUpdateTime
+      })
+
+      // 发送更新状态给所有窗口
+      if (updateAvailable) {
+        // 如果检测到有新版本可用，发送update-available事件
+        // 使用与UpdateManager.js相同的方式发送事件，只传递版本号参数
+        const windows = this.windowManager.getWindowList()
+        windows.forEach(window => {
+          window.webContents.send('update-available', newVersion)
+        })
+      } else {
+        // 如果没有新版本可用，发送update-not-available事件
+        const windows = this.windowManager.getWindowList()
+        windows.forEach(window => {
+          window.webContents.send('update-not-available')
+        })
+      }
+    } catch (error) {
+      logger.warn('[Motrix] Failed to load and send update status:', error.message)
+    }
   }
 }

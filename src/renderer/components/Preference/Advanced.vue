@@ -37,8 +37,8 @@
                 }}
                 <span
                   class="action-link"
-                  :class="{ 'action-link--disabled': isCheckingUpdate }"
-                  @click.prevent="isCheckingUpdate ? null : onCheckUpdateClick()"
+                  :class="{ 'action-link--disabled': isCheckingUpdate || updateAvailable }"
+                  @click.prevent="(isCheckingUpdate || updateAvailable) ? null : onCheckUpdateClick()"
                 >
                   {{ $t('app.check-updates-now') }}
                 </span>
@@ -573,6 +573,7 @@
     },
     computed: {
       ...mapState('app', ['isCheckingUpdate']),
+      ...mapState('preference', ['updateAvailable']),
       ...mapState('app', {
         storeEngineInfo: state => state.engineInfo
       }),

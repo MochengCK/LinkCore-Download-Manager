@@ -131,19 +131,19 @@
       }
     },
     "nsis": {
-      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "artifactName": "LinkCore.Download.Manager-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "appx": {
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "artifactName": "LinkCore.Download.Manager-${version}-${arch}.${ext}",
       "applicationId": "app.motrix.native",
       "identityName": "59744DrrOot.Motrix",
       "publisher": "CN=5BB4961D-30D8-4993-9ADF-05E1E1F5A395",
       "publisherDisplayName": "Dr_rOot"
     },
     "portable": {
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "LinkCore.Download.Manager-${version}-${arch}.${ext}"
     },
     "linux": {
       "category": "Network",
