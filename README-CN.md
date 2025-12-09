@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
@@ -59,10 +59,10 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 
 ## 🖥️ 支持平台
 
-联芯下载管理器支持以下平台：
+联芯下载管理器目前支持以下平台：
 - **Windows** (7, 8, 10, 11)
-- **macOS** (10.13+)
-- **Linux** (Ubuntu, Fedora, Debian, Arch等)
+
+> **注意**：macOS和Linux支持可能在后续版本中添加。敬请期待更新！
 
 ## 📦 安装方式
 
@@ -71,41 +71,6 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
 2. 下载最新版本的 `LinkCore-Download-Manager-Setup-x.y.z.exe` 安装程序
 3. 运行安装程序并按照屏幕提示完成安装
-
-### macOS
-
-#### Homebrew（推荐）
-```bash
-brew install linkcore-download-manager
-```
-
-#### DMG文件
-1. 从 [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.dmg` 文件
-2. 打开DMG文件，将LinkCore拖动到应用程序文件夹
-
-### Linux
-
-#### AppImage
-1. 从 [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 下载最新的 `LinkCore-Download-Manager-x.y.z.AppImage` 文件
-2. 赋予文件执行权限：
-   ```bash
-   chmod +x LinkCore-Download-Manager-x.y.z.AppImage
-   ```
-3. 运行AppImage：
-   ```bash
-   ./LinkCore-Download-Manager-x.y.z.AppImage
-   ```
-
-#### Snap
-```bash
-sudo snap install linkcore-download-manager
-```
-
-#### Debian/Ubuntu (DEB)
-```bash
-sudo dpkg -i linkcore-download-manager_x.y.z_amd64.deb
-sudo apt-get install -f
-```
 
 ## 🖥️ 界面截图
 
@@ -232,5 +197,5 @@ LinkCore-Download-Manager/
 ---
 
 <p align="center">
-  由 HuanXinStudio 用心打造 ❤️
+  由 HuanXinStudio 打造
 </p>

@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
@@ -37,7 +37,7 @@ Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, 
 - **Concurrent Downloads**: Manage up to 10 simultaneous download tasks
 - **Stable Connections**: Robust error handling and automatic retry mechanisms
 
-### � Protocol Support
+### 📁 Protocol Support
 - **HTTP/HTTPS**: Direct downloads from web servers
 - **FTP/SFTP**: File transfers from FTP servers
 - **BitTorrent**: Full torrent file support with selective downloading
@@ -59,12 +59,12 @@ Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, 
 
 ## 🖥️ Platforms
 
-LinkCore Download Manager is available for:
+LinkCore Download Manager is currently available for:
 - **Windows** (7, 8, 10, 11)
-- **macOS** (10.13+)
-- **Linux** (Ubuntu, Fedora, Debian, Arch, etc.)
 
-## � Installation
+> **Note**: macOS and Linux support may be added in future releases. Stay tuned for updates!
+
+## 📦 Installation
 
 ### Windows
 
@@ -72,42 +72,7 @@ LinkCore Download Manager is available for:
 2. Download the latest `LinkCore-Download-Manager-Setup-x.y.z.exe` installer
 3. Run the installer and follow the on-screen instructions
 
-### macOS
-
-#### Homebrew (Recommended)
-```bash
-brew install linkcore-download-manager
-```
-
-#### DMG File
-1. Download the latest `LinkCore-Download-Manager-x.y.z.dmg` from [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases)
-2. Open the DMG file and drag LinkCore to your Applications folder
-
-### Linux
-
-#### AppImage
-1. Download the latest `LinkCore-Download-Manager-x.y.z.AppImage` from [releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases)
-2. Make the file executable:
-   ```bash
-   chmod +x LinkCore-Download-Manager-x.y.z.AppImage
-   ```
-3. Run the AppImage:
-   ```bash
-   ./LinkCore-Download-Manager-x.y.z.AppImage
-   ```
-
-#### Snap
-```bash
-sudo snap install linkcore-download-manager
-```
-
-#### Debian/Ubuntu (DEB)
-```bash
-sudo dpkg -i linkcore-download-manager_x.y.z_amd64.deb
-sudo apt-get install -f
-```
-
-## �️ Screenshots
+## 🖥️ Screenshots
 
 <p align="center">
   <img src="./screenshots/linkcore-screenshot-task.png" alt="Task Management Interface" width="1100" />
@@ -115,7 +80,7 @@ sudo apt-get install -f
   <em>Task Management Interface</em>
 </p>
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### Basic Usage
 
@@ -232,5 +197,5 @@ If you encounter any issues or have questions:
 ---
 
 <p align="center">
-  Made with ❤️ by HuanXinStudio
+  Made with by HuanXinStudio
 </p>
