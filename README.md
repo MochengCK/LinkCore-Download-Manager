@@ -1,4 +1,6 @@
-# LinkCore Download Manager [简体中文](./README-CN.md)
+<p align="right"><a href="./README-CN.md">简体中文</a></p>
+
+# LinkCore Download Manager
 
 <p align="center">
   <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
