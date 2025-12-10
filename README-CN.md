@@ -1,4 +1,6 @@
-# LinkCore Download Manager（联芯下载管理器） [English](./README.md)
+<p align="right"><a href="./README.md">English</a></p>
+
+# LinkCore Download Manager（联芯下载管理器）
 
 <p align="center">
   <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
