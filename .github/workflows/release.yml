@@ -1,5 +1,9 @@
 name: Release
 
+permissions:
+  contents: write
+  packages: write
+
 on:
   push:
     tags:
@@ -8,6 +12,7 @@ on:
 jobs:
   build-and-release:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
