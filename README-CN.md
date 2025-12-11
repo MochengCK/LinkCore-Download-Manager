@@ -13,7 +13,7 @@
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
     <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
-  <a href="#platforms">
+  <a href="#支持平台">
     <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
@@ -56,7 +56,7 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 - **任务调度**：设置下载时间和优先级
 - **批量下载**：导入和导出下载列表
 
-### 独特功能
+### 🧩 独特功能
 - **文件分类**：根据文件类型自动分类保存
 - **自定义分类**：用户可自定义文件分类规则
 - **任务优先值**：用户可设置任务的优先值，影响下载顺序，下载资源分配

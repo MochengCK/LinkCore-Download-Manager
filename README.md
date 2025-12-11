@@ -57,7 +57,7 @@ Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, 
 - **Task Scheduling**: Set download times and priorities
 - **Batch Downloads**: Import and export download lists
 
-### Unique Features
+### 🧩 Unique Features
 
 - **Auto Categorization**: Automatically save files by type
 - **Custom Categories**: Define your own rules for file categorization
