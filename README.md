@@ -67,6 +67,7 @@ Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, 
 - **Quick Engine Switching**: Switch between different download engines quickly to suit various scenarios
 - **Advanced Option Presets**: Name, save, select, and delete presets for advanced options
 - **Link Input UX Enhancements**: Automatically deduplicate links; auto-append newline and place caret after paste or autofill
+- **Customizable Shortcuts**: Set or reset keyboard shortcuts for common commands in “Preferences → Basic → Shortcuts”
 
 ## 🖥️ Platforms
 
@@ -140,6 +141,8 @@ LinkCore Download Manager is currently available for:
 - `Ctrl/Cmd + P`: Pause selected task(s)
 - `Ctrl/Cmd + D`: Delete selected task(s)
 - `Ctrl/Cmd + Q`: Quit the application
+  
+Tip: You can customize these shortcuts in “Preferences → Basic → Shortcuts”; changes take effect immediately after saving.
 
 ## Tips
 
