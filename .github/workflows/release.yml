@@ -10,7 +10,27 @@ on:
       - 'v*'
 
 jobs:
+  pre-clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Delete existing release by tag
+        uses: actions/github-script@v7
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        with:
+          script: |
+            const tag = process.env.TAG_NAME
+            const { owner, repo } = context.repo
+            try {
+              const release = await github.rest.repos.getReleaseByTag({ owner, repo, tag })
+              await github.rest.repos.deleteRelease({ owner, repo, release_id: release.data.id })
+            } catch (e) {
+              core.info(`skip delete: ${e.message}`)
+            }
   build-and-release:
+    needs: pre-clean
     strategy:
       fail-fast: false
       matrix:
@@ -27,34 +47,7 @@ jobs:
           node-version: '16'
           cache: 'npm'
 
-      - name: Clean mac release assets
-        if: matrix.os == 'macos-latest'
-        uses: actions/github-script@v7
-        env:
-          TAG_NAME: ${{ github.ref_name }}
-        with:
-          script: |
-            const tag = process.env.TAG_NAME
-            const { owner, repo } = context.repo
-            try {
-              const release = await github.rest.repos.getReleaseByTag({ owner, repo, tag })
-              const assets = release.data.assets || []
-              const shouldDelete = (name) => {
-                return (
-                  name.endsWith('-arm64.dmg') ||
-                  name.endsWith('-arm64.dmg.blockmap') ||
-                  name.endsWith('-arm64-mac.zip') ||
-                  name.endsWith('-arm64-mac.zip.blockmap')
-                )
-              }
-              for (const asset of assets) {
-                if (shouldDelete(asset.name)) {
-                  await github.rest.repos.deleteReleaseAsset({ owner, repo, asset_id: asset.id })
-                }
-              }
-            } catch (e) {
-              core.info(`skip clean: ${e.message}`)
-            }
+      
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -63,4 +56,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          SKIP_NOTARIZE: 'true'
         run: npm run release
