@@ -6,6 +6,30 @@
   <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
 </p>
 
+## Table of Contents
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+  - [Performance & Reliability](#-performance--reliability)
+  - [Protocol Support](#-protocol-support)
+  - [User Experience](#-user-experience)
+  - [Advanced Features](#-advanced-features)
+  - [Unique Features](#-unique-features)
+- [Platforms](#-platforms)
+- [Installation](#-installation)
+- [Screenshots](#-screenshots)
+- [Quick Start](#-quick-start)
+  - [Basic Usage](#-basic-usage)
+  - [Keyboard Shortcuts](#-keyboard-shortcuts)
+- [Tips](#-tips)
+- [Engine Version & Connections](#-engine-version--connections)
+- [Development](#-development)
+  - [Prerequisites](#-prerequisites)
+  - [Setup](#-setup)
+  - [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Credits](#-credits)
+- [Support](#-support)
 <p align="center">
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
     <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" />
@@ -144,7 +168,7 @@ LinkCore Download Manager is currently available for:
   
 Tip: You can customize these shortcuts in “Preferences → Basic → Shortcuts”; changes take effect immediately after saving.
 
-## Tips
+## 💡 Tips
 
 - In the “Add Task” dialog, you can set a numeric priority for each parsed item. Higher values get scheduled earlier while low-priority tasks are interleaved to keep allocation fair. Priorities are shown on the task card and in the detail panel, and persist across restarts.
 - “Advanced Options” support named presets for quick reuse (UA, Referer, Cookie, proxy, etc.). Saving is blocked when all fields are empty, with a localized warning.
