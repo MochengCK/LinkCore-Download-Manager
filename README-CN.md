@@ -226,7 +226,6 @@ LinkCore-Download-Manager/
 - **原始项目**：[Motrix](https://github.com/agalwood/Motrix) by Dr_rOot
 - **UI框架**：[Vue.js](https://vuejs.org/)
 - **桌面框架**：[Electron](https://www.electronjs.org/)
-- **种子库**：[WebTorrent](https://webtorrent.io/)
 
 ## 📞 支持
 
