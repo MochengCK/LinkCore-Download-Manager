@@ -146,6 +146,12 @@ LinkCore Download Manager is currently available for:
 - In the “Add Task” dialog, you can set a numeric priority for each parsed item. Higher values get scheduled earlier while low-priority tasks are interleaved to keep allocation fair. Priorities are shown on the task card and in the detail panel, and persist across restarts.
 - “Advanced Options” support named presets for quick reuse (UA, Referer, Cookie, proxy, etc.). Saving is blocked when all fields are empty, with a localized warning.
 
+### Engine Version & Connections
+
+- The app ships with and defaults to `aria2c 1.37.0`. This version does not support setting “max-connection-per-server” to 64 and may fail to start tasks if forced. To ensure stability, the app automatically caps this value to 16 on 1.37.0 while keeping `split=64` for high chunk-level concurrency.
+- If you need 64 connections per server, go to “Preferences → Advanced → Engine” and quickly switch to `aria2c 1.36.0`. This version allows `max-connection-per-server=64`, and `split=64` is retained.
+- Note: For single-source HTTP/FTP downloads, the effective concurrency is `min(split, max-connection-per-server)`. For BitTorrent or multi-mirror downloads, concurrency across sources/peers can stack, so overall throughput is less affected.
+
 ## 🛠️ Development
 
 ### Prerequisites
