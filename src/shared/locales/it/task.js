@@ -1,4 +1,5 @@
 export default {
+  'all': 'Tutte le attività',
   'active': 'In corso',
   'waiting': 'In Pausa',
   'stopped': 'Terminate',

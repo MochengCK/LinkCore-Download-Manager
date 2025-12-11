@@ -1,4 +1,5 @@
 export default {
+  'all': 'All Tasks',
   'active': 'Downloading',
   'waiting': 'Waiting',
   'stopped': 'Stopped',
@@ -88,6 +89,9 @@ export default {
   'batch-delete-task-success': 'Successfully delete tasks in batch',
   'batch-delete-task-fail': 'Failed to delete tasks in batch',
   'refresh-list': 'Refresh Task List',
+  'sort-by-progress-asc': 'Sort by Progress (Asc)',
+  'sort-by-progress-desc': 'Sort by Progress (Desc)',
+  'sort-by-progress-none': 'Clear Sort',
   'no-task': 'There are no current tasks',
   'copy-link': 'Copy Link',
   'copy-link-success': 'Successfully copied link',

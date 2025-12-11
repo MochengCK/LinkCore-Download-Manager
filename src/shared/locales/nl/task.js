@@ -1,4 +1,5 @@
 export default {
+  'all': 'Alle taken',
   'active': 'Actief',
   'waiting': 'Wachten',
   'stopped': 'Gestopt',

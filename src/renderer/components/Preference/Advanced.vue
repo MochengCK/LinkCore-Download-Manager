@@ -139,64 +139,79 @@
           <h3 class="card-title">{{ $t('preferences.bt-tracker') }}</h3>
           <el-form-item size="mini">
             <div class="form-item-sub bt-tracker">
-              <el-row :gutter="10" style="line-height: 0;">
-                <el-col :span="20">
-                  <div class="track-source">
-                    <el-select
-                      class="select-track-source"
-                      v-model="form.trackerSource"
-                      allow-create
-                      filterable
-                      multiple
-                    >
-                      <el-option-group
-                        v-for="group in trackerSourceOptions"
-                        :key="group.label"
-                        :label="group.label"
+              <el-row :gutter="4" style="line-height: 0;">
+                <el-col :span="24">
+                  <div style="display:flex; align-items:center;">
+                    <div class="track-source" style="flex:1; transform: translateY(4px);">
+                      <el-select
+                        class="select-track-source"
+                        v-model="form.trackerSource"
+                        allow-create
+                        filterable
+                        multiple
+                        style="width:100%; position: relative; top: 4px;"
                       >
-                        <el-option
-                          v-for="item in group.options"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value"
+                        <el-option-group
+                          v-for="group in trackerSourceOptions"
+                          :key="group.label"
+                          :label="group.label"
                         >
-                          <span style="float: left">{{ item.label }}</span>
-                          <span style="float: right; margin-right: 24px">
-                            <el-tag
-                              type="success"
-                              size="mini"
-                              v-if="item.cdn"
-                            >
-                              CDN
-                            </el-tag>
-                          </span>
-                        </el-option>
-                      </el-option-group>
-                    </el-select>
-                  </div>
-                </el-col>
-                <el-col :span="3">
-                  <div class="sync-tracker">
-                    <el-tooltip
-                      class="item"
-                      effect="dark"
-                      :content="$t('preferences.sync-tracker-tips')"
-                      placement="bottom"
-                    >
-                      <el-button
-                        @click="syncTrackerFromSource"
-                        class="sync-tracker-btn"
+                          <el-option
+                            v-for="item in group.options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                          >
+                            <span style="float: left">{{ item.label }}</span>
+                            <span style="float: right; margin-right: 24px">
+                              <el-tag
+                                type="success"
+                                size="mini"
+                                v-if="item.cdn"
+                              >
+                                CDN
+                              </el-tag>
+                            </span>
+                          </el-option>
+                        </el-option-group>
+                      </el-select>
+                    </div>
+                    <div class="sync-tracker" style="display:flex; align-items:center; margin-left:4px;">
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        :content="$t('preferences.sync-tracker-tips')"
+                        placement="bottom"
                       >
-                        <mo-icon
-                          name="refresh"
-                          width="12"
-                          height="12"
-                          :spin="true"
-                          v-if="trackerSyncing"
-                        />
-                        <mo-icon name="sync" width="12" height="12" v-else />
-                      </el-button>
-                    </el-tooltip>
+                        <el-button
+                          @click="syncTrackerFromSource"
+                          class="sync-tracker-btn"
+                        >
+                          <mo-icon
+                            name="refresh"
+                            width="12"
+                            height="12"
+                            :spin="true"
+                            v-if="trackerSyncing"
+                          />
+                          <mo-icon name="sync" width="12" height="12" v-else />
+                        </el-button>
+                      </el-tooltip>
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        :content="$t('preferences.add-source')"
+                        placement="bottom"
+                      >
+                        <el-button
+                          @click="openTrackerSourceConfigDialog"
+                          class="sync-tracker-btn"
+                          style="margin-left:4px"
+                        >
+                          <mo-icon name="link" width="12" height="12" />
+                        </el-button>
+                      </el-tooltip>
+                    </div>
                   </div>
                 </el-col>
               </el-row>
@@ -208,15 +223,26 @@
                 v-model="form.btTracker">
               </el-input>
               <div class="el-form-item__info" style="margin-top: 8px;">
-                {{ $t('preferences.bt-tracker-tips') }}
-                <a target="_blank" href="https://github.com/ngosang/trackerslist" rel="noopener noreferrer">
-                  ngosang/trackerslist
-                  <mo-icon name="link" width="12" height="12" />
-                </a>
-                <a target="_blank" href="https://github.com/XIU2/TrackersListCollection" rel="noopener noreferrer">
-                  XIU2/TrackersListCollection
-                  <mo-icon name="link" width="12" height="12" />
-                </a>
+                <template v-if="!(originListForDisplay && originListForDisplay.length)">
+                  {{ $t('preferences.bt-tracker-tips') }}
+                </template>
+                <template v-else>
+                  {{ $t('preferences.added-origins') }}
+                  <span v-for="o in originListForDisplay" :key="o" style="margin-right: 12px;">
+                    <el-tooltip class="item" effect="dark" :content="$t('preferences.long-press-to-delete')" placement="top">
+                      <a
+                        href="javascript:;"
+                        @mousedown="(e) => onOriginMouseDown(o, e)"
+                        @mouseup="() => onOriginMouseUp(o)"
+                        @mouseleave="() => onOriginMouseLeave(o)"
+                        @click.prevent="() => onOriginClick(o)"
+                      >
+                        {{ deriveOriginLabel(o) }}
+                        <mo-icon name="link" width="12" height="12" />
+                      </a>
+                    </el-tooltip>
+                  </span>
+                </template>
               </div>
             </div>
             <div class="form-item-sub">
@@ -531,15 +557,15 @@
           <el-col :span="12">
             <el-button type="primary" size="mini" @click="addConfKey">添加键</el-button>
             <el-button size="mini" @click="addConfItem">新增空条目</el-button>
-            <el-button size="mini" @click="copyAria2ConfText">复制为文本</el-button>
-            <el-button size="mini" @click="pasteFromClipboard">粘贴并导入</el-button>
+            <el-button size="mini" @click="copyAria2ConfText">{{ $t('preferences.copy-as-text') }}</el-button>
+            <el-button size="mini" @click="pasteFromClipboard">{{ $t('preferences.paste-and-import') }}</el-button>
           </el-col>
         </el-row>
         <el-row :gutter="8" style="margin-bottom:8px">
           <el-col :span="24">
-            <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" v-model="aria2ConfRawText" placeholder="粘贴或编辑原始配置文本" />
+            <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" v-model="aria2ConfRawText" :placeholder="$t('preferences.aria2-text-placeholder')" />
             <div style="margin-top:8px">
-              <el-button type="primary" size="mini" @click="importFromText">从文本导入</el-button>
+          <el-button type="primary" size="mini" @click="importFromText">{{ $t('preferences.import-from-text') }}</el-button>
             </div>
           </el-col>
         </el-row>
@@ -570,6 +596,29 @@
       </div>
     </el-dialog>
 
+    <el-dialog
+      custom-class="tab-title-dialog"
+      width="640px"
+      :visible.sync="trackerSourceConfigVisible"
+      :show-close="true"
+      :append-to-body="true"
+    >
+      <div style="display:flex; align-items:center; justify-content:center; padding:8px;">
+        <el-input
+          v-model="trackerSourceInput"
+          :placeholder="$t('preferences.tracker-source-input-placeholder')"
+          clearable
+          style="max-width:480px;"
+        />
+        <el-button
+          type="primary"
+          size="mini"
+          @click="addTrackerSourceFromInput"
+          style="margin-left:8px;"
+        >{{ $t('app.submit') }}</el-button>
+      </div>
+    </el-dialog>
+
     </el-main>
   </el-container>
 </template>
@@ -580,6 +629,7 @@
   import { mapState, mapActions } from 'vuex'
   import { cloneDeep, extend, isEmpty } from 'lodash'
   import randomize from 'randomatic'
+  import axios from 'axios'
   import ShowInFolder from '@/components/Native/ShowInFolder'
   import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import userAgentMap from '@shared/ua'
@@ -600,7 +650,7 @@
     diffConfig,
     generateRandomInt
   } from '@shared/utils'
-  import { convertTrackerDataToLine, reduceTrackerString } from '@shared/utils/tracker'
+  import { reduceTrackerString } from '@shared/utils/tracker'
   import '@/components/Icons/dice'
   import '@/components/Icons/sync'
   import '@/components/Icons/refresh'
@@ -624,6 +674,9 @@
       rpcListenPort,
       rpcSecret,
       trackerSource,
+      trackerSourceDiscovered,
+      trackerSourceOrigins,
+      trackerSourceMap,
       useProxy,
       userAgent,
       engineBinary
@@ -646,6 +699,9 @@
       rpcListenPort,
       rpcSecret,
       trackerSource,
+      trackerSourceDiscovered: Array.isArray(trackerSourceDiscovered) ? [...trackerSourceDiscovered] : (config['tracker-source-discovered'] || []),
+      trackerSourceOrigins: Array.isArray(trackerSourceOrigins) ? [...trackerSourceOrigins] : (config['tracker-source-origins'] || []),
+      trackerSourceMap: typeof trackerSourceMap === 'object' && trackerSourceMap ? { ...trackerSourceMap } : (config['tracker-source-map'] || {}),
       useProxy,
       userAgent,
       engineBinary: parsedEngineBinary
@@ -672,10 +728,12 @@
         hideRpcSecret: true,
         proxyScopeOptions: PROXY_SCOPE_OPTIONS,
         rules: {},
-        trackerSourceOptions: TRACKER_SOURCE_OPTIONS,
+        trackerSourceOptions: [],
         trackerSyncing: false,
         saveTimeout: null,
         engineList: [],
+        trackerSourceConfigVisible: false,
+        trackerSourceInput: '',
         // 添加标志，用于跟踪引擎配置是否已初始化
         engineConfigInitialized: false,
         aria2ConfEditorVisible: false,
@@ -756,6 +814,16 @@
           const v = `${i.value}`.toLowerCase()
           return k.includes(q) || v.includes(q)
         })
+      },
+      originListForDisplay () {
+        const builtin = (TRACKER_SOURCE_OPTIONS || [])
+          .map(g => g && g.label ? g.label : '')
+          .filter(Boolean)
+          .filter(l => l.includes('/'))
+          .map(l => `https://github.com/${l}`)
+        const saved = Array.isArray(this.form.trackerSourceOrigins) ? this.form.trackerSourceOrigins : []
+        const normalizedSaved = saved.map(o => this.normalizeOriginUrl(o))
+        return Array.from(new Set([...builtin.map(this.normalizeOriginUrl), ...normalizedSaved]))
       }
     },
     watch: {
@@ -803,12 +871,151 @@
     async created () {
       // 获取引擎列表
       await this.fetchEngineList()
+      this.rebuildTrackerSourceOptions()
     },
     async mounted () {
       // 组件挂载后再次获取引擎列表，确保最新
       await this.fetchEngineList()
+      this.rebuildTrackerSourceOptions()
     },
     methods: {
+      getBuiltinOrigins () {
+        return (TRACKER_SOURCE_OPTIONS || [])
+          .map(g => g && g.label ? g.label : '')
+          .filter(Boolean)
+          .filter(l => l.includes('/'))
+          .map(l => `https://github.com/${l}`)
+      },
+      onOriginMouseDown (o, e) {
+        if (!e || e.button !== 0) return
+        if (!this.originHoldTimers) this.originHoldTimers = {}
+        this.originHoldActivated = false
+        const tid = setTimeout(() => {
+          this.originHoldActivated = true
+          this.deleteOrigin(o)
+        }, 800)
+        this.originHoldTimers[o] = tid
+      },
+      onOriginMouseUp (o) {
+        this.cancelOriginHold(o)
+      },
+      onOriginMouseLeave (o) {
+        this.cancelOriginHold(o)
+      },
+      cancelOriginHold (o) {
+        if (this.originHoldTimers && this.originHoldTimers[o]) {
+          clearTimeout(this.originHoldTimers[o])
+          delete this.originHoldTimers[o]
+        }
+      },
+      onOriginClick (o) {
+        if (this.originHoldActivated) return
+        try {
+          window.open(o, '_blank')
+        } catch (_) {}
+      },
+      deleteOrigin (o) {
+        const builtin = this.getBuiltinOrigins()
+        if (builtin.includes(o)) {
+          this.$msg.warning('内置来源不可删除')
+          return
+        }
+        const origins = Array.isArray(this.form.trackerSourceOrigins) ? [...this.form.trackerSourceOrigins] : []
+        const idx = origins.indexOf(o)
+        if (idx >= 0) origins.splice(idx, 1)
+        this.form.trackerSourceOrigins = origins
+        const discovered = Array.isArray(this.form.trackerSourceDiscovered) ? [...this.form.trackerSourceDiscovered] : []
+        const map = typeof this.form.trackerSourceMap === 'object' && this.form.trackerSourceMap ? { ...this.form.trackerSourceMap } : {}
+        const filtered = discovered.filter(u => {
+          const origin = map[u] || this.deriveOriginSite(u)
+          return origin !== o
+        })
+        this.form.trackerSourceDiscovered = filtered
+        Object.keys(map).forEach(k => { if (map[k] === o) delete map[k] })
+        this.form.trackerSourceMap = map
+        const selected = Array.isArray(this.form.trackerSource) ? [...this.form.trackerSource] : []
+        const selectedFiltered = selected.filter(u => {
+          const origin = map[u] || this.deriveOriginSite(u)
+          return origin !== o
+        })
+        this.form.trackerSource = selectedFiltered
+        this.rebuildTrackerSourceOptions()
+        this.sanitizeSelectedSources()
+        this.autoSaveForm()
+        this.recomputeBtTrackerFromSelected()
+        this.$msg.success(this.$t('preferences.origin-removed'))
+      },
+      recomputeBtTrackerFromSelected () {
+        const selected = Array.isArray(this.form.trackerSource) ? this.form.trackerSource : []
+        if (!selected.length) {
+          this.form.btTracker = ''
+          this.form.lastSyncTrackerTime = Date.now()
+          return
+        }
+        this.trackerSyncing = true
+        this.$store.dispatch('preference/fetchBtTracker', selected)
+          .then((data) => {
+            const texts = Array.isArray(data) ? data : []
+            const lines = []
+            texts.forEach(t => {
+              const ls = this.extractTrackerLines(t)
+              if (ls && ls.length) lines.push(...ls)
+            })
+            const uniq = Array.from(new Set(lines))
+            const tracker = uniq.join('\n')
+            this.form.lastSyncTrackerTime = Date.now()
+            this.form.btTracker = tracker
+            this.trackerSyncing = false
+          })
+          .catch((_) => {
+            this.trackerSyncing = false
+          })
+      },
+      sanitizeSelectedSources () {
+        const allowed = new Set()
+        ;(this.trackerSourceOptions || []).forEach(group => {
+          ;(group.options || []).forEach(opt => allowed.add(opt.value))
+        })
+        const current = Array.isArray(this.form.trackerSource) ? this.form.trackerSource : []
+        const filtered = current.filter(v => allowed.has(v))
+        if (filtered.length !== current.length) {
+          this.form.trackerSource = filtered
+        }
+      },
+      applyTrackerResult (lines, usedUrls = [], originSite = '') {
+        const uniq = Array.from(new Set(lines))
+        this.form.btTracker = uniq.join('\n')
+        this.form.lastSyncTrackerTime = Date.now()
+        const discovered = Array.isArray(this.form.trackerSourceDiscovered) ? [...this.form.trackerSourceDiscovered] : []
+        usedUrls.forEach(u => { if (!discovered.includes(u)) discovered.push(u) })
+        this.form.trackerSourceDiscovered = discovered
+        const origins = Array.isArray(this.form.trackerSourceOrigins) ? [...this.form.trackerSourceOrigins] : []
+        const normalizedOrigin = originSite ? this.normalizeOriginUrl(originSite) : ''
+        if (normalizedOrigin && !origins.map(o => this.normalizeOriginUrl(o)).includes(normalizedOrigin)) origins.push(normalizedOrigin)
+        this.form.trackerSourceOrigins = origins
+        const map = typeof this.form.trackerSourceMap === 'object' && this.form.trackerSourceMap ? { ...this.form.trackerSourceMap } : {}
+        usedUrls.forEach(u => { if (originSite) map[u] = originSite })
+        this.form.trackerSourceMap = map
+        this.rebuildTrackerSourceOptions()
+        this.autoSaveForm()
+        this.$msg.success(this.$t('preferences.extract-success', { count: uniq.length }))
+      },
+      applySourceDiscovery (usedUrls = [], originSite = '') {
+        const discovered = Array.isArray(this.form.trackerSourceDiscovered) ? [...this.form.trackerSourceDiscovered] : []
+        usedUrls.forEach(u => { if (!discovered.includes(u)) discovered.push(u) })
+        this.form.trackerSourceDiscovered = discovered
+        const origins = Array.isArray(this.form.trackerSourceOrigins) ? [...this.form.trackerSourceOrigins] : []
+        const normalizedOrigin = originSite ? this.normalizeOriginUrl(originSite) : ''
+        if (normalizedOrigin && !origins.map(o => this.normalizeOriginUrl(o)).includes(normalizedOrigin)) origins.push(normalizedOrigin)
+        this.form.trackerSourceOrigins = origins
+        const map = typeof this.form.trackerSourceMap === 'object' && this.form.trackerSourceMap ? { ...this.form.trackerSourceMap } : {}
+        usedUrls.forEach(u => { if (originSite) map[u] = originSite })
+        this.form.trackerSourceMap = map
+        this.rebuildTrackerSourceOptions()
+        this.sanitizeSelectedSources()
+        this.autoSaveForm()
+        this.$msg.success(this.$t('preferences.added-origin-files-success', { count: usedUrls.length }))
+      },
       ...mapActions('app', ['updateCheckingUpdate']),
       // 初始化引擎选择
       initEngineSelection (engineList) {
@@ -832,6 +1039,86 @@
           // 保存新的引擎配置
           this.autoSaveForm()
         }
+      },
+      rebuildTrackerSourceOptions () {
+        const base = JSON.parse(JSON.stringify(TRACKER_SOURCE_OPTIONS))
+        const srcs = Array.isArray(this.form.trackerSourceDiscovered) ? this.form.trackerSourceDiscovered : []
+        const groups = {}
+        srcs.forEach(u => {
+          const groupLabel = this.deriveTrackerGroup(u) || this.deriveTrackerGroupByHost(u)
+          const opt = { value: u, label: this.deriveTrackerLabel(u), cdn: false }
+          if (!groupLabel) return
+          if (!groups[groupLabel]) groups[groupLabel] = []
+          groups[groupLabel].push(opt)
+        })
+        Object.keys(groups).forEach(label => {
+          const idx = base.findIndex(i => i.label === label)
+          if (idx >= 0) {
+            const exist = base[idx].options || []
+            const merged = [...exist]
+            groups[label].forEach(opt => {
+              if (!merged.find(o => o.value === opt.value)) merged.push(opt)
+            })
+            base[idx].options = merged
+          } else {
+            base.push({ label, options: groups[label] })
+          }
+        })
+        this.trackerSourceOptions = base
+        this.sanitizeSelectedSources()
+      },
+      deriveTrackerLabel (u) {
+        const m = /([^/]+\.txt)(?:\?.*)?$/i.exec(`${u}`)
+        if (m) return m[1]
+        return u
+      },
+      deriveTrackerGroup (u) {
+        const s = `${u}`
+        const m1 = /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\//i.exec(s)
+        if (m1) return `${m1[1]}/${m1[2]}`
+        const m2 = /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/]+)\//i.exec(s)
+        if (m2) return `${m2[1]}/${m2[2]}`
+        const m3 = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\//i.exec(s)
+        if (m3) return `${m3[1]}/${m3[2]}`
+        if (/down\.adysec\.com/i.test(s)) return 'adysec/tracker'
+        return ''
+      },
+      deriveTrackerGroupByHost (u) {
+        try {
+          const { host } = new URL(u)
+          return host
+        } catch (_) {
+          return ''
+        }
+      },
+      openTrackerSourceConfigDialog () {
+        this.trackerSourceInput = ''
+        this.trackerSourceConfigVisible = true
+      },
+      async addTrackerSourceFromInput () {
+        const url = `${this.trackerSourceInput}`.trim()
+        if (!url) return
+        await this.configureTrackerFromGithubWithUrl(url)
+        this.trackerSourceInput = ''
+      },
+      removeDiscoveredSource (u) {
+        const list = Array.isArray(this.form.trackerSourceDiscovered) ? [...this.form.trackerSourceDiscovered] : []
+        const idx = list.indexOf(u)
+        if (idx >= 0) {
+          list.splice(idx, 1)
+          this.form.trackerSourceDiscovered = list
+          this.rebuildTrackerSourceOptions()
+          this.autoSaveForm()
+        }
+      },
+      resetTrackerSelectBoxSources () {
+        this.form.trackerSource = []
+        this.form.trackerSourceDiscovered = []
+        this.form.trackerSourceMap = {}
+        this.rebuildTrackerSourceOptions()
+        this.sanitizeSelectedSources()
+        this.autoSaveForm()
+        this.$msg.success(this.$t('preferences.reset-select-sources-success'))
       },
       // 获取引擎列表方法
       async fetchEngineList () {
@@ -937,14 +1224,292 @@
         const { trackerSource } = this.form
         this.$store.dispatch('preference/fetchBtTracker', trackerSource)
           .then((data) => {
-            const tracker = convertTrackerDataToLine(data)
+            const texts = Array.isArray(data) ? data : []
+            const lines = []
+            texts.forEach(t => {
+              const ls = this.extractTrackerLines(t)
+              if (ls && ls.length) lines.push(...ls)
+            })
+            const uniq = Array.from(new Set(lines))
+            const tracker = uniq.join('\n')
             this.form.lastSyncTrackerTime = Date.now()
             this.form.btTracker = tracker
             this.trackerSyncing = false
+            if (!uniq.length) {
+              this.$msg.warning(this.$t('preferences.sync-none'))
+            } else {
+              this.$msg.success(this.$t('preferences.sync-success', { count: uniq.length }))
+            }
           })
           .catch((_) => {
             this.trackerSyncing = false
+            this.$msg.error(this.$t('preferences.sync-failed'))
           })
+      },
+      async configureTrackerFromGithub () {
+        try {
+          const r = await this.$prompt(
+            this.$t('preferences.configure-tracker-prompt-message'),
+            this.$t('preferences.configure-tracker-prompt-title'),
+            {
+              confirmButtonText: this.$t('preferences.extract'),
+              cancelButtonText: this.$t('app.cancel'),
+              inputPlaceholder: this.$t('preferences.tracker-source-input-placeholder')
+            }
+          )
+          const url = `${r.value}`.trim()
+          if (!url) return
+          await this.configureTrackerFromGithubWithUrl(url)
+        } catch (e) {
+          if (e && e === 'cancel') return
+          this.$msg.error(this.$t('preferences.extract-failed'))
+        }
+      },
+      async configureTrackerFromGithubWithUrl (url) {
+        try {
+          const origin = this.deriveOriginSite(url)
+          if (origin && this.isOriginDuplicated(origin)) {
+            this.$msg.warning(this.$t('preferences.origin-exists'))
+            return
+          }
+          if (this.isGithubRepoUrl(url)) {
+            const result = await this.resolveGithubRepo(url)
+            const lines = result.trackers || []
+            if (!lines.length) {
+              this.$msg.error(this.$t('preferences.extract-empty-repo'))
+              return
+            }
+            this.applySourceDiscovery(result.usedUrls || [], origin)
+            return
+          }
+          const raw = this.toRawUrl(url)
+          if (this.isSourceDuplicated(raw)) {
+            this.$msg.warning(this.$t('preferences.source-exists'))
+            return
+          }
+          const resp = await axios.get(raw, { responseType: 'text' })
+          const text = `${resp && resp.data ? resp.data : ''}`
+          const trackers = this.extractTrackerLines(text)
+          if (!trackers.length) {
+            this.$msg.error(this.$t('preferences.extract-empty-link'))
+            return
+          }
+          this.applySourceDiscovery([raw], this.deriveOriginSite(url))
+        } catch (e) {
+          this.$msg.error(this.$t('preferences.extract-failed'))
+        }
+      },
+      isOriginDuplicated (origin) {
+        const n = this.normalizeOriginUrl(origin)
+        const builtin = this.getBuiltinOrigins().map(o => this.normalizeOriginUrl(o))
+        const saved = (Array.isArray(this.form.trackerSourceOrigins) ? this.form.trackerSourceOrigins : []).map(o => this.normalizeOriginUrl(o))
+        return builtin.includes(n) || saved.includes(n)
+      },
+      isSourceDuplicated (rawUrl) {
+        const discovered = Array.isArray(this.form.trackerSourceDiscovered) ? this.form.trackerSourceDiscovered : []
+        if (discovered.includes(rawUrl)) return true
+        const allOptionValues = []
+        ;(this.trackerSourceOptions || []).forEach(g => {
+          ;(g.options || []).forEach(opt => allOptionValues.push(opt.value))
+        })
+        return allOptionValues.includes(rawUrl)
+      },
+      deriveOriginSite (url) {
+        const s = `${url}`
+        const repo = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/?$/i.exec(s)
+        if (repo) return this.normalizeOriginUrl(`https://github.com/${repo[1]}/${repo[2]}`)
+        let m = /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\//i.exec(s)
+        if (m) return this.normalizeOriginUrl(`https://github.com/${m[1]}/${m[2]}`)
+        m = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\//i.exec(s)
+        if (m) return this.normalizeOriginUrl(`https://github.com/${m[1]}/${m[2]}`)
+        m = /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/]+)\//i.exec(s)
+        if (m) return this.normalizeOriginUrl(`https://github.com/${m[1]}/${m[2]}`)
+        try {
+          const u = new URL(s)
+          return this.normalizeOriginUrl(`${u.protocol}//${u.host}`)
+        } catch (_) {
+          return this.normalizeOriginUrl(s)
+        }
+      },
+      normalizeOriginUrl (url) {
+        try {
+          const s = `${url}`.trim()
+          const repo = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/?$/i.exec(s)
+          if (repo) {
+            const owner = repo[1]
+            const name = repo[2]
+            return `https://github.com/${owner}/${name}`
+          }
+          const u = new URL(s)
+          const protocol = u.protocol.toLowerCase()
+          const host = u.host.toLowerCase()
+          return `${protocol}//${host}`
+        } catch (_) {
+          return url.replace(/\/+$/, '')
+        }
+      },
+      deriveOriginLabel (url) {
+        const s = `${url}`
+        const m = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/?$/i.exec(s)
+        if (m) return `${m[1]}/${m[2]}`
+        try {
+          const u = new URL(s)
+          return u.host
+        } catch (_) {
+          return s
+        }
+      },
+      isGithubRepoUrl (url) {
+        return /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/i.test(`${url}`)
+      },
+      async resolveGithubRepo (url) {
+        const m = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/?$/i.exec(`${url}`)
+        if (!m) return { trackers: [], usedUrls: [] }
+        const owner = m[1]
+        const repo = m[2]
+        const branches = ['main', 'master']
+        const files = [
+          'trackers_best.txt',
+          'trackers_all.txt',
+          'trackers_best_http.txt',
+          'trackers_best_https.txt',
+          'trackers_best_udp.txt',
+          'trackers_best_wss.txt',
+          'best.txt'
+        ]
+        const readmeCandidates = branches.map(b => `https://raw.githubusercontent.com/${owner}/${repo}/${b}/README.md`)
+        const fileCandidates = []
+        branches.forEach(b => {
+          files.forEach(f => fileCandidates.push(`https://raw.githubusercontent.com/${owner}/${repo}/${b}/${f}`))
+        })
+        const used = []
+        let lines = []
+        for (let i = 0; i < readmeCandidates.length; i++) {
+          const u = readmeCandidates[i]
+          try {
+            const r = await axios.get(u, { responseType: 'text' })
+            const text = `${r && r.data ? r.data : ''}`
+            const linkUrls = this.extractTxtLinksFromReadme(text)
+            const rawUrls = linkUrls.map(this.toRawUrl)
+            const rawSet = Array.from(new Set(rawUrls))
+            const fetched = await this.fetchTrackersFromUrls(rawSet)
+            if (fetched.lines && fetched.lines.length) {
+              const preferred = this.preferCanonicalSources(fetched.usedUrls)
+              used.push(...preferred)
+              lines = fetched.lines
+              break
+            }
+          } catch (_) {}
+        }
+        if (!lines.length) {
+          const fetched = await this.fetchTrackersFromUrls(fileCandidates)
+          if (fetched.lines && fetched.lines.length) {
+            const preferred = this.preferCanonicalSources(fetched.usedUrls)
+            used.push(...preferred)
+            lines = fetched.lines
+          }
+        }
+        if (!lines.length && owner.toLowerCase() === 'adysec' && repo.toLowerCase() === 'tracker') {
+          try {
+            const r = await axios.get('https://down.adysec.com/trackers_best.txt', { responseType: 'text' })
+            const text = `${r && r.data ? r.data : ''}`
+            const fetched = this.extractTrackerLines(text)
+            if (fetched.length) {
+              used.push('https://down.adysec.com/trackers_best.txt')
+              lines = fetched
+            }
+          } catch (_) {}
+        }
+        return { trackers: lines, usedUrls: used }
+      },
+      extractTxtLinksFromReadme (text) {
+        const raw = `${text}`
+        const urls = []
+        const regex = /(https?:\/\/[^\s)]+?trackers[^\s)]*?\.txt|https?:\/\/[^\s)]+?best\.txt)/ig
+        let m
+        while ((m = regex.exec(raw)) !== null) {
+          urls.push(m[1])
+        }
+        const blobRegex = /https?:\/\/github\.com\/[^\s)]+?\.txt/ig
+        let mb
+        while ((mb = blobRegex.exec(raw)) !== null) {
+          urls.push(mb[0])
+        }
+        return Array.from(new Set(urls))
+      },
+      async fetchTrackersFromUrls (urls) {
+        const allLines = []
+        const usedUrls = []
+        for (let i = 0; i < urls.length; i++) {
+          const u = urls[i]
+          try {
+            const r = await axios.get(u, { responseType: 'text' })
+            const text = `${r && r.data ? r.data : ''}`
+            const lines = this.extractTrackerLines(text)
+            if (lines.length) {
+              usedUrls.push(u)
+              allLines.push(...lines)
+            }
+          } catch (_) {}
+        }
+        return { lines: Array.from(new Set(allLines)), usedUrls: Array.from(new Set(usedUrls)) }
+      },
+      toRawUrl (url) {
+        const u = `${url}`
+        if (/^https:\/\/raw\.githubusercontent\.com\//i.test(u)) return u
+        if (/^https:\/\/github\.com\//i.test(u)) {
+          return u.replace('https://github.com/', 'https://raw.githubusercontent.com/').replace('/blob/', '/')
+        }
+        const m = /^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?\/(.+)$/i.exec(u)
+        if (m) {
+          const owner = m[1]
+          const repo = m[2]
+          const branch = m[3] || 'main'
+          const path = m[4]
+          return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
+        }
+        return u
+      },
+      preferCanonicalSources (urls) {
+        const items = (urls || []).map(u => ({ url: u, label: this.deriveTrackerLabel(u), rank: this.getSourceRank(u) }))
+        const byLabel = {}
+        items.forEach(it => {
+          if (!byLabel[it.label]) byLabel[it.label] = []
+          byLabel[it.label].push(it)
+        })
+        const result = []
+        Object.keys(byLabel).forEach(label => {
+          const arr = byLabel[label]
+          arr.sort((a, b) => a.rank - b.rank)
+          result.push(arr[0].url)
+        })
+        return Array.from(new Set(result))
+      },
+      getSourceRank (u) {
+        try {
+          const url = new URL(u)
+          const host = url.host
+          let base = 100
+          if (/raw\.githubusercontent\.com$/i.test(host)) base = 1
+          else if (/github\.com$/i.test(host)) base = 2
+          else if (/cdn\.jsdelivr\.net$/i.test(host)) base = 3
+          else if (/down\.adysec\.com$/i.test(host)) base = 4
+          // 优先 main 分支
+          let branchRank = 0
+          const m = /^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/([^/]+)\//i.exec(u)
+          if (m) {
+            const br = m[1].toLowerCase()
+            branchRank = br === 'main' ? 0 : (br === 'master' ? 1 : 2)
+          }
+          return base * 10 + branchRank
+        } catch (_) {
+          return 999
+        }
+      },
+      extractTrackerLines (text) {
+        const raw = `${text}`
+        const tokens = raw.split(/\r?\n|,/)
+        return tokens.map(t => `${t}`.trim()).filter(Boolean).filter(t => /^(udp|http|https):\/\//i.test(t))
       },
       onProtocolsChange (protocol, enabled) {
         const { protocols } = this.form

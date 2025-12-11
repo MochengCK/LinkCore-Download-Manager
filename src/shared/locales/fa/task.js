@@ -1,4 +1,5 @@
 export default {
+  'all': 'همه وظایف',
   'active': 'در حال بارگیری',
   'waiting': 'در انتظار',
   'stopped': 'متوقف شد',

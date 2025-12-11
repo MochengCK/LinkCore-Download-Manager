@@ -1,4 +1,5 @@
 export default {
+  'all': 'Tất cả tác vụ',
   'active': 'Đang tải về',
   'waiting': 'Đang chờ',
   'stopped': 'Ngừng',

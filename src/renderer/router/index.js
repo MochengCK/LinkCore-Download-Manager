@@ -15,7 +15,7 @@ const router = new Router({
           alias: '/',
           component: require('@/components/Task/Index').default,
           props: {
-            status: 'active'
+            status: 'all'
           }
         },
         {

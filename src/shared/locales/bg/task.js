@@ -1,4 +1,5 @@
 export default {
+  'all': 'Всички задачи',
   'active':'Активен',
   'waiting':'чакане',
   'stopped':'спряно',

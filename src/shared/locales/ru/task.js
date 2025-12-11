@@ -1,4 +1,5 @@
 export default {
+  'all': 'Все задачи',
   'active': 'Загрузки',
   'waiting': 'Ожидание',
   'stopped': 'Остановлено',

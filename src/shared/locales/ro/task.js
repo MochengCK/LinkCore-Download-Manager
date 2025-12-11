@@ -1,4 +1,5 @@
 export default {
+  'all': 'Toate sarcinile',
   'active': 'Se descarcă',
   'waiting': 'În aşteptare',
   'stopped': 'Oprite',

@@ -1,4 +1,5 @@
 export default {
+  'all': '所有任务',
   'active': '下载中',
   'waiting': '等待中',
   'stopped': '已停止',
@@ -88,6 +89,9 @@ export default {
   'batch-delete-task-success': '批量移除任务成功',
   'batch-delete-task-fail': '批量移除任务失败',
   'refresh-list': '刷新任务列表',
+  'sort-by-progress-asc': '按进度升序',
+  'sort-by-progress-desc': '按进度降序',
+  'sort-by-progress-none': '取消排序',
   'no-task': '当前没有下载任务',
   'copy-link': '拷贝链接',
   'copy-link-success': '拷贝链接成功',

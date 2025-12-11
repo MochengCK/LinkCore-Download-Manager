@@ -1,4 +1,5 @@
 export default {
+  'all': 'Alle oppgaver',
   'active': 'Laster ned',
   'waiting': 'Venter',
   'stopped': 'Stoppet',

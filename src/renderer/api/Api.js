@@ -260,6 +260,25 @@ export default class Api {
   fetchTaskList (params = {}) {
     const { type } = params
     switch (type) {
+    case 'all': {
+      const { offset = 0, num = 20, keys } = params
+      const activeArgs = compactUndefined([keys])
+      const waitingArgs = compactUndefined([offset, num, keys])
+      const stoppedArgs = compactUndefined([offset, num, keys])
+      return new Promise((resolve, reject) => {
+        this.client.multicall([
+          ['aria2.tellActive', ...activeArgs],
+          ['aria2.tellWaiting', ...waitingArgs],
+          ['aria2.tellStopped', ...stoppedArgs]
+        ]).then((data) => {
+          const result = mergeTaskResult(data)
+          resolve(result)
+        }).catch((err) => {
+          console.log('[Motrix] fetch all task list fail:', err)
+          reject(err)
+        })
+      })
+    }
     case 'active':
       return this.fetchDownloadingTaskList(params)
     case 'waiting':

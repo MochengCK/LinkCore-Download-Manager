@@ -1,4 +1,5 @@
 export default {
+  'all': 'Totes les tasques',
   'active': 'Descarregant',
   'waiting': 'Esperant',
   'stopped': 'Detinguda',

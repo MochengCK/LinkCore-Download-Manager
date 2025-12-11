@@ -1,4 +1,5 @@
 export default {
+  'all': 'Semua Tugas',
   'active': 'Mengunduh',
   'waiting': 'Mengunggu',
   'stopped': 'Terhenti',

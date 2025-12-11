@@ -1,4 +1,5 @@
 export default {
+  'all': 'Todas las tareas',
   'active': 'Descargando',
   'waiting': 'Esperando',
   'stopped': 'Detenida',

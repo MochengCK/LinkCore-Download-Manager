@@ -1,4 +1,5 @@
 export default {
+  'all': 'Összes feladat',
   'active': 'Letöltés',
   'waiting': 'Varakozás',
   'stopped': 'Lealitva',

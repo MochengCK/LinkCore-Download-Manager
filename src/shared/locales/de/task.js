@@ -1,4 +1,5 @@
 export default {
+  'all': 'Alle Aufgaben',
   'active': 'Aktiv',
   'waiting': 'Warteschlange',
   'stopped': 'Gestoppt',

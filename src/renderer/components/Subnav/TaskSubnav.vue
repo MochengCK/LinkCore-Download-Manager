@@ -3,11 +3,20 @@
     <h3>{{ title }}</h3>
     <ul>
       <li
+        @click="() => nav('all')"
+        :class="[ current === 'all' ? 'active' : '' ]"
+      >
+        <i class="subnav-icon">
+          <mo-icon name="menu-task" width="20" height="20" />
+        </i>
+        <span>{{ $t('task.all') }}</span>
+      </li>
+      <li
         @click="() => nav('active')"
         :class="[ current === 'active' ? 'active' : '' ]"
       >
         <i class="subnav-icon">
-          <mo-icon name="task-start" width="20" height="20" />
+          <mo-icon name="task-pause" width="20" height="20" />
         </i>
         <span>{{ $t('task.active') }}</span>
       </li>
@@ -16,7 +25,7 @@
         :class="[ current === 'waiting' ? 'active' : '' ]"
       >
         <i class="subnav-icon">
-          <mo-icon name="task-pause" width="20" height="20" />
+          <mo-icon name="task-stop" width="20" height="20" />
         </i>
         <span>{{ $t('task.waiting') }}</span>
       </li>
@@ -25,7 +34,7 @@
         :class="[ current === 'stopped' ? 'active' : '' ]"
       >
         <i class="subnav-icon">
-          <mo-icon name="task-stop" width="20" height="20" />
+          <mo-icon name="task-start" width="20" height="20" />
         </i>
         <span>{{ $t('task.stopped') }}</span>
       </li>
@@ -34,6 +43,7 @@
 </template>
 
 <script>
+  import '@/components/Icons/menu-task'
   import '@/components/Icons/task-start'
   import '@/components/Icons/task-pause'
   import '@/components/Icons/task-stop'
@@ -43,7 +53,7 @@
     props: {
       current: {
         type: String,
-        default: 'active'
+        default: 'all'
       }
     },
     computed: {

@@ -1,4 +1,5 @@
 export default {
+  'all': 'Wszystkie zadania',
   'active': 'Pobieranie',
   'waiting': 'Wstrzymane',
   'stopped': 'Zatrzymane',
