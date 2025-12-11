@@ -3,21 +3,21 @@
 # LinkCore Download Manager（联芯下载管理器）
 
 <p align="center">
-  <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" style="border-radius:16px" />
+  <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
 </p>
 
 <p align="center">
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" style="border-radius:8px" />
+    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" style="border-radius:8px" />
+    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" style="border-radius:8px" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" style="border-radius:8px" />
+    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
   </a>
 </p>
 
@@ -107,7 +107,7 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 ## 🖥️ 界面截图
 
 <p align="center">
-  <img src="./screenshots/linkcore-screenshot-task.png" alt="任务管理界面" width="1100" style="border-radius:16px" />
+  <img src="./screenshots/linkcore-screenshot-task.png" alt="任务管理界面" width="1100" />
   <br>
   <em>任务管理界面</em>
 </p>
@@ -235,9 +235,4 @@ LinkCore-Download-Manager/
 
 <p align="center">
   由 HuanXinStudio 打造
-</p>
-<p align="center">
-  <img src="./screenshots/屏幕截图 2025-12-11 095540.png" alt="宣传图" width="900" style="border-radius:16px" />
-  <br>
-  <em>宣传图</em>
 </p>
