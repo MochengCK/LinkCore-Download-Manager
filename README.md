@@ -228,7 +228,6 @@ Contributions are welcome! Whether you're fixing bugs, adding new features, or i
 - **Original Project**: [Motrix](https://github.com/agalwood/Motrix) by Dr_rOot
 - **UI Framework**: [Vue.js](https://vuejs.org/)
 - **Desktop Framework**: [Electron](https://www.electronjs.org/)
-- **Torrent Library**: [WebTorrent](https://webtorrent.io/)
 
 ## 📞 Support
 
