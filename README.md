@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
@@ -72,8 +72,8 @@ Originally forked from <a href="https://github.com/agalwood/Motrix">Motrix</a>, 
 
 LinkCore Download Manager is currently available for:
 - **Windows** (7, 8, 10, 11)
-
-> **Note**: macOS and Linux support may be added in future releases. Stay tuned for updates!
+- **macOS** (Apple Silicon, arm64)
+- **Linux** (x64, arm64)
 
 ## 📦 Installation
 
@@ -82,6 +82,28 @@ LinkCore Download Manager is currently available for:
 1. Visit the [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) page
 2. Download the latest `LinkCore-Download-Manager-Setup-x.y.z.exe` installer
 3. Run the installer and follow the on-screen instructions
+
+### macOS
+
+1. Visit the [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) page
+2. Download `*.dmg` or `*-arm64-mac.zip` (Apple Silicon, arm64)
+3. Using `*.dmg`: double-click to open, then drag the app to `/Applications`
+4. Using `*-arm64-mac.zip`: unzip and move the app to `/Applications`
+5. If macOS shows “unidentified developer”, go to “System Settings → Privacy & Security” and click “Open Anyway”, or right-click the app in Finder and choose “Open”
+
+### Linux
+
+- AppImage (recommended):
+  1. Download `*.AppImage` (`x64` or `arm64`)
+  2. Make it executable: `chmod +x LinkCore-Download-Manager-*.AppImage`
+  3. Run: `./LinkCore-Download-Manager-*.AppImage`
+
+- Debian/Ubuntu (`.deb`):
+  1. Download `linkcore-download-manager_*_amd64.deb` or `linkcore-download-manager_*_arm64.deb`
+  2. Install: `sudo dpkg -i linkcore-download-manager_*.deb`
+  3. Fix dependencies if needed: `sudo apt -f install`
+
+- Other distros: prefer AppImage method.
 
 ## 🖥️ Screenshots
 

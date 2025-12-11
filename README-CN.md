@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
@@ -71,8 +71,8 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 
 联芯下载管理器目前支持以下平台：
 - **Windows** (7, 8, 10, 11)
-
-> **注意**：macOS和Linux支持可能在后续版本中添加。敬请期待更新！
+- **macOS** (Apple Silicon, arm64)
+- **Linux** (x64, arm64)
 
 ## 📦 安装方式
 
@@ -81,6 +81,28 @@ LinkCore Download Manager（联芯下载管理器）是一款功能强大的跨�
 1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
 2. 下载最新版本的 `LinkCore-Download-Manager-Setup-x.y.z.exe` 安装程序
 3. 运行安装程序并按照屏幕提示完成安装
+
+### macOS
+
+1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
+2. 下载 `*.dmg` 或 `*-arm64-mac.zip`（Apple Silicon，arm64）
+3. 使用 `*.dmg`：双击打开，将应用拖拽到 `/Applications`
+4. 使用 `*-arm64-mac.zip`：解压后将应用移动到 `/Applications`
+5. 首次运行若提示“无法验证开发者”，请在“系统设置 → 隐私与安全”中点击“仍要打开”，或在 Finder 中对应用图标“右键 → 打开”
+
+### Linux
+
+- AppImage（通用推荐）：
+  1. 下载 `*.AppImage`（`x64` 或 `arm64`）
+  2. 赋予可执行权限：`chmod +x LinkCore-Download-Manager-*.AppImage`
+  3. 运行：`./LinkCore-Download-Manager-*.AppImage`
+
+- Debian/Ubuntu（`.deb` 包）：
+  1. 下载 `linkcore-download-manager_*_amd64.deb` 或 `linkcore-download-manager_*_arm64.deb`
+  2. 安装：`sudo dpkg -i linkcore-download-manager_*.deb`
+  3. 如有依赖问题：`sudo apt -f install`
+
+- 其他发行版：优先使用 AppImage 方式。
 
 ## 🖥️ 界面截图
 
