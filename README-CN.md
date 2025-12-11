@@ -237,7 +237,7 @@ LinkCore-Download-Manager/
   由 HuanXinStudio 打造
 </p>
 <p align="center">
-  <img src="./screenshots/屏幕截图 2025-12-11 095540.png" alt="宣传图" width="1100" style="border-radius:16px" />
+  <img src="./screenshots/屏幕截图 2025-12-11 095540.png" alt="宣传图" width="900" style="border-radius:16px" />
   <br>
   <em>宣传图</em>
 </p>

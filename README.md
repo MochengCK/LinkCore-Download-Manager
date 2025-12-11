@@ -238,7 +238,7 @@ If you encounter any issues or have questions:
   Made by HuanXinStudio
 </p>
 <p align="center">
-  <img src="./screenshots/屏幕截图 2025-12-11 095540.png" alt="Promo" width="1100" style="border-radius:16px" />
+  <img src="./screenshots/屏幕截图 2025-12-11 095540.png" alt="Promo" width="900" style="border-radius:16px" />
   <br>
   <em>Promo</em>
 </p>
