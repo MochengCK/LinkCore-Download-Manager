@@ -847,16 +847,32 @@
         return [...modifiers, displayKey].filter(Boolean).join(' + ')
       },
       setCommandKeystroke (command, keystroke) {
+        const reserved = new Set(['cmdctrl-a', 'cmdctrl-m'])
+        if (keystroke && reserved.has(keystroke)) {
+          this.$msg.error(this.$t('preferences.shortcut-reserved') || '该快捷键与系统常用快捷键冲突，请更换')
+          return
+        }
+
+        const baseEntries = Object.entries(keymap)
+        const baseUsed = baseEntries.find(([ks, cmd]) => ks === keystroke && cmd !== command)
         const custom = { ...(this.form.customKeymap || {}) }
-        Object.keys(custom).forEach(k => {
-          if (custom[k] === command) {
-            delete custom[k]
+        const customUsed = Object.entries(custom).find(([ks, cmd]) => ks === keystroke && cmd !== command)
+        if (keystroke && (baseUsed || customUsed)) {
+          this.$msg.error(this.$t('preferences.shortcut-duplicated') || '该快捷键已被其他命令占用')
+          return
+        }
+
+        // 允许为同一命令更新快捷键（移除旧映射）
+        const next = { ...custom }
+        Object.keys(next).forEach(k => {
+          if (next[k] === command) {
+            delete next[k]
           }
         })
         if (keystroke) {
-          custom[keystroke] = command
+          next[keystroke] = command
         }
-        this.form.customKeymap = custom
+        this.form.customKeymap = next
         this.autoSaveForm()
       },
       getCommandLabel (command) {

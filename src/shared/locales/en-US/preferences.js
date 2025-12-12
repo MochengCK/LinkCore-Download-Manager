@@ -167,7 +167,9 @@ export default {
   'shortcut-command': 'Command',
   'shortcut-keystroke': 'Keystroke',
   'shortcut-placeholder': 'Press new shortcut here',
-  'shortcut-reset-default': 'Reset to defaults'
+  'shortcut-reset-default': 'Reset to defaults',
+  'shortcut-reserved': 'This shortcut conflicts with system/common shortcuts. Please choose another.',
+  'shortcut-duplicated': 'This shortcut is already used by another command.'
   ,
   'extension-rpc': 'RPC URL used by the extension',
   'extension-copy-rpc': 'Copy RPC URL',
