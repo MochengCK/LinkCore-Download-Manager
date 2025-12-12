@@ -177,5 +177,19 @@ export default {
   'extension-tips': '安装并启用浏览器扩展后，可自动接管浏览器下载'
   ,
   'extension-channel': '扩展通道地址（应用 HTTP）',
-  'extension-copy-channel': '复制通道地址'
+  'extension-copy-channel': '复制通道地址',
+  'aria2-conf-edit-button': '编辑 aria2.conf',
+  'aria2-conf-search-placeholder': '搜索键或值',
+  'aria2-conf-quick-key-placeholder': '快速添加常用键',
+  'aria2-conf-add-key': '添加键',
+  'aria2-conf-add-item': '新增空条目',
+  'aria2-conf-table-key': '键',
+  'aria2-conf-table-value': '值',
+  'aria2-conf-table-action': '操作',
+  'aria2-conf-delete': '删除',
+  'aria2-conf-save': '保存',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

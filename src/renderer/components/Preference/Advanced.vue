@@ -461,10 +461,10 @@
                 v-model="form.userAgent">
               </el-input>
               <el-button-group class="ua-group">
-                <el-button @click="() => changeUA('aria2')">Aria2</el-button>
-                <el-button @click="() => changeUA('transmission')">Transmission</el-button>
-                <el-button @click="() => changeUA('chrome')">Chrome</el-button>
-                <el-button @click="() => changeUA('du')">du</el-button>
+                <el-button @click="() => changeUA('aria2')">{{ $t('preferences.user-agent-aria2') }}</el-button>
+                <el-button @click="() => changeUA('transmission')">{{ $t('preferences.user-agent-transmission') }}</el-button>
+                <el-button @click="() => changeUA('chrome')">{{ $t('preferences.user-agent-chrome') }}</el-button>
+                <el-button @click="() => changeUA('du')">{{ $t('preferences.user-agent-du') }}</el-button>
               </el-button-group>
             </el-col>
           </el-form-item>
@@ -483,7 +483,7 @@
                   :path="aria2ConfPath"
               />
             </el-input>
-            <el-button type="primary" size="mini" @click="openAria2ConfEditor">编辑 aria2.conf</el-button>
+            <el-button type="primary" size="mini" @click="openAria2ConfEditor">{{ $t('preferences.aria2-conf-edit-button') }}</el-button>
           </el-col>
             <el-col class="form-item-sub" :span="24">
               {{ $t('preferences.download-session-path') }}
@@ -545,18 +545,18 @@
             </el-input>
           </el-col>
           <el-col :span="12">
-            <el-input v-model="aria2ConfSearch" placeholder="搜索键或值" clearable />
+            <el-input v-model="aria2ConfSearch" :placeholder="$t('preferences.aria2-conf-search-placeholder')" clearable />
           </el-col>
         </el-row>
         <el-row :gutter="8">
           <el-col :span="12">
-            <el-select v-model="aria2ConfQuickKey" filterable clearable placeholder="快速添加常用键" style="width:100%">
+            <el-select v-model="aria2ConfQuickKey" filterable clearable :placeholder="$t('preferences.aria2-conf-quick-key-placeholder')" style="width:100%">
               <el-option v-for="k in aria2ConfCommonKeys" :key="k" :label="k" :value="k" />
             </el-select>
           </el-col>
           <el-col :span="12">
-            <el-button type="primary" size="mini" @click="addConfKey">添加键</el-button>
-            <el-button size="mini" @click="addConfItem">新增空条目</el-button>
+            <el-button type="primary" size="mini" @click="addConfKey">{{ $t('preferences.aria2-conf-add-key') }}</el-button>
+            <el-button size="mini" @click="addConfItem">{{ $t('preferences.aria2-conf-add-item') }}</el-button>
             <el-button size="mini" @click="copyAria2ConfText">{{ $t('preferences.copy-as-text') }}</el-button>
             <el-button size="mini" @click="pasteFromClipboard">{{ $t('preferences.paste-and-import') }}</el-button>
           </el-col>
@@ -573,26 +573,26 @@
       <el-row :gutter="8">
         <el-col :span="24">
           <el-table :data="aria2ConfFilteredItems" :border="false" :stripe="true" size="mini" style="width: 100%">
-            <el-table-column label="键" width="300">
+            <el-table-column :label="$t('preferences.aria2-conf-table-key')" width="300">
               <template slot-scope="scope">
                 <el-input v-model="scope.row.key" size="mini" />
               </template>
             </el-table-column>
-            <el-table-column label="值">
+            <el-table-column :label="$t('preferences.aria2-conf-table-value')">
               <template slot-scope="scope">
                 <el-input v-model="scope.row.value" size="mini" />
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="120">
+            <el-table-column :label="$t('preferences.aria2-conf-table-action')" width="120">
               <template slot-scope="scope">
-                <el-button type="danger" size="mini" @click="removeConfItem(scope.row)">删除</el-button>
+                <el-button type="danger" size="mini" @click="removeConfItem(scope.row)">{{ $t('preferences.aria2-conf-delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-col>
       </el-row>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="saveAria2Conf">保存</el-button>
+        <el-button type="primary" @click="saveAria2Conf">{{ $t('preferences.aria2-conf-save') }}</el-button>
       </div>
     </el-dialog>
 

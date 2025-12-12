@@ -151,5 +151,19 @@ export default {
   'downloading-file-suffix-tips': 'Добавяне на този суфикс към файловете по време на сваляне, той ще бъде автоматично премахнат след завършване',
   'downloading-file-suffix-format-warning': 'Суфиксът за сваляне трябва да започва с ".", той ще бъде автоматично добавен',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Редактиране на aria2.conf',
+  'aria2-conf-save': 'Запазване',
+  'aria2-conf-save-success': 'Файлът aria2.conf е запазен успешно',
+  'aria2-conf-save-fail': 'Грешка при запазване на файла aria2.conf',
+  'aria2-conf-search-placeholder': 'Търсене на ключ или стойност',
+  'aria2-conf-add-key': 'Добавяне на ключ',
+  'aria2-conf-add-key-placeholder': 'Въведете име на ключ',
+  'aria2-conf-add-value-placeholder': 'Въведете стойност',
+  'aria2-conf-remove-key': 'Премахване на ключ',
+  'aria2-conf-reset': 'Нулиране към стойности по подразбиране',
+  'aria2-conf-reset-confirm': 'Сигурни ли сте, че искате да нулирате настройките на aria2.conf към стойности по подразбиране?',
+  'aria2-conf-import': 'Импортиране на файл',
+  'aria2-conf-export': 'Експортиране на файл',
+  'user-agent-du': 'User-Agent'
 }

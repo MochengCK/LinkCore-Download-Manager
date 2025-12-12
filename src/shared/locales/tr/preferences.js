@@ -153,5 +153,19 @@ export default {
   'downloading-file-suffix-tips': 'Bu soneki indirme sırasında dosyalara ekleyin, tamamlandıktan sonra otomatik olarak silinecektir',
   'downloading-file-suffix-format-warning': 'İndirme sonekı noktayla (.) başlamalıdır, bu otomatik olarak eklenecektir',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'aria2.conf düzenle',
+  'aria2-conf-search-placeholder': 'Anahtar veya değer ara',
+  'aria2-conf-quick-key-placeholder': 'Hızlıca yaygın anahtarlar ekle',
+  'aria2-conf-add-key': 'Anahtar ekle',
+  'aria2-conf-add-item': 'Boş öğe ekle',
+  'aria2-conf-table-key': 'Anahtar',
+  'aria2-conf-table-value': 'Değer',
+  'aria2-conf-table-action': 'Eylem',
+  'aria2-conf-delete': 'Sil',
+  'aria2-conf-save': 'Kaydet',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

@@ -153,5 +153,19 @@ export default {
   'downloading-file-suffix-tips': 'Προσθέστε αυτόν τον επمتίτλο στα αρχεία κατά τη λήψη, θα αφαιρεθεί αυτόματα μετά την ολοκλήρωση',
   'downloading-file-suffix-format-warning': 'Η επمتίτλο λήψης πρέπει να ξεκινά με ".", θα προστεθεί αυτόματα',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Επεξεργασία aria2.conf',
+  'aria2-conf-save': 'Αποθήκευση',
+  'aria2-conf-save-success': 'Το αρχείο aria2.conf αποθηκεύτηκε επιτυχώς',
+  'aria2-conf-save-fail': 'Σφάλμα κατά την αποθήκευση του αρχείου aria2.conf',
+  'aria2-conf-search-placeholder': 'Αναζήτηση κλειδιού ή τιμής',
+  'aria2-conf-add-key': 'Προσθήκη κλειδιού',
+  'aria2-conf-add-key-placeholder': 'Εισαγάγετε όνομα κλειδιού',
+  'aria2-conf-add-value-placeholder': 'Εισαγάγετε τιμή',
+  'aria2-conf-remove-key': 'Διαγραφή κλειδιού',
+  'aria2-conf-reset': 'Επαναφορά στις προεπιλεγμένες τιμές',
+  'aria2-conf-reset-confirm': 'Είστε σίγουροι ότι θέλετε να επαναφέρετε τις ρυθμίσεις aria2.conf στις προεπιλεγμένες τιμές;',
+  'aria2-conf-import': 'Εισαγωγή αρχείου',
+  'aria2-conf-export': 'Εξαγωγή αρχείου',
+  'user-agent-du': 'User-Agent'
 }

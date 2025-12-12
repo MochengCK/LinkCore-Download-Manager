@@ -153,5 +153,19 @@ export default {
   'downloading-file-suffix-tips': 'Dodaj ten przyrostek do plików podczas pobierania, zostanie automatycznie usunięty po zakończeniu',
   'downloading-file-suffix-format-warning': 'Przyrostek pobierania musi zaczynać się od ".", zostanie automatycznie dodany',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Edytuj aria2.conf',
+  'aria2-conf-search-placeholder': 'Szukaj klucza lub wartości',
+  'aria2-conf-quick-key-placeholder': 'Szybko dodaj popularne klucze',
+  'aria2-conf-add-key': 'Dodaj klucz',
+  'aria2-conf-add-item': 'Dodaj pusty element',
+  'aria2-conf-table-key': 'Klucz',
+  'aria2-conf-table-value': 'Wartość',
+  'aria2-conf-table-action': 'Akcja',
+  'aria2-conf-delete': 'Usuń',
+  'aria2-conf-save': 'Zapisz',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

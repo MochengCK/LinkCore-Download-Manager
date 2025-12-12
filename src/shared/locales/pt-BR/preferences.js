@@ -153,5 +153,19 @@ export default {
   'downloading-file-suffix-tips': 'Adicione este sufixo aos arquivos durante o download, ele será removido automaticamente após a conclusão',
   'downloading-file-suffix-format-warning': 'O sufixo de download deve começar com ".", ele será adicionado automaticamente',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Editar aria2.conf',
+  'aria2-conf-search-placeholder': 'Pesquisar chave ou valor',
+  'aria2-conf-quick-key-placeholder': 'Adicionar rapidamente chaves comuns',
+  'aria2-conf-add-key': 'Adicionar chave',
+  'aria2-conf-add-item': 'Adicionar item vazio',
+  'aria2-conf-table-key': 'Chave',
+  'aria2-conf-table-value': 'Valor',
+  'aria2-conf-table-action': 'Ação',
+  'aria2-conf-delete': 'Excluir',
+  'aria2-conf-save': 'Salvar',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

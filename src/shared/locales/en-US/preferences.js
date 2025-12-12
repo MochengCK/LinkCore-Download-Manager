@@ -175,5 +175,19 @@ export default {
   'extension-tips': 'Install and enable the browser extension to hijack downloads automatically'
   ,
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Edit aria2.conf',
+  'aria2-conf-search-placeholder': 'Search key or value',
+  'aria2-conf-quick-key-placeholder': 'Quick add common keys',
+  'aria2-conf-add-key': 'Add Key',
+  'aria2-conf-add-item': 'Add Empty Item',
+  'aria2-conf-table-key': 'Key',
+  'aria2-conf-table-value': 'Value',
+  'aria2-conf-table-action': 'Action',
+  'aria2-conf-delete': 'Delete',
+  'aria2-conf-save': 'Save',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

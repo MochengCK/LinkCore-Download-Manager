@@ -155,5 +155,19 @@ export default {
   'downloading-file-suffix-tips': 'Voeg deze suffix toe aan bestanden tijdens het downloaden, deze wordt automatisch verwijderd na voltooiing',
   'downloading-file-suffix-format-warning': 'Downloadsuffix moet beginnen met ".", deze wordt automatisch toegevoegd',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Bewerk aria2.conf',
+  'aria2-conf-search-placeholder': 'Zoek sleutel of waarde',
+  'aria2-conf-quick-key-placeholder': 'Snel veelgebruikte sleutels toevoegen',
+  'aria2-conf-add-key': 'Sleutel toevoegen',
+  'aria2-conf-add-item': 'Leeg item toevoegen',
+  'aria2-conf-table-key': 'Sleutel',
+  'aria2-conf-table-value': 'Waarde',
+  'aria2-conf-table-action': 'Actie',
+  'aria2-conf-delete': 'Verwijderen',
+  'aria2-conf-save': 'Opslaan',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

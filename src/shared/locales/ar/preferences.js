@@ -155,5 +155,19 @@ export default {
   'downloading-file-suffix-tips': 'إضافة هذا الامتداد إلى الملفات أثناء التحميل، سيتم إزالته تلقائيًا بعد الانتهاء',
   'downloading-file-suffix-format-warning': 'يجب أن يبدأ امتداد التحميل بـ "."، سيتم إضافته تلقائيًا',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'تحرير aria2.conf',
+  'aria2-conf-search-placeholder': 'البحث عن مفتاح أو قيمة',
+  'aria2-conf-quick-key-placeholder': 'إضافة مفاتيح شائعة بسرعة',
+  'aria2-conf-add-key': 'إضافة مفتاح',
+  'aria2-conf-add-item': 'إضافة عنصر فارغ',
+  'aria2-conf-table-key': 'المفتاح',
+  'aria2-conf-table-value': 'القيمة',
+  'aria2-conf-table-action': 'الإجراء',
+  'aria2-conf-delete': 'حذف',
+  'aria2-conf-save': 'حفظ',
+  'user-agent-aria2': 'Aria2',
+  'user-agent-transmission': 'Transmission',
+  'user-agent-chrome': 'Chrome',
+  'user-agent-du': 'du'
 }

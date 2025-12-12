@@ -110,5 +110,19 @@ export default {
   'not-saved-confirm': 'Les preferències modificades es perdran, esteu segur que marxareu?',
   'undo-change': 'Desfer canvi',
   'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-copy-channel': 'Copy channel URL',
+  'aria2-conf-edit-button': 'Editar aria2.conf',
+  'aria2-conf-save': 'Guardar',
+  'aria2-conf-save-success': 'Fitxer aria2.conf guardat amb èxit',
+  'aria2-conf-save-fail': 'Error en guardar el fitxer aria2.conf',
+  'aria2-conf-search-placeholder': 'Cercar clau o valor',
+  'aria2-conf-add-key': 'Afegir clau',
+  'aria2-conf-add-key-placeholder': 'Introdueix el nom de la clau',
+  'aria2-conf-add-value-placeholder': 'Introdueix el valor',
+  'aria2-conf-remove-key': 'Eliminar clau',
+  'aria2-conf-reset': 'Restablir als valors per defecte',
+  'aria2-conf-reset-confirm': 'Estàs segur que vols restablir la configuració aria2.conf als valors per defecte?',
+  'aria2-conf-import': 'Importar fitxer',
+  'aria2-conf-export': 'Exportar fitxer',
+  'user-agent-du': 'User-Agent'
 }
