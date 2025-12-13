@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Du er oppdatert!',
   'update-downloaded-message': 'Klar til å installere...',
   'update-error-message': 'Oppdateringsfeil',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Oppdateringssjekk tidsavbrutt, vennligst prøv igjen senere',
   'engine-damaged-message': 'Motoren er skadet. Vennligst installer den på nytt :(',
   'engine-missing-message': 'Motoren mangler. Vennligst installer den på nytt :(',
   'system-error-title': 'Systemfeil',

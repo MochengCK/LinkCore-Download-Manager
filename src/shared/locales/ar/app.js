@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'لديك أحدث إصدار!',
   'update-downloaded-message': 'جاهز للتثبيت...',
   'update-error-message': 'حدث خطأ أثناء التحديث',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'انتهت مهلة التحقق من التحديثات، يرجى المحاولة مرة أخرى لاحقًا',
   'engine-damaged-message': 'المحرك متضرر، الرجاء إعادة التثبيت : (',
   'engine-missing-message': 'المحرك مفقود، الرجاء إعادة التثبيت : (',
   'system-error-title': 'خطأ في النظام',

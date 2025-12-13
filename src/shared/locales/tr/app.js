@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Gündemdesin!',
   'update-downloaded-message': 'Yüklemeye hazır...',
   'update-error-message': 'Güncelleme Hatası',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Güncelleme kontrolü zaman aşımına uğradı, lütfen daha sonra tekrar deneyin',
   'engine-damaged-message': 'Motor hasarlı, lütfen tekrar takın : (',
   'engine-missing-message': 'Motor eksik, lütfen tekrar takın : (',
   'system-error-title': 'Sistem hatası',

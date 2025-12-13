@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Bạn đang dùng bản mới nhất!',
   'update-downloaded-message': 'Đã sẵn sàng để cài đặt...',
   'update-error-message': 'Cập nhật lỗi',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Kiểm tra cập nhật đã hết thời gian, vui lòng thử lại sau',
   'engine-damaged-message': 'Ứng dụng bị lỗi, vui lòng cài đặt lại : (',
   'engine-missing-message': 'Ứng dụng bị thiếu tập tin, vui lòng cài đặt lại : (',
   'system-error-title': 'Lỗi hệ thống',

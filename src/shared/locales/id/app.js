@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Aplikasi dalam kondisi ter-update!',
   'update-downloaded-message': 'siap meng-install...',
   'update-error-message': 'Update Gagal',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Pemeriksaan pembaruan telah habis waktu, silakan coba lagi nanti',
   'engine-damaged-message': 'Mesin rusak, silahkan install ulang : (',
   'engine-missing-message': 'Mesin hilang, silahkan install ulang : (',
   'system-error-title': 'System Error',

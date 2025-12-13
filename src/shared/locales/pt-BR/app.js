@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Você esta atualizado!',
   'update-downloaded-message': 'Pronto para instalar...',
   'update-error-message': 'Atualizar erro',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Verificação de atualização expirou, por favor tente novamente mais tarde',
   'engine-damaged-message': 'O motor está danificado, por favor, reinstale : (',
   'engine-missing-message': 'O motor está faltando, por favor, reinstale : (',
   'system-error-title': 'Erro do sistema',

@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Versiunea este la zi!',
   'update-downloaded-message': 'Gata de instalare...',
   'update-error-message': 'Eroare actualizare',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Verificarea actualizărilor a expirat, vă rugăm să încercați din nou mai târziu',
   'engine-damaged-message': 'Motorul este deteriorat, vă rugăm să reinstalați : (',
   'engine-missing-message': 'Motorul lipseşte, vă rugăm să reinstalați : (',
   'system-error-title': 'Eroare sistem',

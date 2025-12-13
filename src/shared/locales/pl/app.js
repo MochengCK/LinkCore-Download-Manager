@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Masz zainstalowaną najnowszą wersję!',
   'update-downloaded-message': 'Gotowe do instalacji...',
   'update-error-message': 'Błąd aktualizacji',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Sprawdzanie aktualizacji przekroczyło limit czasu, spróbuj ponownie później',
   'engine-damaged-message': 'Silnik został uszkodzony, spróbuj zreinstalować program : (',
   'engine-missing-message': 'Nie można znaleźć silnika, spróbuj zreinstalować program : (',
   'system-error-title': 'Błąd systemu',

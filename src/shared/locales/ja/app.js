@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'あなたは最新です！',
   'update-downloaded-message': 'インストールする準備ができています...',
   'update-error-message': '更新エラー',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'アップデートチェックがタイムアウトしました。後でもう一度お試しください',
   'engine-damaged-message': 'エンジンが破損しています、再インストールしてください : (',
   'engine-missing-message': 'エンジンが見つかりません。再インストールしてください : (',
   'system-error-title': 'システムエラー',

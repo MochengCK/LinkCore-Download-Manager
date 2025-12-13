@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Sie sind auf dem neuesten Stand!',
   'update-downloaded-message': 'Bereit zur Installation...',
   'update-error-message': 'Aktualisierungsfehler',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Update-Prüfung ist abgelaufen, bitte versuchen Sie es später erneut',
   'engine-damaged-message': 'Der Motor ist beschädigt, bitte neu installieren : (',
   'engine-missing-message': 'Der Motor fehlt, bitte neu installieren : (',
   'system-error-title': 'Systemfehler',

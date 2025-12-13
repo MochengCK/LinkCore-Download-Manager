@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Applicazione già aggiornata!',
   'update-downloaded-message': 'Pronto per l\'installazione...',
   'update-error-message': 'Errore nell\'aggiornamento',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Controllo aggiornamenti scaduto, per favore riprova più tardi',
   'engine-damaged-message': 'Il motore è danneggiato, per favore, reinstalla l\'app : (',
   'engine-missing-message': 'Il motore è assente, per favore, reinstalla l\'app : (',
   'system-error-title': 'Errore di sistema',

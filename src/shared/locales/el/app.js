@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Έχετε τη τελευταία έκδοση!',
   'update-downloaded-message': 'Έτοιμο για εγκατάσταση...',
   'update-error-message': 'Σφάλμα κατά την Ενημέρωση',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Ο έλεγχος ενημερώσεων έληξε, δοκιμάστε ξανά αργότερα',
   'engine-damaged-message': 'Σφάλμα στη μηχανή, παρακαλώ κάντε επανεγκατάσταση : (',
   'engine-missing-message': 'Η μηχανή λείπει, παρακαλώ κάντε επανεγκατάσταση : (',
   'system-error-title': 'Σφάλμα Συστήματος',

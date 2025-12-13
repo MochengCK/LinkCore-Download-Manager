@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Nincs elérhető frissités!',
   'update-downloaded-message': 'Telepitésre kész...',
   'update-error-message': 'Hiba történt frissités közben',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'A frissítés ellenőrzése időtúllépés miatt megszakadt, kérjük próbálja újra később',
   'engine-damaged-message': 'A motor meghibásodot, kérjük telepitse újra a LinkCore Download Manager-t : (',
   'engine-missing-message': 'A motor hiányzik, kérjük telepitse újra a LinkCore Download Manager-t : (',
   'system-error-title': 'Rendszer hiba',

@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Вече използвате най-новата версия!',
   'update-downloaded-message': 'Готово за инсталиране...',
   'update-error-message': 'Грешка при обновяване',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Проверката за актуализации изтече, моля опитайте по-късно',
   'engine-damaged-message': 'Програмата е повредена, моля преинсталирайте :(',
   'engine-missing-message': 'Програмата е загубена, моля преинсталирайте :(',
   'system-error-title': 'Грешка',

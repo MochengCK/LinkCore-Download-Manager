@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'U heeft de laatste versie!',
   'update-downloaded-message': 'Klaar om te installeren...',
   'update-error-message': 'Update fout',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Updatecontrole is verlopen, probeer het later opnieuw',
   'engine-damaged-message': 'De engine is beschadigd, opnieuw installeren a.u.b. :(',
   'engine-missing-message': 'De engine mist, opnieuw installeren a.u.b. :(',
   'system-error-title': 'Systeemfout',

@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'คุณใช้เวอร์ชั่นปัจจุบันแล้ว',
   'update-downloaded-message': 'พร้อมติดตั้ง...',
   'update-error-message': 'อัพเดทล้มเหลว',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'การตรวจสอบอัปเดตหมดเวลา โปรดลองอีกครั้งในภายหลัง',
   'engine-damaged-message': 'เอ็นจิ้นเกิดความเสียหาย กรุณาติดตั้งใหม่อีกครั้ง : (',
   'engine-missing-message': 'ไม่พบเอ็นจิ้น กรุณาติดตั้งใหม่อีกครั้ง : (',
   'system-error-title': 'ระบบผิดพลาด',

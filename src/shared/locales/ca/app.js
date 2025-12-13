@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Estàs en l\'última versió!',
   'update-downloaded-message': 'Llest per instal·lar...',
   'update-error-message': 'Error mentre s\'actualitzava',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'La comprovació d\'actualitzacions ha caducat, si us plau torneu-ho a provar més tard',
   'engine-damaged-message': 'El motor està danyat, per favor reinstal·la :(',
   'engine-missing-message': 'No es troba el motor, por favor reinstal·la :(',
   'system-error-title': 'Error del sistema',

@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': '최신 버전을 사용 중입니다!',
   'update-downloaded-message': '설치 준비 완료...',
   'update-error-message': '업데이트 오류',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': '업데이트 확인 시간이 초과되었습니다. 나중에 다시 시도해 주세요',
   'engine-damaged-message': '엔진이 손상되었으므로 다시 설치하십시오: (',
   'engine-missing-message': '엔진이 누락되었으므로 다시 설치하십시오: (',
   'system-error-title': '시스템 오류',

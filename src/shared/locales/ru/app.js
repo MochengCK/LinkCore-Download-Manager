@@ -11,7 +11,7 @@ export default {
   'update-not-available-message': 'Вы уже используете самую последнюю версию!',
   'update-downloaded-message': 'Готово к установке...',
   'update-error-message': 'Ошибка обновления',
-  'update-timeout-message': 'Update check timed out, please try again later',
+  'update-timeout-message': 'Проверка обновлений истекла, пожалуйста, попробуйте позже',
   'engine-damaged-message': 'Движок поврежден. Пожалуйста, переустановите его : (',
   'engine-missing-message': 'Движок потерян. Пожалуйста, переустановите его : (',
   'system-error-title': 'Системная ошибка',
