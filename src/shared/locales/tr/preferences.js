@@ -167,5 +167,22 @@ export default {
   'user-agent-aria2': 'Aria2',
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
-  'user-agent-du': 'du'
+  'user-agent-du': 'du',
+  'extension-rpc': 'Eklenti tarafından kullanılan RPC URL',
+  'extension-copy-rpc': 'RPC URL kopyala',
+  'extension-tips': 'İndirmeleri otomatik olarak yakalamak için tarayıcı uzantısını yükleyin ve etkinleştirin',
+  'cancel': 'İptal',
+  'save': 'Kaydet',
+  'scheduler': 'Zamanlayıcı motoru - Test',
+  'scheduler-enabled': 'Zamanlayıcı motorunu etkinleştir',
+  'scheduler-enabled-tips': 'Yavaş indirme görevlerini otomatik olarak algılar ve kullanıcı müdahalesi olmadan yeniden zamanlama başlatır',
+  'scheduler-low-speed-threshold': 'Düşük hız tetikleme eşiği',
+  'scheduler-low-speed-threshold-tips': 'Hız, tepe hızının bu yüzdesinin altına düştüğünde zamanlamayı tetikler',
+  'scheduler-min-peak-speed': 'Minimum tepe hızı',
+  'scheduler-min-peak-speed-tips': 'Yalnızca tepe hızı bu değeri aştığında düşük hız tetiklemesini dikkate alır',
+  'scheduler-min-file-size': 'Minimum dosya boyutu',
+  'scheduler-min-file-size-tips': 'Bu boyuttan küçük görevler zamanlanmaz',
+  'scheduler-max-rebalance-count': 'Maksimum yeniden dengeleme sayısı',
+  'scheduler-max-rebalance-count-tips': 'Görev başına maksimum yeniden dengeleme sayısı',
+  'scheduler-tips': 'Zamanlayıcı motoru yapılandırma kılavuzu'
 }

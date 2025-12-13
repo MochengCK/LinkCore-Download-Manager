@@ -196,5 +196,17 @@ export default {
   'extension-copy-rpc': 'Copia URL RPC',
   'extension-tips': 'Installa e abilita l\'estensione del browser per intercettare automaticamente i download',
   'cancel': 'Annulla',
-  'save': 'Salva'
+  'save': 'Salva',
+  'scheduler': 'Motore di pianificazione - Test',
+  'scheduler-enabled': 'Abilita motore di pianificazione',
+  'scheduler-enabled-tips': 'Rileva automaticamente le attività di download lente e attiva la ripianificazione senza intervento dell\'utente',
+  'scheduler-low-speed-threshold': 'Soglia di attivazione a bassa velocità',
+  'scheduler-low-speed-threshold-tips': 'Attiva la pianificazione quando la velocità scende al di sotto di questa percentuale della velocità di picco',
+  'scheduler-min-peak-speed': 'Velocità di picco minima',
+  'scheduler-min-peak-speed-tips': 'Considera l\'attivazione a bassa velocità solo se la velocità di picco supera questo valore',
+  'scheduler-min-file-size': 'Dimensione minima del file',
+  'scheduler-min-file-size-tips': 'Le attività più piccole di questa dimensione non vengono pianificate',
+  'scheduler-max-rebalance-count': 'Numero massimo di ribilanciamenti',
+  'scheduler-max-rebalance-count-tips': 'Numero massimo di ribilanciamenti per attività',
+  'scheduler-tips': 'Guida alla configurazione del motore di pianificazione'
 }

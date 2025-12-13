@@ -198,5 +198,17 @@ export default {
   'extension-copy-rpc': 'RPC URL 복사',
   'extension-tips': '브라우저 확장 프로그램을 설치하고 활성화하여 다운로드를 자동으로 가로채기',
   'cancel': '취소',
-  'save': '저장'
+  'save': '저장',
+  'scheduler': '스케줄러 엔진 - 테스트',
+  'scheduler-enabled': '스케줄러 엔진 활성화',
+  'scheduler-enabled-tips': '다운로드 속도가 느린 작업을 자동으로 감지하고 사용자 개입 없이 재스케줄링을 트리거합니다',
+  'scheduler-low-speed-threshold': '저속 트리거 임계값',
+  'scheduler-low-speed-threshold-tips': '속도가 최고 속도의 이 비율 아래로 떨어질 때 스케줄링을 트리거합니다',
+  'scheduler-min-peak-speed': '최소 최고 속도',
+  'scheduler-min-peak-speed-tips': '최고 속도가 이 값을 초과하는 경우에만 저속 트리거를 고려합니다',
+  'scheduler-min-file-size': '최소 파일 크기',
+  'scheduler-min-file-size-tips': '이 크기보다 작은 작업은 스케줄링되지 않습니다',
+  'scheduler-max-rebalance-count': '최대 재할당 횟수',
+  'scheduler-max-rebalance-count-tips': '작업당 최대 재할당 횟수',
+  'scheduler-tips': '스케줄러 엔진 구성 가이드'
 }

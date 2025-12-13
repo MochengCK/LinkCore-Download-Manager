@@ -167,5 +167,22 @@ export default {
   'user-agent-aria2': 'Aria2',
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
-  'user-agent-du': 'du'
+  'user-agent-du': 'du',
+  'extension-rpc': 'URL RPC usada pela extensão',
+  'extension-copy-rpc': 'Copiar URL RPC',
+  'extension-tips': 'Instale e ative a extensão do navegador para interceptar downloads automaticamente',
+  'cancel': 'Cancelar',
+  'save': 'Salvar',
+  'scheduler': 'Motor de agendamento - Teste',
+  'scheduler-enabled': 'Ativar motor de agendamento',
+  'scheduler-enabled-tips': 'Detecta automaticamente tarefas de download lentas e aciona o reagendamento sem intervenção do usuário',
+  'scheduler-low-speed-threshold': 'Limiar de acionamento de baixa velocidade',
+  'scheduler-low-speed-threshold-tips': 'Aciona o agendamento quando a velocidade cai abaixo desta porcentagem da velocidade de pico',
+  'scheduler-min-peak-speed': 'Velocidade de pico mínima',
+  'scheduler-min-peak-speed-tips': 'Considera o acionamento de baixa velocidade apenas se a velocidade de pico exceder este valor',
+  'scheduler-min-file-size': 'Tamanho mínimo do arquivo',
+  'scheduler-min-file-size-tips': 'Tarefas menores que este tamanho não são agendadas',
+  'scheduler-max-rebalance-count': 'Número máximo de reequilíbrios',
+  'scheduler-max-rebalance-count-tips': 'Número máximo de reequilíbrios por tarefa',
+  'scheduler-tips': 'Guia de configuração do motor de agendamento'
 }

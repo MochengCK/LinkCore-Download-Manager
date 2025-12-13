@@ -201,5 +201,17 @@ export default {
   'extension-copy-rpc': 'RPC URLをコピー',
   'extension-tips': 'ブラウザ拡張機能をインストールして有効にすると、ダウンロードを自動的に引き継ぎます',
   'cancel': 'キャンセル',
-  'save': '保存'
+  'save': '保存',
+  'scheduler': 'スケジューラエンジン - テスト',
+  'scheduler-enabled': 'スケジューラエンジンを有効にする',
+  'scheduler-enabled-tips': 'ダウンロード速度が遅いタスクを自動的に検出し、ユーザーの介入なしに再スケジューリングをトリガーします',
+  'scheduler-low-speed-threshold': '低速トリガー閾値',
+  'scheduler-low-speed-threshold-tips': '速度がピーク速度のこの割合を下回った場合にスケジューリングをトリガーします',
+  'scheduler-min-peak-speed': '最小ピーク速度',
+  'scheduler-min-peak-speed-tips': 'ピーク速度がこの値を超える場合のみ低速トリガーを考慮します',
+  'scheduler-min-file-size': '最小ファイルサイズ',
+  'scheduler-min-file-size-tips': 'このサイズより小さいタスクはスケジューリングされません',
+  'scheduler-max-rebalance-count': '最大再割り当て回数',
+  'scheduler-max-rebalance-count-tips': 'タスクごとの最大再割り当て回数',
+  'scheduler-tips': 'スケジューラエンジン設定ガイド'
 }

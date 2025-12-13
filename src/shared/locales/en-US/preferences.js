@@ -206,7 +206,7 @@ export default {
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
   'user-agent-du': 'du',
-  'scheduler': 'Scheduler Engine',
+  'scheduler': 'Scheduler Engine - Test',
   'scheduler-enabled': 'Enable Scheduler Engine',
   'scheduler-enabled-tips': 'Automatically detect slow download tasks and trigger rescheduling without user intervention',
   'scheduler-low-speed-threshold': 'Low Speed Threshold',

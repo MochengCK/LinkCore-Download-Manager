@@ -196,5 +196,17 @@ export default {
   'extension-copy-rpc': 'Copiar URL RPC',
   'extension-tips': 'Instala y habilita la extensión del navegador para interceptar descargas automáticamente',
   'cancel': 'Cancelar',
-  'save': 'Guardar'
+  'save': 'Guardar',
+  'scheduler': 'Motor de planificación - Test',
+  'scheduler-enabled': 'Habilitar motor de planificación',
+  'scheduler-enabled-tips': 'Detecta automáticamente tareas de descarga lentas y activa la reprogramación sin intervención del usuario',
+  'scheduler-low-speed-threshold': 'Umbral de activación de baja velocidad',
+  'scheduler-low-speed-threshold-tips': 'Activa la planificación cuando la velocidad cae por debajo de este porcentaje de la velocidad máxima',
+  'scheduler-min-peak-speed': 'Velocidad máxima mínima',
+  'scheduler-min-peak-speed-tips': 'Solo considera la activación de baja velocidad si la velocidad máxima supera este valor',
+  'scheduler-min-file-size': 'Tamaño mínimo de archivo',
+  'scheduler-min-file-size-tips': 'Las tareas más pequeñas que este tamaño no se planifican',
+  'scheduler-max-rebalance-count': 'Número máximo de reequilibrios',
+  'scheduler-max-rebalance-count-tips': 'Número máximo de reequilibrios por tarea',
+  'scheduler-tips': 'Guía de configuración del motor de planificación'
 }

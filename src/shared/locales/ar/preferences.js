@@ -169,5 +169,22 @@ export default {
   'user-agent-aria2': 'Aria2',
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
-  'user-agent-du': 'du'
+  'user-agent-du': 'du',
+  'extension-rpc': 'عنوان RPC المستخدم بواسطة الامتداد',
+  'extension-copy-rpc': 'نسخ عنوان RPC',
+  'extension-tips': 'قم بتثبيت وتمكين امتداد المتصفح لاعتراض التنزيلات تلقائيًا',
+  'cancel': 'إلغاء',
+  'save': 'حفظ',
+  'scheduler': 'محرك الجدولة - اختبار',
+  'scheduler-enabled': 'تمكين محرك الجدولة',
+  'scheduler-enabled-tips': 'يكتشف تلقائيًا مهام التنزيل البطيئة ويطلق إعادة الجدولة دون تدخل المستخدم',
+  'scheduler-low-speed-threshold': 'عتبة تشغيل السرعة المنخفضة',
+  'scheduler-low-speed-threshold-tips': 'يطلق الجدولة عندما تنخفض السرعة إلى أقل من هذه النسبة من السرعة القصوى',
+  'scheduler-min-peak-speed': 'السرعة القصوى الدنيا',
+  'scheduler-min-peak-speed-tips': 'يعتبر تشغيل السرعة المنخفضة فقط إذا تجاوزت السرعة القصوى هذه القيمة',
+  'scheduler-min-file-size': 'الحجم الأدنى للملف',
+  'scheduler-min-file-size-tips': 'المهام الأصغر من هذا الحجم لا يتم جدولتها',
+  'scheduler-max-rebalance-count': 'الحد الأقصى لعدد إعادة التوازن',
+  'scheduler-max-rebalance-count-tips': 'الحد الأقصى لعدد إعادة التوازن لكل مهمة',
+  'scheduler-tips': 'دليل إعداد محرك الجدولة'
 }

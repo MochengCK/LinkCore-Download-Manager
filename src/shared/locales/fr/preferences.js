@@ -201,5 +201,17 @@ export default {
   'extension-copy-rpc': 'Copier l\'URL RPC',
   'extension-tips': 'Installez et activez l\'extension de navigateur pour intercepter automatiquement les téléchargements',
   'cancel': 'Annuler',
-  'save': 'Sauvegarder'
+  'save': 'Sauvegarder',
+  'scheduler': 'Moteur de planification - Test',
+  'scheduler-enabled': 'Activer le moteur de planification',
+  'scheduler-enabled-tips': 'Détecte automatiquement les tâches de téléchargement lentes et déclenche une resplanification sans intervention utilisateur',
+  'scheduler-low-speed-threshold': 'Seuil de déclenchement à faible vitesse',
+  'scheduler-low-speed-threshold-tips': 'Déclenche la planification lorsque la vitesse tombe en dessous de ce pourcentage de la vitesse de pointe',
+  'scheduler-min-peak-speed': 'Vitesse de pointe minimale',
+  'scheduler-min-peak-speed-tips': 'Nécessite une vitesse de pointe supérieure à cette valeur pour déclencher la détection de faible vitesse',
+  'scheduler-min-file-size': 'Taille de fichier minimale',
+  'scheduler-min-file-size-tips': 'Les tâches plus petites que cette taille ne sont pas planifiées',
+  'scheduler-max-rebalance-count': 'Nombre maximal de rééquilibrages',
+  'scheduler-max-rebalance-count-tips': 'Nombre maximal de rééquilibrages par tâche',
+  'scheduler-tips': 'Guide de configuration du moteur de planification'
 }
