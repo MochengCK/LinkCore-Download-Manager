@@ -3,6 +3,9 @@ name: CI Tests
 on:
   push:
     branches: [ master, develop ]
+    # 排除标签推送，避免与release工作流重复
+    tags-ignore:
+      - 'v*'
   pull_request:
     branches: [ master ]
   schedule:

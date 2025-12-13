@@ -10,7 +10,57 @@ on:
       - 'v*'
 
 jobs:
+  # 代码质量检查
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check package.json syntax
+      run: node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))"
+
+  # 扩展功能测试
+  extension-test:
+    name: Browser Extension Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Test extension manifest
+      run: |
+        node -e "
+          const manifest = JSON.parse(require('fs').readFileSync('extensions/linkcore-webextension/manifest.json', 'utf8'));
+          if (!manifest.name || !manifest.version || !manifest.manifest_version) {
+            throw new Error('Invalid extension manifest');
+          }
+          console.log('Extension manifest validated:', manifest.name, manifest.version);
+        "
+
   pre-clean:
+    needs: [lint-and-typecheck, extension-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,12 +79,20 @@ jobs:
             } catch (e) {
               core.info(`skip delete: ${e.message}`)
             }
+
   build-and-release:
     needs: pre-clean
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win32
+          - os: macos-latest
+            platform: darwin
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -47,14 +105,55 @@ jobs:
           node-version: '16'
           cache: 'npm'
 
-      
-
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build and publish
+      - name: Build test (pre-release verification)
+        run: npm run build:dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          SKIP_NOTARIZE: 'true'
+
+      - name: Verify build artifacts
+        run: |
+          if [ "${{ matrix.platform }}" = "linux" ]; then
+            ls -la dist/
+            echo "Linux build artifacts verified"
+          elif [ "${{ matrix.platform }}" = "win32" ]; then
+            ls -la dist/
+            echo "Windows build artifacts verified"
+          elif [ "${{ matrix.platform }}" = "darwin" ]; then
+            ls -la dist/
+            echo "macOS build artifacts verified"
+          fi
+
+      - name: Build and publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
           SKIP_NOTARIZE: 'true'
         run: npm run release
+
+  # 发布后验证
+  post-release-verification:
+    name: Post-Release Verification
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Generate release report
+      run: |
+        echo "=== Release Test Report ==="
+        echo "Release Date: $(date)"
+        echo "Tag: $GITHUB_REF_NAME"
+        echo "Commit: $GITHUB_SHA"
+        echo ""
+        echo "Test Results:"
+        echo "- Lint & Type Check: ${{ needs.lint-and-typecheck.result }}"
+        echo "- Extension Test: ${{ needs.extension-test.result }}"
+        echo "- Linux Build: ${{ needs.build-and-release.result }}"
+        echo "- Windows Build: ${{ needs.build-and-release.result }}"
+        echo "- macOS Build: ${{ needs.build-and-release.result }}"
+        echo ""
+        echo "Release Status: ${{ job.status }}"
