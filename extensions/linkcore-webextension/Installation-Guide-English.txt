@@ -1,0 +1,63 @@
+# LinkCore Browser Extension Installation Guide
+
+## Installation Steps
+
+1. **Open Chrome Browser**
+   - Make sure you are using the latest version of Chrome browser
+
+2. **Go to Extensions Management Page**
+   - Type `chrome://extensions/` in the address bar
+   - Press Enter to access the extensions management page
+
+3. **Enable Developer Mode**
+   - Find the "Developer mode" toggle in the top-right corner
+   - Click the toggle to enable it (it will turn blue)
+
+4. **Drag and Drop Installation**
+   - Drag the `linkcore-webextension` folder from your desktop directly into the browser window
+   - Or click the "Load unpacked extension" button and select the `linkcore-webextension` folder on your desktop
+   - Click "Select Folder" to complete the installation
+
+**Recommended Method**: Drag the folder directly into the browser window for faster and more convenient installation!
+
+## Important Notes
+
+### Security Warning
+During installation, you may see a warning "This extension is not listed in the Chrome Web Store". This is normal because this is a developer-provided extension.
+
+### Solutions
+- **Method 1 (Recommended)**: Simply click "Continue installation"
+- **Method 2 (Alternative)**: If installation fails, follow these steps:
+  1. Type `chrome://flags/#extensions-on-chrome-urls` in the address bar
+  2. Set "Extensions on chrome:// URLs" to Enabled
+  3. Restart the browser and try installation again
+
+## Extension Features
+
+After installation, the extension provides the following features:
+- One-click download of media files from web pages
+- Support for multiple file formats (video, audio, images, etc.)
+- Seamless integration with LinkCore Download Manager
+- Smart recognition of download links
+
+## Usage Instructions
+
+1. **Activate Extension**: Click the LinkCore icon in the browser toolbar
+2. **Select Files**: Choose files to download in the popup window
+3. **Start Download**: Click the download button, files will be automatically added to LinkCore download queue
+
+## Frequently Asked Questions
+
+### Q: Extension not working after installation?
+A: Please check the following:
+- Ensure LinkCore Download Manager is running
+- Check if browser has been restarted
+- Confirm extension is properly enabled
+
+### Q: How to update the extension?
+A: When a new version is available, re-download and install the latest extension folder
+
+### Q: How to uninstall the extension?
+A: Go to `chrome://extensions/` page, find LinkCore extension, and click "Remove" button
+
+Technical Support: https：//github.com/HuanXinStudio/LinkCore-Download-Manager/issues

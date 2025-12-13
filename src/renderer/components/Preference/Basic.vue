@@ -167,6 +167,14 @@
                   </el-button>
                 </el-input>
               </div>
+              <div class="form-item-sub" style="margin-top: 16px;">
+                <span
+                  class="text-link"
+                  style="color: #409EFF; cursor: pointer; text-decoration: underline;"
+                  @click="downloadExtension">
+                  Chrome
+                </span>
+              </div>
               <div class="el-form-item__info" style="margin-top: 8px;">
                 {{ $t('preferences.extension-tips') }}
               </div>
@@ -475,6 +483,7 @@
     </div>
 
   </el-dialog>
+
     </el-main>
   </el-container>
 </template>
@@ -1028,6 +1037,46 @@
             this.$msg.error(this.$t('preferences.save-fail-message'))
           })
       },
+      async downloadExtension () {
+        const { dialog } = require('@electron/remote')
+        const fs = require('fs')
+        const path = require('path')
+
+        // 扩展文件路径 - 指向目录
+        const extensionDir = path.join(__dirname, '..', '..', '..', '..', 'extensions', 'linkcore-webextension')
+
+        // 检查目录是否存在
+        if (!fs.existsSync(extensionDir)) {
+          this.$msg.error(this.$t('preferences.extension-file-not-found'))
+          return
+        }
+
+        // 弹出文件夹选择对话框
+        const result = await dialog.showOpenDialog({
+          title: '选择扩展文件保存位置',
+          defaultPath: require('os').homedir() + '/Desktop',
+          properties: ['openDirectory', 'createDirectory']
+        })
+
+        // 如果用户取消了选择
+        if (result.canceled || result.filePaths.length === 0) {
+          return
+        }
+
+        const selectedDir = result.filePaths[0]
+        const destinationDir = path.join(selectedDir, 'linkcore-webextension')
+
+        try {
+          // 复制整个目录到用户选择的位置
+          this.copyDirectory(extensionDir, destinationDir)
+
+          // 显示成功消息
+          this.$msg.success(this.$t('preferences.extension-download-success'))
+        } catch (error) {
+          console.error('下载扩展失败:', error)
+          this.$msg.error(this.$t('preferences.extension-download-failed'))
+        }
+      },
       onDirectorySelected (dir) {
         this.form.dir = dir
         this.autoSaveForm()
@@ -1227,6 +1276,35 @@
             }
           }
         })
+      },
+
+      // 复制目录
+      copyDirectory (sourceDir, destinationDir) {
+        const fs = require('fs')
+        const path = require('path')
+
+        // 创建目标目录
+        if (!fs.existsSync(destinationDir)) {
+          fs.mkdirSync(destinationDir, { recursive: true })
+        }
+
+        // 读取源目录中的所有文件和子目录
+        const items = fs.readdirSync(sourceDir)
+
+        for (const item of items) {
+          const sourcePath = path.join(sourceDir, item)
+          const destinationPath = path.join(destinationDir, item)
+
+          const stat = fs.statSync(sourcePath)
+
+          if (stat.isDirectory()) {
+            // 如果是目录，递归复制
+            this.copyDirectory(sourcePath, destinationPath)
+          } else {
+            // 如果是文件，复制文件
+            fs.copyFileSync(sourcePath, destinationPath)
+          }
+        }
       }
     },
     beforeRouteLeave (to, from, next) {
