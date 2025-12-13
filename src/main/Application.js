@@ -11,6 +11,7 @@ import {
   APP_RUN_MODE,
   AUTO_SYNC_TRACKER_INTERVAL,
   PROXY_SCOPES,
+  PROXY_MODE,
   APP_HTTP_PORT
 } from '@shared/constants'
 import { checkIsNeedRun } from '@shared/utils'
@@ -19,6 +20,7 @@ import {
   fetchBtTrackerFromSource,
   reduceTrackerString
 } from '@shared/utils/tracker'
+import { inferRefererFromUrl } from '@shared/utils/referer-rules'
 import { showItemInFolder, getEngineList, getAria2ConfPath } from './utils'
 import logger from './core/Logger'
 import Context from './core/Context'
@@ -99,22 +101,29 @@ export default class Application extends EventEmitter {
 
   initAppHttpServer () {
     try {
+      // 保存所有活跃的连接，方便关闭时强制断开
+      this.httpConnections = new Set()
+
       const server = createServer((req, res) => {
+        const url = req.url || ''
+
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept')
+
         if (req.method === 'OPTIONS') {
           res.writeHead(204)
           res.end()
           return
         }
-        const url = req.url || ''
+
         if (url.startsWith('/linkcore/version')) {
           const version = app.getVersion()
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ version }))
           return
         }
+
         if (url.startsWith('/linkcore/tasks')) {
           (async () => {
             try {
@@ -139,6 +148,7 @@ export default class Application extends EventEmitter {
           })()
           return
         }
+
         if (url.startsWith('/linkcore/add')) {
           let body = ''
           req.on('data', (chunk) => {
@@ -154,7 +164,23 @@ export default class Application extends EventEmitter {
                 return
               }
               const options = { header: Array.isArray(headers) && headers.length ? headers : ['X-LinkCore-Source: BrowserExtension'] }
-              if (referer) options.referer = referer
+
+              // 检查用户的 headers 数组中是否已经包含 Referer
+              const hasRefererInHeaders = Array.isArray(headers) && headers.some(h =>
+                typeof h === 'string' && /^referer\s*:/i.test(h.trim())
+              )
+
+              // 如果有 referer 则使用，否则自动推断（但不覆盖用户在 headers 中设置的）
+              if (referer) {
+                options.referer = referer
+              } else if (!hasRefererInHeaders) {
+                // 自动推断 Referer（仅在用户未设置任何 Referer 时）
+                const inferredReferer = inferRefererFromUrl(url)
+                if (inferredReferer) {
+                  options.referer = inferredReferer
+                }
+              }
+
               const result = await this.engineClient.call('addUri', [url], options)
               if (result) {
                 res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -170,14 +196,40 @@ export default class Application extends EventEmitter {
           })
           return
         }
+
         if (url.startsWith('/linkcore/health')) {
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ ok: true }))
           return
         }
+
+        if (url.startsWith('/linkcore/locale')) {
+          const locale = this.configManager.getLocale()
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ locale }))
+          return
+        }
+
         res.writeHead(404, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ error: 'Not Found' }))
       })
+
+      // 跟踪所有连接
+      server.on('connection', (conn) => {
+        this.httpConnections.add(conn)
+        conn.on('close', () => {
+          this.httpConnections.delete(conn)
+        })
+      })
+
+      // 添加错误处理
+      server.on('error', (err) => {
+        logger.error('[Motrix] App HTTP server error:', err && err.message ? err.message : err)
+        if (err.code === 'EADDRINUSE') {
+          logger.error(`[Motrix] Port ${APP_HTTP_PORT} is already in use. Browser extension connection will not work.`)
+        }
+      })
+
       server.listen(APP_HTTP_PORT, '127.0.0.1', () => {
         logger.info(`[Motrix] App HTTP server listening at http://127.0.0.1:${APP_HTTP_PORT}/`)
       })
@@ -437,13 +489,33 @@ export default class Application extends EventEmitter {
       logger.info(`[Motrix] detected ${key} value change event:`, newValue, oldValue)
       this.updateManager.setupProxy(newValue)
 
-      const { enable, server, bypass, scope = [] } = newValue
-      const system = enable && server && scope.includes(PROXY_SCOPES.DOWNLOAD)
-        ? {
+      const { server, bypass, scope = [] } = newValue
+      // 兼容旧版配置（enable 字段）
+      let proxyMode = newValue.mode
+      if (!proxyMode && newValue.enable !== undefined) {
+        proxyMode = newValue.enable ? PROXY_MODE.CUSTOM : PROXY_MODE.NONE
+      }
+
+      let system = {}
+      if (proxyMode === PROXY_MODE.CUSTOM && server && scope.includes(PROXY_SCOPES.DOWNLOAD)) {
+        // 自定义代理模式：使用用户设置的代理服务器
+        system = {
           'all-proxy': server,
           'no-proxy': bypass
         }
-        : {}
+      } else if (proxyMode === PROXY_MODE.SYSTEM && scope.includes(PROXY_SCOPES.DOWNLOAD)) {
+        // 系统代理模式：清空 aria2 代理设置，aria2 会自动使用系统代理
+        system = {
+          'all-proxy': '',
+          'no-proxy': ''
+        }
+      } else {
+        // 不使用代理模式：清空代理设置
+        system = {
+          'all-proxy': '',
+          'no-proxy': ''
+        }
+      }
       this.configManager.setSystemConfig(system)
       this.engineClient.call('changeGlobalOption', system)
     })
@@ -725,6 +797,33 @@ export default class Application extends EventEmitter {
         this.energyManager.stopPowerSaveBlocker(),
         this.trayManager.destroy()
       ]
+
+      // 关闭HTTP服务器
+      if (this.httpServer) {
+        promises.push(new Promise((resolve) => {
+          // 先强制销毁所有活跃连接
+          if (this.httpConnections) {
+            logger.info(`[Motrix] Destroying ${this.httpConnections.size} active HTTP connections`)
+            this.httpConnections.forEach(conn => {
+              conn.destroy()
+            })
+            this.httpConnections.clear()
+          }
+
+          // 设置超时，如果1秒内没有关闭就强制resolve
+          const timeout = setTimeout(() => {
+            logger.warn('[Motrix] HTTP server close timeout, forcing shutdown')
+            resolve()
+          }, 1000)
+
+          // 关闭服务器
+          this.httpServer.close(() => {
+            clearTimeout(timeout)
+            logger.info('[Motrix] App HTTP server closed gracefully')
+            resolve()
+          })
+        }))
+      }
 
       return promises
     } catch (err) {

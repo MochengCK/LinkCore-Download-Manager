@@ -12,6 +12,7 @@ import {
   buildCategorizedPaths,
   shouldCategorizeFiles
 } from '@shared/utils/file-categorize'
+import { inferRefererFromUrl } from '@shared/utils/referer-rules'
 
 import {
   buildUrisFromCurl,
@@ -54,16 +55,27 @@ export const initTaskForm = state => {
   return result
 }
 
-export const buildHeader = (form) => {
+export const buildHeader = (form, uris = []) => {
   const { userAgent, referer, cookie, authorization } = form
   const result = []
 
+  // 用户设置的请求头始终优先，自动推断的请求头不会覆盖用户设置
   if (!isEmpty(userAgent)) {
     result.push(`User-Agent: ${userAgent}`)
   }
+
+  // Referer 处理：用户设置优先，仅在用户未设置时才自动推断
   if (!isEmpty(referer)) {
+    // 用户手动设置的 Referer，优先级最高
     result.push(`Referer: ${referer}`)
+  } else if (uris.length > 0) {
+    // 自动推断 Referer（仅在用户未设置时）
+    const inferredReferer = inferRefererFromUrl(uris[0])
+    if (inferredReferer) {
+      result.push(`Referer: ${inferredReferer}`)
+    }
   }
+
   if (!isEmpty(cookie)) {
     result.push(`Cookie: ${cookie}`)
   }
@@ -74,7 +86,7 @@ export const buildHeader = (form) => {
   return result
 }
 
-export const buildOption = (type, form) => {
+export const buildOption = (type, form, uris = []) => {
   const {
     allProxy,
     dir,
@@ -109,7 +121,7 @@ export const buildOption = (type, form) => {
     }
   }
 
-  const header = buildHeader(form)
+  const header = buildHeader(form, uris)
   if (!isEmpty(header)) {
     result.header = header
   }
@@ -157,7 +169,7 @@ export const buildUriPayload = (form, autoCategorize = false, categories = null)
     })
   }
 
-  const options = buildOption(ADD_TASK_TYPE.URI, form)
+  const options = buildOption(ADD_TASK_TYPE.URI, form, uris)
   const result = {
     uris,
     outs: categorizedOuts,

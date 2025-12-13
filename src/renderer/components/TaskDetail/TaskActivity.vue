@@ -67,6 +67,14 @@
         <span>{{ task.downloadSpeed | bytesToSize }}/s</span>
       </div>
     </el-form-item>
+    <el-form-item :label="`${$t('task.task-average-speed')}: `">
+      <div class="form-static-value">
+        <span>{{ averageDownloadSpeed | bytesToSize }}/s</span>
+        <span class="average-speed-samples" v-if="speedSampleCount > 0">
+          ({{ $t('task.task-average-speed-samples', { count: speedSampleCount }) }})
+        </span>
+      </div>
+    </el-form-item>
     <el-form-item :label="`${$t('task.task-upload-speed')}: `" v-if="isBT">
       <div class="form-static-value">
         <span>{{ task.uploadSpeed | bytesToSize }}/s</span>
@@ -137,7 +145,12 @@
         form: {},
         formLabelWidth: calcFormLabelWidth(locale),
         locale,
-        graphicWidth: 0
+        graphicWidth: 0,
+        // 平均速度计算相关
+        speedSamples: [],
+        // 记录开始采样时的已下载量，用于计算增量
+        initialCompletedLength: 0,
+        downloadStartTime: null
       }
     },
     computed: {
@@ -176,16 +189,74 @@
         const { totalLength, uploadLength } = this.task
         const ratio = calcRatio(totalLength, uploadLength)
         return ratio
+      },
+      averageDownloadSpeed () {
+        // 基于速度采样计算平均值（只计算有效的非零采样）
+        if (this.speedSamples.length > 0) {
+          const validSamples = this.speedSamples.filter(s => s > 0)
+          if (validSamples.length > 0) {
+            const sum = validSamples.reduce((a, b) => a + b, 0)
+            return Math.round(sum / validSamples.length)
+          }
+        }
+
+        // 备用方式：基于增量下载和时间计算（仅计算打开详情页后新下载的部分）
+        if (this.downloadStartTime && this.task.completedLength > this.initialCompletedLength) {
+          const elapsedSeconds = (Date.now() - this.downloadStartTime) / 1000
+          const downloadedSinceStart = this.task.completedLength - this.initialCompletedLength
+          if (elapsedSeconds > 0 && downloadedSinceStart > 0) {
+            return Math.round(downloadedSinceStart / elapsedSeconds)
+          }
+        }
+
+        return 0
+      },
+      speedSampleCount () {
+        return this.speedSamples.filter(s => s > 0).length
       }
     },
     filters: {
       bytesToSize,
       timeFormat
     },
+    watch: {
+      'task.downloadSpeed': {
+        handler (newSpeed) {
+          // 采样当前下载速度
+          if (typeof newSpeed === 'number' && newSpeed >= 0) {
+            this.addSpeedSample(newSpeed)
+          }
+        },
+        immediate: true
+      },
+      'task.completedLength': {
+        handler (newLength, oldLength) {
+          // 检测下载开始（仅在未记录起始时间时）
+          if (newLength > 0 && !this.downloadStartTime) {
+            this.downloadStartTime = Date.now()
+            this.initialCompletedLength = newLength
+          }
+        },
+        immediate: true
+      },
+      'task.gid': {
+        handler (newGid, oldGid) {
+          // 任务切换时重置采样数据
+          if (newGid !== oldGid) {
+            this.resetSpeedSamples()
+          }
+        }
+      }
+    },
     mounted () {
       setImmediate(() => {
         this.updateGraphicWidth()
       })
+      // 初始化记录当前已下载量（作为基准线）
+      if (this.task && this.task.completedLength > 0) {
+        this.downloadStartTime = Date.now()
+        this.initialCompletedLength = this.task.completedLength
+      }
     },
     methods: {
       updateGraphicWidth () {
@@ -204,6 +275,19 @@
         const paddingLeft = parseInt(style.paddingLeft, 10)
         const paddingRight = parseInt(style.paddingRight, 10)
         return width - paddingLeft - paddingRight
+      },
+      addSpeedSample (speed) {
+        // 保留最近 60 个采样点（约 1 分钟的数据，假设每秒采样一次）
+        const MAX_SAMPLES = 60
+        this.speedSamples.push(speed)
+        if (this.speedSamples.length > MAX_SAMPLES) {
+          this.speedSamples.shift()
+        }
+      },
+      resetSpeedSamples () {
+        this.speedSamples = []
+        this.downloadStartTime = null
+        this.initialCompletedLength = 0
       }
     }
   }
@@ -216,5 +300,11 @@
 
 .task-time-remaining {
   margin-left: 1rem;
+}
+
+.average-speed-samples {
+  margin-left: 0.5rem;
+  color: #909399;
+  font-size: 0.85em;
 }
 </style>

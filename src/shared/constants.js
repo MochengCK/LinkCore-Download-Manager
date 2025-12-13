@@ -187,6 +187,31 @@ export const PROXY_SCOPE_OPTIONS = [
   PROXY_SCOPES.UPDATE_TRACKERS
 ]
 
+// 代理模式
+export const PROXY_MODE = {
+  NONE: 'none', // 不使用代理
+  SYSTEM: 'system', // 使用系统代理
+  CUSTOM: 'custom' // 自定义代理
+}
+
+// 调度引擎默认配置
+export const SCHEDULER_CONFIG_DEFAULTS = {
+  // 是否启用调度引擎
+  enabled: false,
+  // 低速触发阈值（当速度低于峰值的此百分比时触发）
+  lowSpeedThreshold: 20,
+  // 最小峰值速度数值
+  minPeakSpeed: 100,
+  // 最小峰值速度单位 ('K' = KB/s, 'M' = MB/s)
+  minPeakSpeedUnit: 'K',
+  // 最小文件大小数值
+  minFileSize: 10,
+  // 最小文件大小单位 ('M' = MB, 'G' = GB)
+  minFileSizeUnit: 'M',
+  // 单个任务最大重分配次数
+  maxRebalanceCount: 5
+}
+
 export const NONE_SELECTED_FILES = 'none'
 export const SELECTED_ALL_FILES = 'all'
 

@@ -4,26 +4,265 @@
   <meta charset="utf-8">
   <title>LinkCore Helper</title>
   <style>
-    body { font-family: system-ui; margin: 10px; min-width: 280px; }
-    .row { margin-bottom: 8px; }
-    label { font-size: 13px; }
-    button { padding: 6px 10px; font-size: 13px; }
-    .kv { font-size: 12px; color: #666; }
-    .task { margin-bottom: 10px; }
-    .task .meta { display: flex; justify-content: space-between; font-size: 12px; }
-    .progress { width: 100%; height: 6px; background: #eee; border-radius: 4px; overflow: hidden; }
-    .progress-bar { height: 100%; background: #409eff; width: 0%; transition: width .3s ease; }
+    :root {
+      --primary-color: #409eff;
+      --success-color: #67c23a;
+      --warning-color: #e6a23c;
+      --danger-color: #f56c6c;
+      --text-primary: #303133;
+      --text-regular: #606266;
+      --text-secondary: #909399;
+      --border-color: #dcdfe6;
+      --bg-color: #f5f7fa;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      margin: 0; 
+      min-width: 320px; 
+      background: white;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--primary-color), #337ecc);
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 16px;
+    }
+    
+    .status-card {
+      background: var(--bg-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .status-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .status-label {
+      color: var(--text-regular);
+      font-size: 13px;
+    }
+    
+    .status-value {
+      font-weight: 500;
+      font-size: 13px;
+    }
+    
+    .status-connected { color: var(--success-color); }
+    .status-disconnected { color: var(--danger-color); }
+    
+    .tasks-section {
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 14px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+    
+    .task-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .task-item {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .task-item:hover {
+      border-color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+    }
+    
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    
+    .task-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+    
+    .task-stats {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: right;
+      white-space: nowrap;
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #e4e7ed;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-color), #79bbff);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 13px;
+      padding: 20px;
+    }
+    
+    .settings-section {
+      border-top: 1px solid var(--border-color);
+      padding-top: 16px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary-color);
+    }
+    
+    .checkbox-group label {
+      font-size: 13px;
+      color: var(--text-regular);
+      cursor: pointer;
+    }
+    
+    .footer {
+      border-top: 1px solid var(--border-color);
+      padding: 12px 16px;
+      text-align: center;
+    }
+    
+    .footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 12px;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <div class="row kv" id="rpc"></div>
-  <div class="row kv" id="conn"></div>
-  <div class="row kv" id="clientVersion"></div>
-  <div class="row kv" id="globalSpeed"></div>
-  <div id="taskList"></div>
-  <div class="row">
-    <label><input id="autoHijack" type="checkbox"> 自动接管浏览器下载</label>
+  <div class="header">
+    <h1 id="popupTitle">LinkCore 下载助手</h1>
   </div>
+  
+  <div class="content">
+    <div class="status-card">
+      <div class="status-item">
+        <span class="status-label" id="labelRpc">RPC 地址</span>
+        <span class="status-value" id="rpc">-</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label" id="labelConn">连接状态</span>
+        <span class="status-value" id="conn">-</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label" id="labelClientVersion">客户端版本</span>
+        <span class="status-value" id="clientVersion">-</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label" id="labelGlobalSpeed">总下载速度</span>
+        <span class="status-value" id="globalSpeed">-</span>
+      </div>
+    </div>
+    
+    <div class="tasks-section">
+      <div class="section-title" id="labelDownloadTasks">下载任务</div>
+      <div class="task-list" id="taskList">
+        <div class="empty-state" id="emptyState">暂无下载任务</div>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="checkbox-group">
+        <input id="autoHijack" type="checkbox">
+        <label for="autoHijack" id="labelAutoHijack">自动接管浏览器下载</label>
+      </div>
+    </div>
+  </div>
+  
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

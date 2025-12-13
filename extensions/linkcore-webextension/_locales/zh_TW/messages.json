@@ -1,0 +1,58 @@
+{
+  "extensionName": {
+    "message": "LinkCore 下載助手",
+    "description": "擴展名稱"
+  },
+  "extensionDescription": {
+    "message": "透過 aria2 RPC 將瀏覽器下載發送到 LinkCore 下載管理器",
+    "description": "擴展描述"
+  },
+  "actionTitle": {
+    "message": "LinkCore 助手",
+    "description": "瀏覽器操作標題"
+  },
+  "popupTitle": {
+    "message": "LinkCore 下載助手",
+    "description": "彈窗標題"
+  },
+  "rpcAddress": {
+    "message": "RPC 地址",
+    "description": "RPC地址標籤"
+  },
+  "connectionStatus": {
+    "message": "連接狀態",
+    "description": "連接狀態標籤"
+  },
+  "clientVersion": {
+    "message": "客戶端版本",
+    "description": "客戶端版本標籤"
+  },
+  "totalSpeed": {
+    "message": "總下載速度",
+    "description": "總下載速度標籤"
+  },
+  "downloadTasks": {
+    "message": "下載任務",
+    "description": "下載任務部分標題"
+  },
+  "noTasks": {
+    "message": "暫無下載任務",
+    "description": "無任務時顯示的訊息"
+  },
+  "autoHijack": {
+    "message": "自動接管瀏覽器下載",
+    "description": "自動接管複選框標籤"
+  },
+  "connected": {
+    "message": "已連接",
+    "description": "連接狀態：已連接"
+  },
+  "disconnected": {
+    "message": "未連接",
+    "description": "連接狀態：未連接"
+  },
+  "contextMenuDownload": {
+    "message": "使用 LinkCore 下載",
+    "description": "右鍵選單項文字"
+  }
+}

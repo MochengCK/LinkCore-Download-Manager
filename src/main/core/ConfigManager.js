@@ -17,8 +17,10 @@ import {
   LOGIN_SETTING_OPTIONS,
   NGOSANG_TRACKERS_BEST_IP_URL_CDN,
   NGOSANG_TRACKERS_BEST_URL_CDN,
+  PROXY_MODE,
   PROXY_SCOPES,
-  PROXY_SCOPE_OPTIONS
+  PROXY_SCOPE_OPTIONS,
+  SCHEDULER_CONFIG_DEFAULTS
 } from '@shared/constants'
 import { CHROME_UA } from '@shared/ua'
 import { separateConfig } from '@shared/utils'
@@ -126,13 +128,14 @@ export default class ConfigManager {
         'open-at-login': false,
         'protocols': { 'magnet': true, 'thunder': false },
         'proxy': {
-          'enable': false,
+          'mode': PROXY_MODE.NONE,
           'server': EMPTY_STRING,
           'bypass': EMPTY_STRING,
           'scope': PROXY_SCOPE_OPTIONS
         },
         'resume-all-when-app-launched': false,
         'run-mode': APP_RUN_MODE.STANDARD,
+        'scheduler': { ...SCHEDULER_CONFIG_DEFAULTS },
         'show-progress-bar': true,
         'task-notification': true,
         'theme': APP_THEME.AUTO,
@@ -159,11 +162,24 @@ export default class ConfigManager {
       })
     }
 
-    const proxy = this.getUserConfig('proxy', { enable: false })
-    const { enable, server, bypass, scope = [] } = proxy
-    if (enable && server && scope.includes(PROXY_SCOPES.DOWNLOAD)) {
+    const proxy = this.getUserConfig('proxy', { mode: PROXY_MODE.NONE })
+    // 兼容旧版配置（enable 字段）
+    let proxyMode = proxy.mode
+    if (!proxyMode && proxy.enable !== undefined) {
+      proxyMode = proxy.enable ? PROXY_MODE.CUSTOM : PROXY_MODE.NONE
+    }
+    const { server, bypass, scope = [] } = proxy
+    if (proxyMode === PROXY_MODE.CUSTOM && server && scope.includes(PROXY_SCOPES.DOWNLOAD)) {
       this.setSystemConfig('all-proxy', server)
       this.setSystemConfig('no-proxy', bypass)
+    } else if (proxyMode === PROXY_MODE.SYSTEM && scope.includes(PROXY_SCOPES.DOWNLOAD)) {
+      // 系统代理由 Electron 自动处理，此处清空 aria2 代理配置
+      // aria2 不支持直接使用系统代理，需要在前端获取系统代理地址后传递
+      this.setSystemConfig('all-proxy', EMPTY_STRING)
+      this.setSystemConfig('no-proxy', EMPTY_STRING)
+    } else {
+      this.setSystemConfig('all-proxy', EMPTY_STRING)
+      this.setSystemConfig('no-proxy', EMPTY_STRING)
     }
 
     // Fix spawn ENAMETOOLONG on Windows

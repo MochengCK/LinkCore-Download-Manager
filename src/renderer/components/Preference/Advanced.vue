@@ -51,14 +51,24 @@
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.proxy') }}</h3>
           <el-form-item size="mini">
-            <el-switch
-              v-model="form.proxy.enable"
-              :active-text="$t('preferences.enable-proxy')"
-              @change="(val) => { onProxyEnableChange(val); autoSaveForm(); }"
-              >
-            </el-switch>
+            <el-radio-group
+              v-model="form.proxy.mode"
+              @change="(val) => { onProxyModeChange(val); autoSaveForm(); }"
+            >
+              <el-radio label="none">{{ $t('preferences.proxy-mode-none') }}</el-radio>
+              <el-radio label="system">{{ $t('preferences.proxy-mode-system') }}</el-radio>
+              <el-radio label="custom">{{ $t('preferences.proxy-mode-custom') }}</el-radio>
+            </el-radio-group>
           </el-form-item>
-          <el-form-item size="mini" v-if="form.proxy.enable" style="margin-top: -16px;">
+          <el-form-item size="mini" v-if="form.proxy.mode === 'system'" style="margin-top: -8px;">
+            <el-col class="form-item-sub" :span="24">
+              <div class="el-form-item__info proxy-system-info">
+                <i class="el-icon-info"></i>
+                {{ $t('preferences.proxy-system-tips') }}
+              </div>
+            </el-col>
+          </el-form-item>
+          <el-form-item size="mini" v-if="form.proxy.mode === 'custom'" style="margin-top: -8px;">
             <el-col
               class="form-item-sub"
               :xs="24"
@@ -117,6 +127,127 @@
           </el-form-item>
         </div>
 
+        <!-- 调度引擎设置卡片 -->
+        <div class="preference-card">
+          <h3 class="card-title">{{ $t('preferences.scheduler') }}</h3>
+          <el-form-item size="mini">
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.scheduler.enabled" @change="autoSaveForm">
+                {{ $t('preferences.scheduler-enabled') }}
+              </el-checkbox>
+              <div class="el-form-item__info" style="margin-top: 4px;">
+                {{ $t('preferences.scheduler-enabled-tips') }}
+              </div>
+            </el-col>
+          </el-form-item>
+          <template v-if="form.scheduler.enabled">
+            <el-form-item size="mini" :label="$t('preferences.scheduler-low-speed-threshold')" style="margin-top: 8px;">
+              <el-col :xs="16" :sm="12" :md="8" :lg="6">
+                <el-input-number
+                  v-model="form.scheduler.lowSpeedThreshold"
+                  :min="5"
+                  :max="50"
+                  :step="5"
+                  size="mini"
+                  @change="autoSaveForm"
+                />
+                <span style="margin-left: 8px;">%</span>
+              </el-col>
+              <el-col :span="24" style="margin-top: 4px;">
+                <div class="el-form-item__info">
+                  {{ $t('preferences.scheduler-low-speed-threshold-tips') }}
+                </div>
+              </el-col>
+            </el-form-item>
+            <el-form-item size="mini" :label="$t('preferences.scheduler-min-peak-speed')">
+              <el-col :xs="18" :sm="14" :md="10" :lg="8">
+                <el-input-number
+                  v-model="form.scheduler.minPeakSpeed"
+                  :min="1"
+                  :max="9999"
+                  :step="10"
+                  size="mini"
+                  @change="autoSaveForm"
+                />
+                <el-select
+                  style="width: 90px; margin-left: 8px;"
+                  v-model="form.scheduler.minPeakSpeedUnit"
+                  size="mini"
+                  @change="autoSaveForm"
+                >
+                  <el-option
+                    v-for="item in schedulerSpeedUnits"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-col>
+              <el-col :span="24" style="margin-top: 4px;">
+                <div class="el-form-item__info">
+                  {{ $t('preferences.scheduler-min-peak-speed-tips') }}
+                </div>
+              </el-col>
+            </el-form-item>
+            <el-form-item size="mini" :label="$t('preferences.scheduler-min-file-size')">
+              <el-col :xs="18" :sm="14" :md="10" :lg="8">
+                <el-input-number
+                  v-model="form.scheduler.minFileSize"
+                  :min="1"
+                  :max="9999"
+                  :step="1"
+                  size="mini"
+                  @change="autoSaveForm"
+                />
+                <el-select
+                  style="width: 90px; margin-left: 8px;"
+                  v-model="form.scheduler.minFileSizeUnit"
+                  size="mini"
+                  @change="autoSaveForm"
+                >
+                  <el-option
+                    v-for="item in schedulerSizeUnits"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-col>
+              <el-col :span="24" style="margin-top: 4px;">
+                <div class="el-form-item__info">
+                  {{ $t('preferences.scheduler-min-file-size-tips') }}
+                </div>
+              </el-col>
+            </el-form-item>
+            <el-form-item size="mini" :label="$t('preferences.scheduler-max-rebalance-count')">
+              <el-col :xs="16" :sm="12" :md="8" :lg="6">
+                <el-input-number
+                  v-model="form.scheduler.maxRebalanceCount"
+                  :min="1"
+                  :max="20"
+                  :step="1"
+                  size="mini"
+                  @change="autoSaveForm"
+                />
+              </el-col>
+              <el-col :span="24" style="margin-top: 4px;">
+                <div class="el-form-item__info">
+                  {{ $t('preferences.scheduler-max-rebalance-count-tips') }}
+                </div>
+              </el-col>
+            </el-form-item>
+          </template>
+          <!-- 调度引擎配置教程链接 -->
+          <el-form-item size="mini" style="margin-top: 8px;">
+            <div class="el-form-item__info">
+              <a target="_blank" href="https://github.com/hugetiny/LinkCore/wiki/Scheduler" rel="noopener noreferrer">
+                {{ $t('preferences.scheduler-tips') }}
+                <mo-icon name="link" width="12" height="12" />
+              </a>
+            </div>
+          </el-form-item>
+        </div>
+
         <!-- BT Tracker设置卡片 -->
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.bt-tracker') }}</h3>
@@ -125,6 +256,21 @@
               <el-row :gutter="4" style="line-height: 0;">
                 <el-col :span="24">
                   <div style="display:flex; align-items:center;">
+                    <div style="display:flex; align-items:center; margin-right:4px;">
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        :content="isAllTrackerSourcesSelected ? $t('preferences.deselect-all-tracker-sources') : $t('preferences.select-all-tracker-sources')"
+                        placement="bottom"
+                      >
+                        <el-button
+                          @click="toggleAllTrackerSources"
+                          class="sync-tracker-btn"
+                        >
+                          <mo-icon :name="isAllTrackerSourcesSelected ? 'deselect-all' : 'select-all'" width="12" height="12" />
+                        </el-button>
+                      </el-tooltip>
+                    </div>
                     <div class="track-source" style="flex:1; transform: translateY(4px);">
                       <el-select
                         class="select-track-source"
@@ -637,6 +783,8 @@
   import '@/components/Icons/dice'
   import '@/components/Icons/sync'
   import '@/components/Icons/refresh'
+  import '@/components/Icons/select-all'
+  import '@/components/Icons/deselect-all'
   import { getLanguage } from '@shared/locales'
   import { getLocaleManager } from '@/components/Locale'
 
@@ -656,6 +804,7 @@
       proxy,
       rpcListenPort,
       rpcSecret,
+      scheduler,
       trackerSource,
       trackerSourceDiscovered,
       trackerSourceOrigins,
@@ -666,6 +815,23 @@
     } = config
     // 兼容旧的kebab-case配置键
     const parsedEngineBinary = engineBinary || config['engine-binary'] || ''
+    // 兼容旧版代理配置（旧版使用 enable 字段，新版使用 mode 字段）
+    const clonedProxy = cloneDeep(proxy) || {}
+    if (!clonedProxy.mode) {
+      // 如果没有 mode 字段，根据旧的 enable 字段设置默认值
+      clonedProxy.mode = clonedProxy.enable ? 'custom' : 'none'
+    }
+    // 调度引擎配置默认值
+    const defaultScheduler = {
+      enabled: false,
+      lowSpeedThreshold: 20,
+      minPeakSpeed: 100,
+      minPeakSpeedUnit: 'K',
+      minFileSize: 10,
+      minFileSizeUnit: 'M',
+      maxRebalanceCount: 5
+    }
+    const clonedScheduler = { ...defaultScheduler, ...(scheduler || {}) }
     const result = {
       autoCheckUpdate,
       autoSyncTracker,
@@ -677,10 +843,11 @@
       lastSyncTrackerTime,
       listenPort,
       logLevel,
-      proxy: cloneDeep(proxy),
+      proxy: clonedProxy,
       protocols: { ...protocols },
       rpcListenPort,
       rpcSecret,
+      scheduler: clonedScheduler,
       trackerSource,
       trackerSourceDiscovered: Array.isArray(trackerSourceDiscovered) ? [...trackerSourceDiscovered] : (config['tracker-source-discovered'] || []),
       trackerSourceOrigins: Array.isArray(trackerSourceOrigins) ? [...trackerSourceOrigins] : (config['tracker-source-origins'] || []),
@@ -804,6 +971,43 @@
         const saved = Array.isArray(this.form.trackerSourceOrigins) ? this.form.trackerSourceOrigins : []
         const normalizedSaved = saved.map(o => this.normalizeOriginUrl(o))
         return Array.from(new Set([...builtin.map(this.normalizeOriginUrl), ...normalizedSaved]))
+      },
+      isAllTrackerSourcesSelected () {
+        // 获取所有可用的源
+        const allSources = []
+        ;(this.trackerSourceOptions || []).forEach(group => {
+          ;(group.options || []).forEach(opt => {
+            if (opt.value && !allSources.includes(opt.value)) {
+              allSources.push(opt.value)
+            }
+          })
+        })
+
+        // 如果没有可用源，返回false
+        if (allSources.length === 0) {
+          return false
+        }
+
+        // 获取当前选中的源
+        const selectedSources = Array.isArray(this.form.trackerSource) ? this.form.trackerSource : []
+
+        // 检查是否所有源都被选中
+        return allSources.length === selectedSources.length &&
+               allSources.every(source => selectedSources.includes(source))
+      },
+      // 速度单位选项
+      schedulerSpeedUnits () {
+        return [
+          { label: 'KB/s', value: 'K' },
+          { label: 'MB/s', value: 'M' }
+        ]
+      },
+      // 文件大小单位选项
+      schedulerSizeUnits () {
+        return [
+          { label: 'MB', value: 'M' },
+          { label: 'GB', value: 'G' }
+        ]
       }
     },
     watch: {
@@ -1099,6 +1303,36 @@
         this.sanitizeSelectedSources()
         this.autoSaveForm()
         this.$msg.success(this.$t('preferences.reset-select-sources-success'))
+      },
+      toggleAllTrackerSources () {
+        // 判断当前是否全选
+        if (this.isAllTrackerSourcesSelected) {
+          // 如果已全选，则取消全选
+          this.form.trackerSource = []
+          this.$msg.success(this.$t('preferences.deselect-all-tracker-sources-success'))
+
+          // 清除输入框里的Tracker服务器内容
+          this.recomputeBtTrackerFromSelected()
+        } else {
+          // 否则全选
+          const allSources = []
+          ;(this.trackerSourceOptions || []).forEach(group => {
+            ;(group.options || []).forEach(opt => {
+              if (opt.value && !allSources.includes(opt.value)) {
+                allSources.push(opt.value)
+              }
+            })
+          })
+
+          this.form.trackerSource = allSources
+          this.$msg.success(this.$t('preferences.select-all-tracker-sources-success', { count: allSources.length }))
+
+          // 自动同步Tracker
+          this.recomputeBtTrackerFromSelected()
+        }
+
+        // 自动保存配置
+        this.autoSaveForm()
       },
       // 获取引擎列表方法
       async fetchEngineList () {
@@ -1504,10 +1738,10 @@
           [protocol]: enabled
         }
       },
-      onProxyEnableChange (enable) {
+      onProxyModeChange (mode) {
         this.form.proxy = {
           ...this.form.proxy,
-          enable
+          mode
         }
       },
       onProxyServerChange (server) {
@@ -1712,11 +1946,9 @@
         }
       },
       syncFormConfig () {
-        this.$store.dispatch('preference/fetchPreference')
-          .then((config) => {
-            this.form = initForm(config)
-            this.formOriginal = cloneDeep(this.form)
-          })
+        // 保存成功后，直接使用当前表单数据更新 formOriginal
+        // 而不是从后端重新获取，避免竞态条件导致配置被重置
+        this.formOriginal = cloneDeep(this.form)
       },
       submitForm (formName) {
         this.$refs[formName].validate((valid) => {

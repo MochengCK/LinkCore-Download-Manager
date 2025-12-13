@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "LinkCore Download Helper",
-  "version": "0.1.0",
-  "description": "Send browser downloads to LinkCore Download Manager via aria2 RPC",
+  "name": "__MSG_extensionName__",
+  "version": "1.0.0",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
   "permissions": [
     "downloads",
     "storage",
@@ -18,9 +19,8 @@
   "background": {
     "service_worker": "background.js"
   },
-  "options_page": "options.html",
   "action": {
-    "default_title": "LinkCore Helper",
+    "default_title": "__MSG_actionTitle__",
     "default_popup": "popup.html"
   }
 }

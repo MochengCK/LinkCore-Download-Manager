@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import is from 'electron-is'
 import { autoUpdater } from 'electron-updater'
 
-import { PROXY_SCOPES } from '@shared/constants'
+import { PROXY_SCOPES, PROXY_MODE } from '@shared/constants'
 import logger from './Logger'
 import { getI18n } from '../ui/Locale'
 
@@ -33,8 +33,15 @@ export default class UpdateManager extends EventEmitter {
   }
 
   setupProxy (proxy) {
-    const { enable, server, scope = [] } = proxy
-    if (!enable || !server || !scope.includes(PROXY_SCOPES.UPDATE_APP)) {
+    const { server, scope = [] } = proxy
+    // 兼容旧版配置（enable 字段）
+    let proxyMode = proxy.mode
+    if (!proxyMode && proxy.enable !== undefined) {
+      proxyMode = proxy.enable ? PROXY_MODE.CUSTOM : PROXY_MODE.NONE
+    }
+
+    // 只有自定义代理模式才设置代理规则
+    if (proxyMode !== PROXY_MODE.CUSTOM || !server || !scope.includes(PROXY_SCOPES.UPDATE_APP)) {
       this.updater.netSession.setProxy({
         proxyRules: undefined
       })

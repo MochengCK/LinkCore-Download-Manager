@@ -1,0 +1,58 @@
+{
+  "extensionName": {
+    "message": "LinkCore Download Manager",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Send browser downloads to LinkCore Download Manager via aria2 RPC",
+    "description": "Description of the extension"
+  },
+  "actionTitle": {
+    "message": "LinkCore Helper",
+    "description": "Title for browser action"
+  },
+  "popupTitle": {
+    "message": "LinkCore Download Assistant",
+    "description": "Title in popup header"
+  },
+  "rpcAddress": {
+    "message": "RPC Address",
+    "description": "Label for RPC address"
+  },
+  "connectionStatus": {
+    "message": "Connection Status",
+    "description": "Label for connection status"
+  },
+  "clientVersion": {
+    "message": "Client Version",
+    "description": "Label for client version"
+  },
+  "totalSpeed": {
+    "message": "Total Download Speed",
+    "description": "Label for total download speed"
+  },
+  "downloadTasks": {
+    "message": "Download Tasks",
+    "description": "Title for download tasks section"
+  },
+  "noTasks": {
+    "message": "No download tasks",
+    "description": "Message when no tasks are available"
+  },
+  "autoHijack": {
+    "message": "Auto-hijack browser downloads",
+    "description": "Label for auto-hijack checkbox"
+  },
+  "connected": {
+    "message": "Connected",
+    "description": "Connection status when connected"
+  },
+  "disconnected": {
+    "message": "Disconnected",
+    "description": "Connection status when disconnected"
+  },
+  "contextMenuDownload": {
+    "message": "Download with LinkCore",
+    "description": "Context menu item text"
+  }
+}

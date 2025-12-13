@@ -1,0 +1,58 @@
+{
+  "extensionName": {
+    "message": "LinkCore Download Manager",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "通过 aria2 RPC 将浏览器下载发送到 LinkCore 下载管理器",
+    "description": "扩展描述"
+  },
+  "actionTitle": {
+    "message": "LinkCore 助手",
+    "description": "浏览器操作标题"
+  },
+  "popupTitle": {
+    "message": "LinkCore 下载助手",
+    "description": "弹窗标题"
+  },
+  "rpcAddress": {
+    "message": "RPC 地址",
+    "description": "RPC地址标签"
+  },
+  "connectionStatus": {
+    "message": "连接状态",
+    "description": "连接状态标签"
+  },
+  "clientVersion": {
+    "message": "客户端版本",
+    "description": "客户端版本标签"
+  },
+  "totalSpeed": {
+    "message": "总下载速度",
+    "description": "总下载速度标签"
+  },
+  "downloadTasks": {
+    "message": "下载任务",
+    "description": "下载任务部分标题"
+  },
+  "noTasks": {
+    "message": "暂无下载任务",
+    "description": "无任务时显示的消息"
+  },
+  "autoHijack": {
+    "message": "自动接管浏览器下载",
+    "description": "自动接管复选框标签"
+  },
+  "connected": {
+    "message": "已连接",
+    "description": "连接状态:已连接"
+  },
+  "disconnected": {
+    "message": "未连接",
+    "description": "连接状态:未连接"
+  },
+  "contextMenuDownload": {
+    "message": "使用 LinkCore 下载",
+    "description": "右键菜单项文本"
+  }
+}

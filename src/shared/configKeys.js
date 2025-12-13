@@ -24,6 +24,7 @@ const userKeys = [
   'proxy',
   'resume-all-when-app-launched',
   'run-mode',
+  'scheduler',
   'show-progress-bar',
   'task-notification',
   'theme',

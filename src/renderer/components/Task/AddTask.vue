@@ -560,7 +560,25 @@
             this.$msg.info(this.$t('task.remove-duplicate-links-message', { count: removed }))
           }
         }
+
+        // 保留已存在 URL 的优先值和其他属性
+        const existingMap = new Map()
+        for (const task of this.parsedTasks) {
+          if (task.url) {
+            existingMap.set(task.url, task)
+          }
+        }
+
         const items = lines.map((u, i) => {
+          // 检查是否已存在该 URL，保留其优先值和其他属性
+          const existing = existingMap.get(u)
+          if (existing) {
+            return {
+              ...existing,
+              order: i
+            }
+          }
+
           try {
             const url = decodeURI(u)
             const lastSlash = url.lastIndexOf('/')
@@ -579,7 +597,13 @@
           }
         })
         this.parsedTasks = items
-        await this.fetchUriSizes(lines)
+
+        // 只对新增的 URL 获取文件大小
+        const newLines = lines.filter(u => !existingMap.has(u))
+        if (newLines.length > 0) {
+          await this.fetchUriSizes(lines)
+        }
+
         if (this.keepTrailingNewline && lines.length > 0) {
           this.ensureTrailingNewlineAndCaret()
         }
