@@ -240,7 +240,7 @@
           <!-- 调度引擎配置教程链接 -->
           <el-form-item size="mini" style="margin-top: 8px;">
             <div class="el-form-item__info">
-              <a target="_blank" href="https://github.com/hugetiny/LinkCore/wiki/Scheduler" rel="noopener noreferrer">
+              <a target="_blank" href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/wiki/%E8%B0%83%E5%BA%A6%E5%BC%95%E6%93%8E%E9%85%8D%E7%BD%AE%E6%95%99%E7%A8%8B---Scheduler-Configuration-Guide" rel="noopener noreferrer">
                 {{ $t('preferences.scheduler-tips') }}
                 <mo-icon name="link" width="12" height="12" />
               </a>
