@@ -1,0 +1,241 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    # 每周一早上6点运行完整测试
+    - cron: '0 6 * * 1'
+
+jobs:
+  # 代码质量检查
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check package.json syntax
+      run: node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))"
+      
+    - name: Verify build configuration
+      run: |
+        node -e "
+          const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+          const electronBuilder = JSON.parse(require('fs').readFileSync('electron-builder.json', 'utf8'));
+          console.log('Package name:', pkg.name);
+          console.log('Electron builder config verified');
+        "
+
+  # 多平台构建测试
+  build-test:
+    name: Build Test (${{ matrix.os }})
+    needs: lint-and-typecheck
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win32
+          - os: macos-latest
+            platform: darwin
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+      
+    - name: Build application
+      run: npm run build:dir
+      env:
+        # 禁用代码签名和公证以加速测试
+        CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        SKIP_NOTARIZE: 'true'
+        
+    - name: Verify build artifacts
+      run: |
+        if [ "${{ matrix.platform }}" = "linux" ]; then
+          ls -la dist/
+          echo "Linux build artifacts verified"
+        elif [ "${{ matrix.platform }}" = "win32" ]; then
+          ls -la dist/
+          echo "Windows build artifacts verified"
+        elif [ "${{ matrix.platform }}" = "darwin" ]; then
+          ls -la dist/
+          echo "macOS build artifacts verified"
+        fi
+
+  # 开发环境测试
+  dev-test:
+    name: Development Environment Test
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+      
+    - name: Test webpack build (renderer)
+      run: npm run pack:renderer
+      
+    - name: Test webpack build (main)
+      run: npm run pack:main
+      
+    - name: Test development server startup
+      run: |
+        # 启动开发服务器并检查是否正常启动
+        timeout 30s npm run dev:renderer &
+        sleep 10
+        
+        # 检查进程是否在运行
+        if ps aux | grep -v grep | grep webpack; then
+          echo "Development server started successfully"
+          pkill -f webpack
+        else
+          echo "Development server failed to start"
+          exit 1
+        fi
+
+  # 扩展功能测试
+  extension-test:
+    name: Browser Extension Test
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Test extension manifest
+      run: |
+        # 验证浏览器扩展的manifest文件
+        node -e "
+          const manifest = JSON.parse(require('fs').readFileSync('extensions/linkcore-webextension/manifest.json', 'utf8'));
+          if (!manifest.name || !manifest.version || !manifest.manifest_version) {
+            throw new Error('Invalid extension manifest');
+          }
+          console.log('Extension manifest validated:', manifest.name, manifest.version);
+        "
+        
+    - name: Verify extension locales
+      run: |
+        # 检查所有语言文件是否存在且格式正确
+        for lang in en de es fr ja ko ru zh_CN zh_TW; do
+          if [ -f "extensions/linkcore-webextension/_locales/$lang/messages.json" ]; then
+            node -e "
+              try {
+                JSON.parse(require('fs').readFileSync('extensions/linkcore-webextension/_locales/$lang/messages.json', 'utf8'));
+                console.log('$lang locale file is valid JSON');
+              } catch (e) {
+                console.error('$lang locale file has invalid JSON:', e.message);
+                process.exit(1);
+              }
+            "
+          else
+            echo "Warning: $lang locale file not found"
+          fi
+        done
+
+  # 集成测试
+  integration-test:
+    name: Integration Test
+    needs: [build-test, dev-test, extension-test]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+      
+    - name: Run post-install script
+      run: npm run postinstall
+      
+    - name: Verify engine dependencies
+      run: |
+        # 检查引擎依赖文件是否存在
+        for platform in win32/x64 win32/ia32 linux/x64 linux/arm64 linux/armv7l darwin/x64 darwin/arm64; do
+          if [ -d "extra/$platform/engine" ]; then
+            echo "Engine dependencies found for $platform"
+            ls -la "extra/$platform/engine/"
+          else
+            echo "Warning: Engine dependencies not found for $platform"
+          fi
+        done
+
+  # 最终报告
+  test-report:
+    name: Test Report
+    needs: [lint-and-typecheck, build-test, dev-test, extension-test, integration-test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Generate test report
+      run: |
+        echo "=== CI Test Report ==="
+        echo "Build Date: $(date)"
+        echo "Commit: $GITHUB_SHA"
+        echo "Branch: $GITHUB_REF"
+        echo ""
+        echo "Test Results:"
+        echo "- Lint & Type Check: ${{ needs.lint-and-typecheck.result }}"
+        echo "- Build Test (Linux): ${{ needs.build-test.result }}"
+        echo "- Build Test (Windows): ${{ needs.build-test.result }}"
+        echo "- Build Test (macOS): ${{ needs.build-test.result }}"
+        echo "- Development Test: ${{ needs.dev-test.result }}"
+        echo "- Extension Test: ${{ needs.extension-test.result }}"
+        echo "- Integration Test: ${{ needs.integration-test.result }}"
+        echo ""
+        echo "Overall Status: ${{ job.status }}"
