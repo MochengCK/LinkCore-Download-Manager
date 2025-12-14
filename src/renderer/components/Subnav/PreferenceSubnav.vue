@@ -29,13 +29,6 @@
         </i>
         <span>{{ $t('preferences.lab') }}</span>
       </li>
-      <li
-        @click="updateAvailable ? downloadUpdate() : (isChecking ? null : checkForUpdates())"
-        class="version-item"
-        :class="{ 'update-available': updateAvailable, 'is-checking': isChecking, 'downloading': isDownloading }"
-        >
-        <span>{{ getVersionText() }}</span>
-      </li>
     </ul>
   </nav>
 </template>

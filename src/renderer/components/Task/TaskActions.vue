@@ -1,16 +1,6 @@
 <template>
   <div class="task-actions">
     <el-tooltip
-      class="item hidden-md-and-up"
-      effect="dark"
-      placement="bottom"
-      :content="$t('task.new-task')"
-    >
-      <i class="task-action" @click.stop="onAddClick">
-        <mo-icon name="menu-add" width="14" height="14" />
-      </i>
-    </el-tooltip>
-    <el-tooltip
       class="item"
       effect="dark"
       placement="bottom"

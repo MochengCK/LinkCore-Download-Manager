@@ -1,15 +1,80 @@
 <template>
   <el-container class="main panel" direction="horizontal">
-    <el-aside width="200px" class="subnav hidden-xs-only">
-      <router-view name="subnav" />
-    </el-aside>
     <router-view name="form" />
+    <div
+      v-if="subnavMode === 'floating'"
+      class="subnav-small-screen subnav-right"
+    >
+      <ul class="menu small-menu">
+        <li
+          @click="navPreference('basic')"
+          :class="{ active: isActive('/preference/basic') || isActive('/preference') }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('preferences.basic')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="preference-basic" width="20" height="20" />
+          </el-tooltip>
+        </li>
+        <li
+          @click="navPreference('advanced')"
+          :class="{ active: isActive('/preference/advanced') }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('preferences.advanced')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="preference-advanced" width="20" height="20" />
+          </el-tooltip>
+        </li>
+        <li
+          @click="navPreference('lab')"
+          :class="{ active: isActive('/preference/lab') }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('preferences.lab')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="preference-lab" width="20" height="20" />
+          </el-tooltip>
+        </li>
+      </ul>
+    </div>
   </el-container>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+  import '@/components/Icons/preference-basic'
+  import '@/components/Icons/preference-advanced'
+  import '@/components/Icons/preference-lab'
+
   export default {
     name: 'mo-content-preference',
+    computed: {
+      ...mapState('preference', {
+        subnavMode: state => state.config.subnavMode || 'floating'
+      })
+    },
+    methods: {
+      navPreference (category) {
+        this.$router.push({
+          path: `/preference/${category}`
+        }).catch(err => {
+          console.log(err)
+        })
+      },
+      isActive (path) {
+        return this.$route.path === path
+      }
+    },
     created () {
       this.$store.dispatch('preference/fetchPreference')
     }
@@ -17,6 +82,79 @@
 </script>
 
 <style lang="scss">
+.subnav-small-screen.subnav-right {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  background-color: var(--speedometer-background);
+  border-radius: 100px;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  padding: 8px;
+}
+
+.subnav-small-screen.subnav-right:hover {
+  opacity: 1;
+}
+
+.subnav-small-screen .menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  user-select: none;
+  cursor: default;
+}
+
+.subnav-small-screen .menu > li {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: background-color 0.25s, border-radius 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subnav-small-screen .menu > li:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.subnav-small-screen .menu > li.active {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+}
+
+.subnav-small-screen .menu svg {
+  padding: 6px;
+  color: $--icon-color;
+}
+
+.subnav-small-screen .small-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.subnav-small-screen .small-menu > li {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.subnav-small-screen .small-menu > li:first-child {
+  margin-top: 0;
+}
+
+.subnav-small-screen .small-menu > li:last-child {
+  margin-bottom: 0;
+}
+
 .form-preference {
   padding: 16px 16px 64px 16px;
   display: flex;

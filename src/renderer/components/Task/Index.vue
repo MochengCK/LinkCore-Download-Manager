@@ -3,12 +3,6 @@
     class="main panel"
     direction="horizontal"
   >
-    <el-aside
-      width="200px"
-      class="subnav hidden-xs-only"
-    >
-      <mo-task-subnav :current="status" />
-    </el-aside>
     <el-container
       class="content panel"
       direction="vertical"
@@ -17,11 +11,22 @@
         class="panel-header"
         height="84"
       >
-        <h4 class="task-title hidden-xs-only">{{ title }}</h4>
+        <h4
+          v-if="subnavMode !== 'title'"
+          class="task-title hidden-xs-only"
+        >
+          {{ title }}
+        </h4>
+        <h4
+          v-if="subnavMode === 'floating'"
+          class="task-title hidden-sm-and-up"
+        >
+          {{ title }}
+        </h4>
         <mo-subnav-switcher
+          v-if="subnavMode === 'title'"
           :title="title"
           :subnavs="subnavs"
-          class="hidden-sm-and-up"
         />
         <mo-task-actions />
       </el-header>
@@ -29,6 +34,65 @@
         <mo-task-list />
       </el-main>
     </el-container>
+    <div
+      v-if="subnavMode === 'floating'"
+      class="subnav-small-screen subnav-right"
+    >
+      <ul class="menu small-menu">
+        <li
+          @click="navStatus('all')"
+          :class="{ active: status === 'all' }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('task.all')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="menu-task" width="20" height="20" />
+          </el-tooltip>
+        </li>
+        <li
+          @click="navStatus('active')"
+          :class="{ active: status === 'active' }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('task.active')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="task-pause" width="20" height="20" />
+          </el-tooltip>
+        </li>
+        <li
+          @click="navStatus('waiting')"
+          :class="{ active: status === 'waiting' }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('task.waiting')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="task-stop" width="20" height="20" />
+          </el-tooltip>
+        </li>
+        <li
+          @click="navStatus('stopped')"
+          :class="{ active: status === 'stopped' }"
+        >
+          <el-tooltip
+            effect="dark"
+            :content="$t('task.stopped')"
+            placement="left"
+            :open-delay="500"
+          >
+            <mo-icon name="task-start" width="20" height="20" />
+          </el-tooltip>
+        </li>
+      </ul>
+    </div>
   </el-container>
 </template>
 
@@ -38,10 +102,13 @@
 
   import { commands } from '@/components/CommandManager/instance'
   import { ADD_TASK_TYPE } from '@shared/constants'
-  import TaskSubnav from '@/components/Subnav/TaskSubnav'
   import TaskActions from '@/components/Task/TaskActions'
   import TaskList from '@/components/Task/TaskList'
   import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
+  import '@/components/Icons/menu-task'
+  import '@/components/Icons/task-start'
+  import '@/components/Icons/task-pause'
+  import '@/components/Icons/task-stop'
   import {
     getTaskUri,
     parseHeader
@@ -55,7 +122,6 @@
   export default {
     name: 'mo-content-task',
     components: {
-      [TaskSubnav.name]: TaskSubnav,
       [TaskActions.name]: TaskActions,
       [TaskList.name]: TaskList,
       [SubnavSwitcher.name]: SubnavSwitcher
@@ -73,7 +139,8 @@
         selectedGidListCount: state => state.selectedGidList.length
       }),
       ...mapState('preference', {
-        noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask
+        noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask,
+        subnavMode: state => state.config.subnavMode || 'floating'
       }),
       subnavs () {
         return [
@@ -108,6 +175,13 @@
       status: 'onStatusChange'
     },
     methods: {
+      navStatus (status) {
+        this.$router.push({
+          path: `/task/${status}`
+        }).catch(err => {
+          console.log(err)
+        })
+      },
       onStatusChange () {
         this.changeCurrentList()
       },
@@ -424,3 +498,78 @@
     }
   }
 </script>
+
+<style lang="scss">
+.subnav-small-screen.subnav-right {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  background-color: var(--speedometer-background);
+  border-radius: 100px;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  padding: 8px;
+}
+
+.subnav-small-screen.subnav-right:hover {
+  opacity: 1;
+}
+
+.subnav-small-screen .menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  user-select: none;
+  cursor: default;
+}
+
+.subnav-small-screen .menu > li {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: background-color 0.25s, border-radius 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subnav-small-screen .menu > li:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.subnav-small-screen .menu > li.active {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+}
+
+.subnav-small-screen .menu svg {
+  padding: 6px;
+  color: $--icon-color;
+}
+
+.subnav-small-screen .small-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.subnav-small-screen .small-menu > li {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.subnav-small-screen .small-menu > li:first-child {
+  margin-top: 0;
+}
+
+.subnav-small-screen .small-menu > li:last-child {
+  margin-bottom: 0;
+}
+</style>

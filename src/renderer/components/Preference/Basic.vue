@@ -1,11 +1,22 @@
 <template>
   <el-container class="content panel" direction="vertical">
       <el-header class="panel-header" height="84">
-        <h4 class="hidden-xs-only">{{ title }}</h4>
+        <h4
+          v-if="subnavMode !== 'title'"
+          class="hidden-xs-only"
+        >
+          {{ title }}
+        </h4>
+        <h4
+          v-if="subnavMode === 'floating'"
+          class="hidden-sm-and-up"
+        >
+          {{ title }}
+        </h4>
         <mo-subnav-switcher
+          v-if="subnavMode === 'title'"
           :title="title"
           :subnavs="subnavs"
-          class="hidden-sm-and-up"
         />
       </el-header>
       <el-main class="panel-content">
@@ -47,6 +58,24 @@
               <el-checkbox v-model="form.showProgressBar" @change="autoSaveForm">
                 {{ $t('preferences.show-progress-bar') }}
               </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
+              <el-form-item :label="$t('preferences.subnav-mode')">
+                <el-select
+                  v-model="form.subnavMode"
+                  size="mini"
+                  @change="autoSaveForm"
+                >
+                  <el-option
+                    :label="$t('preferences.subnav-mode-floating')"
+                    value="floating"
+                  />
+                  <el-option
+                    :label="$t('preferences.subnav-mode-title')"
+                    value="title"
+                  />
+                </el-select>
+              </el-form-item>
             </el-col>
           </el-form-item>
         </div>
@@ -576,7 +605,8 @@
       autoCategorizeFiles,
       fileCategories,
       setFileMtimeOnComplete,
-      customKeymap
+      customKeymap,
+      subnavMode
     } = config
 
     const btAutoDownloadContent = followTorrent &&
@@ -630,7 +660,8 @@
         programs: { name: 'program-files', extensions: ['exe', 'msi', 'dmg', 'pkg', 'deb', 'rpm'] },
         others: { name: 'other-files', extensions: [] }
       },
-      customKeymap: customKeymap || {}
+      customKeymap: customKeymap || {},
+      subnavMode: subnavMode || 'floating'
     }
     return result
   }
@@ -671,6 +702,10 @@
       isLinux () { return is.linux() },
       title () {
         return this.$t('preferences.basic')
+      },
+      subnavMode () {
+        const { config = {} } = this
+        return config.subnavMode || 'floating'
       },
       maxConcurrentDownloads () {
         return ENGINE_MAX_CONCURRENT_DOWNLOADS

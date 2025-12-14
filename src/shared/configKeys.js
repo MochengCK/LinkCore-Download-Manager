@@ -44,7 +44,8 @@ const userKeys = [
   'extension-intercept-all-downloads',
   'extension-silent-download',
   'extension-skip-file-extensions',
-  'extension-shift-toggle-enabled'
+  'extension-shift-toggle-enabled',
+  'subnav-mode'
 ]
 
 const systemKeys = [

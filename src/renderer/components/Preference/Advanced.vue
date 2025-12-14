@@ -1,11 +1,22 @@
 <template>
   <el-container class="content panel" direction="vertical">
     <el-header class="panel-header" height="84">
-      <h4 class="hidden-xs-only">{{ title }}</h4>
+      <h4
+        v-if="subnavMode !== 'title'"
+        class="hidden-xs-only"
+      >
+        {{ title }}
+      </h4>
+      <h4
+        v-if="subnavMode === 'floating'"
+        class="hidden-sm-and-up"
+      >
+        {{ title }}
+      </h4>
       <mo-subnav-switcher
+        v-if="subnavMode === 'title'"
         :title="title"
         :subnavs="subnavs"
-        class="hidden-sm-and-up"
       />
     </el-header>
     <el-main class="panel-content">
@@ -42,6 +53,13 @@
                 >
                   {{ $t('app.check-updates-now') }}
                 </span>
+              </div>
+              <div
+                class="version-item"
+                :class="{ 'update-available': updateAvailable, 'is-checking': isCheckingUpdate, 'downloading': isDownloadingUpdate }"
+                @click="updateAvailable ? downloadUpdate() : (isCheckingUpdate ? null : onCheckUpdateClick())"
+              >
+                <span>{{ getVersionText() }}</span>
               </div>
             </el-col>
           </el-form-item>
@@ -800,12 +818,13 @@
           'user-agent',
           'dir'
         ],
-        aria2ConfRawText: ''
+        aria2ConfRawText: '',
+        appVersion: ''
       }
     },
     computed: {
       ...mapState('app', ['isCheckingUpdate']),
-      ...mapState('preference', ['updateAvailable']),
+      ...mapState('preference', ['updateAvailable', 'newVersion', 'isDownloadingUpdate', 'downloadProgress']),
       ...mapState('app', {
         storeEngineInfo: state => state.engineInfo
       }),
@@ -815,6 +834,10 @@
       },
       engineInfo () {
         return this.storeEngineInfo
+      },
+      subnavMode () {
+        const { config = {} } = this.$store.state.preference
+        return config.subnavMode || 'floating'
       },
       isRenderer: () => is.renderer(),
       title () {
@@ -964,9 +987,14 @@
       this.rebuildTrackerSourceOptions()
     },
     async mounted () {
-      // 组件挂载后再次获取引擎列表，确保最新
       await this.fetchEngineList()
       this.rebuildTrackerSourceOptions()
+      try {
+        const appConfig = await this.$electron.ipcRenderer.invoke('get-app-config')
+        this.appVersion = appConfig.version
+      } catch (error) {
+        console.error('[Motrix] Failed to get app version:', error)
+      }
     },
     methods: {
       getBuiltinOrigins () {
@@ -1034,6 +1062,56 @@
         this.autoSaveForm()
         this.recomputeBtTrackerFromSelected()
         this.$msg.success(this.$t('preferences.origin-removed'))
+      },
+      getVersionText () {
+        if (this.isDownloadingUpdate) {
+          return `下载中 ${this.downloadProgress}%`
+        } else if (this.updateAvailable) {
+          return `下载新版本 ${this.newVersion}`
+        } else {
+          return this.appVersion
+        }
+      },
+      hasMsgSupport () {
+        return typeof this.$msg !== 'undefined' && this.$msg !== null
+      },
+      showMessage (type, message) {
+        if (this.hasMsgSupport()) {
+          this.$msg[type](message)
+        } else {
+          console.log(`[Motrix] Update message: ${type} - ${message}`)
+          if (type === 'error') {
+            alert(message)
+          }
+        }
+      },
+      downloadUpdate () {
+        if (this.isDownloadingUpdate) return
+        this.$store.dispatch('preference/updateIsDownloadingUpdate', true)
+        this.$store.dispatch('preference/updateDownloadProgress', 0)
+        this.showMessage('info', '开始下载新版本...')
+        const onDownloadProgress = (event, progress) => {
+          this.$store.dispatch('preference/updateDownloadProgress', Math.round(progress.percent))
+        }
+        const onDownloaded = () => {
+          this.$store.dispatch('preference/updateIsDownloadingUpdate', false)
+          this.$store.dispatch('preference/updateUpdateAvailable', false)
+          this.showMessage('success', '更新下载完成，应用程序将自动重启并安装更新')
+          this.$electron.ipcRenderer.removeListener('download-progress', onDownloadProgress)
+          this.$electron.ipcRenderer.removeListener('update-downloaded', onDownloaded)
+          this.$electron.ipcRenderer.removeListener('update-error', onDownloadError)
+        }
+        const onDownloadError = () => {
+          this.$store.dispatch('preference/updateIsDownloadingUpdate', false)
+          this.showMessage('error', '下载更新失败，请检查网络连接后重试')
+          this.$electron.ipcRenderer.removeListener('download-progress', onDownloadProgress)
+          this.$electron.ipcRenderer.removeListener('update-downloaded', onDownloaded)
+          this.$electron.ipcRenderer.removeListener('update-error', onDownloadError)
+        }
+        this.$electron.ipcRenderer.on('download-progress', onDownloadProgress)
+        this.$electron.ipcRenderer.on('update-downloaded', onDownloaded)
+        this.$electron.ipcRenderer.on('update-error', onDownloadError)
+        this.$electron.ipcRenderer.send('command', 'application:download-update')
       },
       recomputeBtTrackerFromSelected () {
         const selected = Array.isArray(this.form.trackerSource) ? this.form.trackerSource : []

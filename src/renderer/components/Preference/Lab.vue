@@ -1,11 +1,22 @@
 <template>
   <el-container class="content panel" direction="vertical">
     <el-header class="panel-header" height="84">
-      <h4 class="hidden-xs-only">{{ title }}</h4>
+      <h4
+        v-if="subnavMode !== 'title'"
+        class="hidden-xs-only"
+      >
+        {{ title }}
+      </h4>
+      <h4
+        v-if="subnavMode === 'floating'"
+        class="hidden-sm-and-up"
+      >
+        {{ title }}
+      </h4>
       <mo-subnav-switcher
+        v-if="subnavMode === 'title'"
         :title="title"
         :subnavs="subnavs"
-        class="hidden-sm-and-up"
       />
     </el-header>
     <mo-browser
@@ -60,6 +71,10 @@
       },
       title () {
         return this.$t('preferences.lab')
+      },
+      subnavMode () {
+        const { config = {} } = this.$store.state.preference
+        return config.subnavMode || 'floating'
       },
       subnavs () {
         return [

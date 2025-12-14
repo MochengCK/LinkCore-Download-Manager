@@ -1,6 +1,5 @@
 <template>
   <el-container id="container">
-    <mo-aside v-if="!isSmallScreen" />
     <router-view />
     <mo-floating-bar />
     <mo-speedometer />
@@ -13,8 +12,7 @@
       :peers="currentTaskPeers"
     />
     <mo-dragger />
-    <!-- 在小屏幕上显示的侧边栏按钮 -->
-    <div v-if="isSmallScreen" class="aside-small-screen">
+    <div class="aside-small-screen">
       <ul class="menu small-menu">
         <li
           @click="nav('/task')"
@@ -49,7 +47,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  import Aside from '@/components/Aside/Index'
   import FloatingBar from '@/components/BottomBar/FloatingBar'
   import Speedometer from '@/components/Speedometer/Speedometer'
   import AddTask from '@/components/Task/AddTask'
@@ -61,17 +58,11 @@
   export default {
     name: 'mo-main',
     components: {
-      [Aside.name]: Aside,
       [FloatingBar.name]: FloatingBar,
       [Speedometer.name]: Speedometer,
       [AddTask.name]: AddTask,
       [TaskDetail.name]: TaskDetail,
       [Dragger.name]: Dragger
-    },
-    data () {
-      return {
-        windowWidth: 0
-      }
     },
     computed: {
       ...mapState('app', {
@@ -85,11 +76,7 @@
         currentTaskItem: state => state.currentTaskItem,
         currentTaskFiles: state => state.currentTaskFiles,
         currentTaskPeers: state => state.currentTaskPeers
-      }),
-      isSmallScreen () {
-        // 当窗口宽度小于850px时，认为是小屏幕
-        return this.windowWidth < 850
-      }
+      })
     },
     methods: {
       nav (page) {
@@ -98,20 +85,7 @@
         }).catch(err => {
           console.log(err)
         })
-      },
-      updateWindowWidth () {
-        this.windowWidth = window.innerWidth
       }
-    },
-    mounted () {
-      // 初始化窗口宽度
-      this.updateWindowWidth()
-      // 添加窗口大小变化事件监听器
-      window.addEventListener('resize', this.updateWindowWidth)
-    },
-    beforeDestroy () {
-      // 移除窗口大小变化事件监听器
-      window.removeEventListener('resize', this.updateWindowWidth)
     }
   }
 </script>
