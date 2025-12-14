@@ -106,11 +106,28 @@ LinkCore Download Manager（联芯下载管理器）是一款简洁易用的跨�
 
 ## 🖥️ 界面截图
 
-<p align="center">
-  <img src="./screenshots/linkcore-screenshot-task.png" alt="任务管理界面" width="1100" />
-  <br>
-  <em>任务管理界面</em>
-</p>
+<div style="display: flex; justify-content: center; gap: 16px;">
+  <figure style="margin: 0; text-align: center; width: 49%;">
+    <img
+      src="./screenshots/linkcore-screenshot-task.png"
+      alt="深色模式 - 任务管理界面"
+      style="max-width: 100%;"
+    />
+    <figcaption>
+      <em>深色模式</em>
+    </figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center; width: 49%;">
+    <img
+      src="./screenshots/屏幕截图 2025-12-15 062122.png"
+      alt="浅色模式 - 任务管理界面"
+      style="max-width: 100%;"
+    />
+    <figcaption>
+      <em>浅色模式</em>
+    </figcaption>
+  </figure>
+</div>
 
 ## 🚀 快速开始
 

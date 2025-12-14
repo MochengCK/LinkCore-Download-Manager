@@ -108,24 +108,28 @@ LinkCore Download Manager is currently available for:
 
 ## 🖥️ Screenshots
 
-<p align="center">
-  <img
-    src="./screenshots/linkcore-screenshot-task.png"
-    alt="Dark Mode - Task Management Interface"
-    width="49%"
-    style="max-width: 49%; display: inline-block;"
-  />
-  <img
-    src="./screenshots/屏幕截图 2025-12-15 062122.png"
-    alt="Light Mode - Task Management Interface"
-    width="49%"
-    style="max-width: 49%; display: inline-block;"
-  />
-</p>
-
-<p align="center">
-  <em>Dark Mode (left) &amp; Light Mode (right)</em>
-</p>
+<div style="display: flex; justify-content: center; gap: 16px;">
+  <figure style="margin: 0; text-align: center; width: 49%;">
+    <img
+      src="./screenshots/linkcore-screenshot-task.png"
+      alt="Dark Mode - Task Management Interface"
+      style="max-width: 100%;"
+    />
+    <figcaption>
+      <em>Dark Mode</em>
+    </figcaption>
+  </figure>
+  <figure style="margin: 0; text-align: center; width: 49%;">
+    <img
+      src="./screenshots/屏幕截图 2025-12-15 062122.png"
+      alt="Light Mode - Task Management Interface"
+      style="max-width: 100%;"
+    />
+    <figcaption>
+      <em>Light Mode</em>
+    </figcaption>
+  </figure>
+</div>
 
 ## 🚀 Quick Start
 
