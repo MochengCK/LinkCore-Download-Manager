@@ -40,7 +40,11 @@ const userKeys = [
   'set-file-mtime-on-complete',
   'advanced-option-presets',
   'task-priorities',
-  'custom-keymap'
+  'custom-keymap',
+  'extension-intercept-all-downloads',
+  'extension-silent-download',
+  'extension-skip-file-extensions',
+  'extension-shift-toggle-enabled'
 ]
 
 const systemKeys = [

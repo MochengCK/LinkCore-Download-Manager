@@ -379,10 +379,13 @@
       handleCopyTaskLink (payload) {
         const { task } = payload
         const uri = getTaskUri(task)
-        navigator.clipboard.writeText(uri)
-          .then(() => {
-            this.$msg.success(this.$t('task.copy-link-success'))
-          })
+        try {
+          const { clipboard } = require('electron')
+          clipboard.writeText(uri)
+          this.$msg.success(this.$t('task.copy-link-success'))
+        } catch (e) {
+          this.$msg.error(this.$t('preferences.save-fail-message'))
+        }
       },
       handleShowTaskInfo (payload) {
         const { task } = payload

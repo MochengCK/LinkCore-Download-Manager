@@ -4,7 +4,7 @@
     "description": "擴展名稱"
   },
   "extensionDescription": {
-    "message": "透過 aria2 RPC 將瀏覽器下載發送到 LinkCore 下載管理器",
+    "message": "LinkCore Download Manager 深度整合瀏覽器外掛程式",
     "description": "擴展描述"
   },
   "actionTitle": {

@@ -2,7 +2,7 @@
 const translations = {
   en: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "Send browser downloads to LinkCore Download Manager via aria2 RPC",
+    extensionDescription: "Deeply integrated browser extension for LinkCore Download Manager",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC Address",
@@ -18,7 +18,7 @@ const translations = {
   },
   zh_CN: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "通过 aria2 RPC 将浏览器下载发送到 LinkCore 下载管理器",
+    extensionDescription: "LinkCore Download Manager 深度集成浏览器插件",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC 地址",
@@ -34,7 +34,7 @@ const translations = {
   },
   zh_TW: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "透過 aria2 RPC 將瀏覽器下載發送到 LinkCore 下載管理器",
+    extensionDescription: "LinkCore Download Manager 深度整合瀏覽器外掛程式",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC 地址",
@@ -50,7 +50,7 @@ const translations = {
   },
   ja: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "aria2 RPC を介してブラウザのダウンロードを LinkCore ダウンロードマネージャーに送信",
+    extensionDescription: "LinkCore Download Manager と深く統合されたブラウザー拡張機能",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC アドレス",
@@ -66,7 +66,7 @@ const translations = {
   },
   ko: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "aria2 RPC를 통해 브라우저 다운로드를 LinkCore 다운로드 관리자로 전송",
+    extensionDescription: "LinkCore Download Manager와 깊이 통합된 브라우저 확장 프로그램",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC 주소",
@@ -82,7 +82,7 @@ const translations = {
   },
   es: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "Enviar descargas del navegador al administrador de descargas LinkCore a través de aria2 RPC",
+    extensionDescription: "Extensión de navegador profundamente integrada para LinkCore Download Manager",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "Dirección RPC",
@@ -98,7 +98,7 @@ const translations = {
   },
   fr: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "Envoyer les téléchargements du navigateur vers le gestionnaire de téléchargements LinkCore via aria2 RPC",
+    extensionDescription: "Extension de navigateur profondément intégrée pour LinkCore Download Manager",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "Adresse RPC",
@@ -114,7 +114,7 @@ const translations = {
   },
   de: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "Browser-Downloads über aria2 RPC an LinkCore Download Manager senden",
+    extensionDescription: "Tief integrierte Browser-Erweiterung für LinkCore Download Manager",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "RPC-Adresse",
@@ -130,7 +130,7 @@ const translations = {
   },
   ru: {
     extensionName: "LinkCore Download Manager",
-    extensionDescription: "Отправка загрузок браузера в менеджер загрузок LinkCore через aria2 RPC",
+    extensionDescription: "Глубоко интегрированное расширение браузера для LinkCore Download Manager",
     actionTitle: "LinkCore",
     popupTitle: "LinkCore Download Manager",
     rpcAddress: "Адрес RPC",

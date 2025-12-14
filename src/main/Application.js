@@ -13,7 +13,8 @@ import {
   ONE_HOUR,
   PROXY_SCOPES,
   PROXY_MODE,
-  APP_HTTP_PORT
+  APP_HTTP_PORT,
+  ADD_TASK_TYPE
 } from '@shared/constants'
 import { checkIsNeedRunAdvanced } from '@shared/utils'
 import {
@@ -212,6 +213,55 @@ export default class Application extends EventEmitter {
                 }
               }
 
+              const silentDownload = !!this.configManager.getUserConfig('extension-silent-download', false)
+
+              if (!silentDownload) {
+                const headerMap = {}
+                finalHeaders.forEach((h) => {
+                  if (typeof h !== 'string') {
+                    return
+                  }
+                  const idx = h.indexOf(':')
+                  if (idx <= 0) {
+                    return
+                  }
+                  const name = h.slice(0, idx).trim().toLowerCase()
+                  const value = h.slice(idx + 1).trim()
+                  if (!name) {
+                    return
+                  }
+                  if (!headerMap[name]) {
+                    headerMap[name] = value
+                  }
+                })
+
+                const userAgent = headerMap['user-agent']
+                const cookie = headerMap.cookie
+                const authorization = headerMap.authorization
+                const taskPayload = {
+                  type: ADD_TASK_TYPE.URI,
+                  uri: url
+                }
+                if (options.referer) {
+                  taskPayload.referer = options.referer
+                }
+                if (userAgent) {
+                  taskPayload.userAgent = userAgent
+                }
+                if (cookie) {
+                  taskPayload.cookie = cookie
+                }
+                if (authorization) {
+                  taskPayload.authorization = authorization
+                }
+
+                this.show()
+                global.application.sendCommandToAll('application:new-task', taskPayload)
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ ok: true, dialog: true }))
+                return
+              }
+
               const result = await this.engineClient.call('addUri', [url], options)
               if (result) {
                 res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -225,6 +275,37 @@ export default class Application extends EventEmitter {
               res.end(JSON.stringify({ ok: false }))
             }
           })
+          return
+        }
+
+        if (url.startsWith('/linkcore/ext-config')) {
+          try {
+            const interceptAllDownloads = !!this.configManager.getUserConfig('extension-intercept-all-downloads', false)
+            const silentDownload = !!this.configManager.getUserConfig('extension-silent-download', false)
+            const shiftToggleEnabled = !!this.configManager.getUserConfig('extension-shift-toggle-enabled', false)
+            const skipRaw = this.configManager.getUserConfig('extension-skip-file-extensions', '')
+            let skipFileExtensions = []
+            if (typeof skipRaw === 'string') {
+              skipFileExtensions = skipRaw.split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean)
+            } else if (Array.isArray(skipRaw)) {
+              skipFileExtensions = skipRaw.map(x => `${x}`.trim().toLowerCase()).filter(Boolean)
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+              interceptAllDownloads,
+              silentDownload,
+              shiftToggleEnabled,
+              skipFileExtensions
+            }))
+          } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+              interceptAllDownloads: false,
+              silentDownload: false,
+              shiftToggleEnabled: false,
+              skipFileExtensions: []
+            }))
+          }
           return
         }
 

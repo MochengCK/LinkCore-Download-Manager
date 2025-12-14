@@ -5,6 +5,16 @@ const defaults = {
   autoHijack: true
 }
 
+const extConfigDefaults = {
+  interceptAllDownloads: false,
+  silentDownload: false,
+  skipFileExtensions: [],
+  shiftToggleEnabled: false
+}
+
+let extConfig = { ...extConfigDefaults }
+const AUTO_HIJACK_OVERRIDE_KEY = 'autoHijackTemporarilyDisabled'
+
 const getConfig = () => {
   return new Promise((resolve) => {
     chrome.storage.local.get(defaults, (cfg) => resolve(cfg || defaults))
@@ -122,6 +132,42 @@ const tryChannel = async (path, options = {}, timeout = 1000) => {
   return null
 }
 
+const syncExtConfigFromClient = async () => {
+  try {
+    const result = await tryChannel('/linkcore/ext-config', { method: 'GET' }, 1000)
+    if (!result || !result.resp || !result.resp.ok) {
+      return
+    }
+    const data = await result.resp.json().catch(() => null)
+    if (!data) {
+      return
+    }
+    const interceptAllDownloads = !!data.interceptAllDownloads
+    const silentDownload = !!data.silentDownload
+    const shiftToggleEnabled = !!data.shiftToggleEnabled
+    const rawList = Array.isArray(data.skipFileExtensions) ? data.skipFileExtensions : []
+    const skipFileExtensions = rawList.map(x => `${x}`.trim().toLowerCase()).filter(Boolean)
+    const nextConfig = {
+      interceptAllDownloads,
+      silentDownload,
+      skipFileExtensions,
+      shiftToggleEnabled
+    }
+    const changed = JSON.stringify(extConfig) !== JSON.stringify(nextConfig)
+    extConfig = nextConfig
+  } catch (e) {
+  }
+}
+
+let extConfigTimer = null
+const startExtConfigPolling = () => {
+  if (extConfigTimer) {
+    clearInterval(extConfigTimer)
+  }
+  syncExtConfigFromClient()
+  extConfigTimer = setInterval(syncExtConfigFromClient, 3000)
+}
+
 const addUri = async (url, referer) => {
   try {
     const headers = await getHeadersForUrl(url, referer)
@@ -164,19 +210,53 @@ chrome.runtime.onInstalled.addListener(() => {
     title: chrome.i18n.getMessage('contextMenuDownload'),
     contexts: ['link', 'page', 'selection', 'image', 'video', 'audio']
   })
+  try {
+    chrome.storage.local.set({ [AUTO_HIJACK_OVERRIDE_KEY]: false }, () => {})
+  } catch (e) {}
   // 预探测一次,提升首用体验
   probeRpc()
   // 同步客户端语言
   syncLocaleFromClient()
   // 启动语言监听
   startLocalePolling()
+  // 同步客户端扩展配置
+  startExtConfigPolling()
 })
 
 // 启动时也要启动语言监听
 chrome.runtime.onStartup.addListener(() => {
+  try {
+    chrome.storage.local.set({ [AUTO_HIJACK_OVERRIDE_KEY]: false }, () => {})
+  } catch (e) {}
   syncLocaleFromClient()
   startLocalePolling()
+  startExtConfigPolling()
 })
+
+const getAutoHijackOverride = () => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(AUTO_HIJACK_OVERRIDE_KEY, (res) => {
+      resolve(!!(res && res[AUTO_HIJACK_OVERRIDE_KEY]))
+    })
+  })
+}
+
+const toggleAutoHijackOverride = async () => {
+  const current = await getAutoHijackOverride()
+  const next = !current
+  await new Promise((resolve) => {
+    chrome.storage.local.set({ [AUTO_HIJACK_OVERRIDE_KEY]: next }, () => resolve(true))
+  })
+  return next
+}
+
+if (chrome.commands && chrome.commands.onCommand) {
+  chrome.commands.onCommand.addListener((command) => {
+    if (command === 'toggle-bypass-downloads') {
+      toggleAutoHijackOverride()
+    }
+  })
+}
 
 // 当前已知的语言,用于检测变化
 let lastKnownLocale = null
@@ -356,6 +436,32 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       })
     return true
   }
+
+  if (msg && msg.type === 'getExtConfig') {
+    sendResponse({
+      bypassHotkeyEnabled: !!extConfig.bypassHotkeyEnabled,
+      bypassHotkey: extConfig.bypassHotkey || ''
+    })
+    return true
+  }
+
+  if (msg && msg.type === 'toggleAutoHijackOverride') {
+    toggleAutoHijackOverride().then((disabled) => {
+      sendResponse({ disabled })
+    })
+    return true
+  }
+
+  if (msg && msg.type === 'shiftHotkeyTriggered') {
+    if (extConfig && extConfig.shiftToggleEnabled) {
+      toggleAutoHijackOverride().then((disabled) => {
+        sendResponse({ disabled })
+      })
+    } else {
+      sendResponse({ disabled: null })
+    }
+    return true
+  }
 })
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   let url = info.linkUrl || info.srcUrl || info.pageUrl
@@ -365,16 +471,42 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 })
 
-chrome.downloads.onCreated.addListener(async (item) => {
-  const cfg = await getConfig()
-  if (!cfg.autoHijack) return
-  const url = item && item.url ? item.url : ''
-  if (!url || !/^https?:/i.test(url)) return
-  try {
-    const ok = await addUri(url, item.referrer)
-    if (ok) {
-      chrome.downloads.cancel(item.id)
+chrome.downloads.onCreated.addListener((item) => {
+  const handleDownloadCreated = async () => {
+    const overrideDisabled = await getAutoHijackOverride()
+    if (overrideDisabled) {
+      return
     }
-  } catch (e) {
+    const cfg = await getConfig()
+    const effectiveAutoHijack = !!cfg.autoHijack || !!extConfig.interceptAllDownloads
+    if (!effectiveAutoHijack) return
+    const url = item && item.url ? item.url : ''
+    if (!url || !/^https?:/i.test(url)) return
+    try {
+      let name = ''
+      if (item && item.filename) {
+        name = item.filename
+      } else {
+        try {
+          const u = new URL(url)
+          name = u.pathname ? u.pathname.split('/').pop() || '' : ''
+        } catch (e) {
+          name = ''
+        }
+      }
+      const ext = name && name.indexOf('.') !== -1 ? name.split('.').pop().toLowerCase() : ''
+      if (ext && Array.isArray(extConfig.skipFileExtensions) && extConfig.skipFileExtensions.includes(ext)) {
+        return
+      }
+    } catch (e) {
+    }
+    try {
+      const ok = await addUri(url, item.referrer)
+      if (ok) {
+        chrome.downloads.cancel(item.id)
+      }
+    } catch (e) {
+    }
   }
+  handleDownloadCreated()
 })

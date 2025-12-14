@@ -40,12 +40,6 @@ After installation, the extension provides the following features:
 - Seamless integration with LinkCore Download Manager
 - Smart recognition of download links
 
-## Usage Instructions
-
-1. **Activate Extension**: Click the LinkCore icon in the browser toolbar
-2. **Select Files**: Choose files to download in the popup window
-3. **Start Download**: Click the download button, files will be automatically added to LinkCore download queue
-
 ## Frequently Asked Questions
 
 ### Q: Extension not working after installation?

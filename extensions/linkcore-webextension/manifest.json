@@ -11,6 +11,7 @@
     "cookies"
   ],
   "host_permissions": [
+    "<all_urls>",
     "http://127.0.0.1/*",
     "http://127.0.0.1:16900/*",
     "http://localhost/*",
@@ -18,6 +19,23 @@
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "key-listener.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "commands": {
+    "toggle-bypass-downloads": {
+      "description": "Temporarily disable auto-hijack for next browser download"
+    }
   },
   "action": {
     "default_title": "__MSG_actionTitle__",

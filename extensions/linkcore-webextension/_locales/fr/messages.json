@@ -4,7 +4,7 @@
     "description": "Nom de l'extension"
   },
   "extensionDescription": {
-    "message": "Envoie les téléchargements du navigateur vers LinkCore Download Manager via aria2 RPC",
+    "message": "Extension de navigateur profondément intégrée pour LinkCore Download Manager",
     "description": "Description de l'extension"
   },
   "actionTitle": {

@@ -4,7 +4,7 @@
     "description": "Название расширения"
   },
   "extensionDescription": {
-    "message": "Отправляет загрузки браузера в LinkCore Download Manager через aria2 RPC",
+    "message": "Глубоко интегрированное расширение браузера для LinkCore Download Manager",
     "description": "Описание расширения"
   },
   "actionTitle": {

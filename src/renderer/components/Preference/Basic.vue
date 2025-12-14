@@ -178,6 +178,29 @@
               <div class="el-form-item__info" style="margin-top: 8px;">
                 {{ $t('preferences.extension-tips') }}
               </div>
+              <div class="form-item-sub" style="margin-top: 12px;">
+                <el-checkbox v-model="form.extensionInterceptAllDownloads" @change="autoSaveForm">
+                  {{ $t('preferences.extension-intercept-all-downloads') }}
+                </el-checkbox>
+              </div>
+              <div class="form-item-sub" style="margin-top: 4px;">
+                <el-checkbox v-model="form.extensionSilentDownload" @change="autoSaveForm">
+                  {{ $t('preferences.extension-silent-download') }}
+                </el-checkbox>
+              </div>
+              <div class="form-item-sub" style="margin-top: 4px;">
+                <el-checkbox v-model="form.extensionShiftToggleEnabled" @change="autoSaveForm">
+                  {{ $t('preferences.extension-shift-toggle-enabled') }}
+                </el-checkbox>
+              </div>
+              <div class="form-item-sub" style="margin-top: 8px;">
+                {{ $t('preferences.extension-skip-file-extensions') }}
+                <el-input
+                  v-model="form.extensionSkipFileExtensions"
+                  @change="autoSaveForm"
+                  :placeholder="$t('preferences.extension-skip-file-extensions-tips')"
+                />
+              </div>
             </el-col>
           </el-form-item>
         </div>
@@ -539,6 +562,10 @@
       openAtLogin,
       pauseMetadata,
       resumeAllWhenAppLaunched,
+      extensionInterceptAllDownloads,
+      extensionSilentDownload,
+      extensionSkipFileExtensions,
+      extensionShiftToggleEnabled,
       runMode,
       seedRatio,
       seedTime,
@@ -581,6 +608,10 @@
       openAtLogin,
       pauseMetadata,
       resumeAllWhenAppLaunched,
+      extensionInterceptAllDownloads: extensionInterceptAllDownloads || false,
+      extensionSilentDownload: extensionSilentDownload || false,
+      extensionSkipFileExtensions: extensionSkipFileExtensions || '',
+      extensionShiftToggleEnabled: extensionShiftToggleEnabled || false,
       runMode,
       seedRatio,
       seedTime,
@@ -1029,13 +1060,13 @@
       copyChannelUrl () {
         const text = this.appChannelUrl
         if (!text) return
-        navigator.clipboard.writeText(text)
-          .then(() => {
-            this.$msg.success(this.$t('preferences.save-success-message'))
-          })
-          .catch(() => {
-            this.$msg.error(this.$t('preferences.save-fail-message'))
-          })
+        try {
+          const { clipboard } = require('electron')
+          clipboard.writeText(text)
+          this.$msg.success(this.$t('preferences.save-success-message'))
+        } catch (e) {
+          this.$msg.error(this.$t('preferences.save-fail-message'))
+        }
       },
       async downloadExtension () {
         const { dialog, app } = require('@electron/remote')

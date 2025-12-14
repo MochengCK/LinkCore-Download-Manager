@@ -4,7 +4,7 @@
     "description": "확장 프로그램 이름"
   },
   "extensionDescription": {
-    "message": "aria2 RPC를 통해 브라우저 다운로드를 LinkCore 다운로드 관리자로 전송합니다",
+    "message": "LinkCore Download Manager와 깊이 통합된 브라우저 확장 프로그램",
     "description": "확장 프로그램 설명"
   },
   "actionTitle": {

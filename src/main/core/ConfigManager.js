@@ -146,7 +146,11 @@ export default class ConfigManager {
         'tray-theme': APP_THEME.AUTO,
         'tray-speedometer': is.macOS(),
         'update-channel': 'latest',
-        'window-state': {}
+        'window-state': {},
+        'extension-intercept-all-downloads': false,
+        'extension-silent-download': false,
+        'extension-skip-file-extensions': '',
+        'extension-shift-toggle-enabled': false
       }
       /* eslint-enable quote-props */
     })

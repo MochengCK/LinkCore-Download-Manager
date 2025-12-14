@@ -924,14 +924,22 @@
           port: this.form.rpcListenPort,
           secret: val
         })
-        navigator.clipboard.writeText(url)
+        try {
+          const { clipboard } = require('electron')
+          clipboard.writeText(url)
+        } catch (e) {
+        }
       },
       'form.rpcSecret' (val) {
         const url = buildRpcUrl({
           port: this.form.rpcListenPort,
           secret: val
         })
-        navigator.clipboard.writeText(url)
+        try {
+          const { clipboard } = require('electron')
+          clipboard.writeText(url)
+        } catch (e) {
+        }
       },
       // 监听引擎列表变化，确保当前选择的引擎有效
       engineList (newList) {
@@ -1814,7 +1822,11 @@
           .map(i => `${i.key}=${i.value}`)
           .join('\n')
         if (text) {
-          navigator.clipboard.writeText(text)
+          try {
+            const { clipboard } = require('electron')
+            clipboard.writeText(text)
+          } catch (e) {
+          }
         }
       },
       importFromText () {
@@ -1836,7 +1848,8 @@
       },
       async pasteFromClipboard () {
         try {
-          const text = await navigator.clipboard.readText()
+          const { clipboard } = require('electron')
+          const text = clipboard.readText()
           this.aria2ConfRawText = text
           this.importFromText()
         } catch (e) {

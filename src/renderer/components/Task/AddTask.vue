@@ -299,7 +299,8 @@
       isRenderer: () => is.renderer(),
       isMas: () => is.mas(),
       ...mapState('app', {
-        taskList: state => state.taskList
+        taskList: state => state.taskList,
+        addTaskUrlFromStore: state => state.addTaskUrl
       }),
       ...mapState('preference', {
         config: state => state.config
@@ -329,6 +330,27 @@
         } else {
           document.removeEventListener('keydown', this.handleHotkey)
         }
+      },
+      addTaskUrlFromStore (current, previous) {
+        if (!this.visible) {
+          return
+        }
+        if (this.taskType !== ADD_TASK_TYPE.URI) {
+          return
+        }
+        const cur = (current || '').trim()
+        const prev = (previous || '').trim()
+        if (!cur || cur === prev) {
+          return
+        }
+        const existing = (this.form.uris || '').trim()
+        const lines = existing ? existing.split(/\r?\n/).filter(Boolean) : []
+        if (lines.includes(cur)) {
+          return
+        }
+        const next = existing ? `${existing}\n${cur}` : cur
+        this.keepTrailingNewline = true
+        this.form.uris = next
       },
       'form.uris' (val) {
         if (this.taskType === ADD_TASK_TYPE.URI) {
@@ -414,17 +436,22 @@
         this.$msg.success(this.$t('task.delete-preset-success'))
       },
       async autofillResourceLink () {
-        const content = await navigator.clipboard.readText()
-        const hasResource = detectResource(content)
-        if (!hasResource) {
-          return
-        }
+        try {
+          const { clipboard } = require('electron')
+          const content = clipboard.readText()
+          const hasResource = detectResource(content)
+          if (!hasResource) {
+            return
+          }
 
-        if (isEmpty(this.form.uris)) {
-          this.form.uris = content
-          this.updateUriPreview(this.form.uris)
-          this.keepTrailingNewline = true
-          this.ensureTrailingNewlineAndCaret()
+          if (isEmpty(this.form.uris)) {
+            this.form.uris = content
+            this.updateUriPreview(this.form.uris)
+            this.keepTrailingNewline = true
+            this.ensureTrailingNewlineAndCaret()
+          }
+        } catch (e) {
+          // ignore clipboard errors
         }
       },
       beforeClose () {

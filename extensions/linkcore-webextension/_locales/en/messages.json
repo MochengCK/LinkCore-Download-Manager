@@ -4,7 +4,7 @@
     "description": "Name of the extension"
   },
   "extensionDescription": {
-    "message": "Send browser downloads to LinkCore Download Manager via aria2 RPC",
+    "message": "Deeply integrated browser extension for LinkCore Download Manager",
     "description": "Description of the extension"
   },
   "actionTitle": {
