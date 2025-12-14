@@ -200,6 +200,16 @@ export default {
   'extension-rpc': 'Von der Erweiterung verwendete RPC-URL',
   'extension-copy-rpc': 'RPC-URL kopieren',
   'extension-tips': 'Installieren und aktivieren Sie die Browser-Erweiterung, um Downloads automatisch abzufangen',
+  'extension-intercept-all-downloads': 'Alle Downloads des Browsers abfangen',
+  'extension-silent-download': 'Download direkt starten, ohne das „Neue Aufgabe“-Fenster zu zeigen',
+  'extension-shift-toggle-enabled': 'Umschalttaste verwenden, um das Abfangen vorübergehend zu deaktivieren/aktivieren',
+  'extension-skip-file-extensions': 'Folgende Dateitypen (Erweiterungen) nicht abfangen',
+  'extension-skip-file-extensions-tips': 'Beispiel: exe,msi,zip; mehrere durch Kommas oder Zeilenumbrüche trennen',
+  'extension-download': 'Erweiterung herunterladen',
+  'extension-download-tips': 'Klicken, um die Browser-Erweiterungsdatei auf dem Desktop zu speichern',
+  'extension-download-success': 'Erweiterungsdatei wurde gespeichert',
+  'extension-download-failed': 'Speichern der Erweiterungsdatei fehlgeschlagen',
+  'extension-file-not-found': 'Erweiterungsdatei existiert nicht, bitte Dateipfad überprüfen',
   'cancel': 'Abbrechen',
   'save': 'Speichern'
 }

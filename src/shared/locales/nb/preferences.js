@@ -154,6 +154,19 @@ export default {
   'downloading-file-suffix': 'Suffiks som legges til under nedlasting av filer',
   'downloading-file-suffix-tips': 'Legg til dette suffikset til filer under nedlasting, det vil bli fjernet automatisk etter fullført',
   'downloading-file-suffix-format-warning': 'Nedlastingssuffikset må begynne med ".", det vil bli lagt til automatisk',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'URL for utvidelseskanal (app-HTTP)',
+  'extension-copy-channel': 'Kopier kanal-URL',
+  'extension-rpc': 'RPC-URL som brukes av utvidelsen',
+  'extension-copy-rpc': 'Kopier RPC-URL',
+  'extension-tips': 'Installer og aktiver nettleserutvidelsen for automatisk å fange nedlastinger',
+  'extension-intercept-all-downloads': 'Fang alle nedlastinger fra nettleseren',
+  'extension-silent-download': 'Start nedlastingen direkte uten å vise vinduet for ny oppgave',
+  'extension-shift-toggle-enabled': 'Tillat å bruke Shift-tasten for midlertidig å slå av/på fangst',
+  'extension-skip-file-extensions': 'Ikke fang følgende filtyper (filendelser)',
+  'extension-skip-file-extensions-tips': 'Eksempel: exe,msi,zip; skill flere verdier med komma eller linjeskift',
+  'extension-download': 'Hent utvidelse',
+  'extension-download-tips': 'Klikk for å lagre nettleserutvidelsesfilen på skrivebordet',
+  'extension-download-success': 'Utvidelsesfilen er lagret',
+  'extension-download-failed': 'Kunne ikke lagre utvidelsesfilen',
+  'extension-file-not-found': 'Utvidelsesfilen finnes ikke, kontroller filbanen'
 }

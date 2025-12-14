@@ -195,6 +195,16 @@ export default {
   'extension-rpc': 'RPC URL, используемый расширением',
   'extension-copy-rpc': 'Копировать RPC URL',
   'extension-tips': 'Установите и включите расширение браузера для автоматического перехвата загрузок',
+  'extension-intercept-all-downloads': 'Перехватывать все загрузки браузера',
+  'extension-silent-download': 'Начинать загрузку сразу, не показывая окно добавления задачи',
+  'extension-shift-toggle-enabled': 'Разрешить временно отключать/включать перехват с помощью клавиши Shift',
+  'extension-skip-file-extensions': 'Не перехватывать следующие типы файлов (расширения)',
+  'extension-skip-file-extensions-tips': 'Например: exe,msi,zip; несколько значений разделяйте запятыми или переводом строки',
+  'extension-download': 'Получить расширение',
+  'extension-download-tips': 'Щёлкните, чтобы сохранить файл расширения браузера на рабочий стол',
+  'extension-download-success': 'Файл расширения сохранён',
+  'extension-download-failed': 'Не удалось сохранить файл расширения',
+  'extension-file-not-found': 'Файл расширения не найден, проверьте путь к файлу',
   'cancel': 'Отмена',
   'save': 'Сохранить'
 }

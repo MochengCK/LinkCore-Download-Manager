@@ -153,6 +153,19 @@ export default {
   'downloading-file-suffix': 'Hậu tố được thêm vào khi tải tệp',
   'downloading-file-suffix-tips': 'Thêm hậu tố này vào các tệp khi tải, nó sẽ được tự động xóa sau khi hoàn tất',
   'downloading-file-suffix-format-warning': 'Hậu tố tải xuống phải bắt đầu bằng ".", nó sẽ được tự động thêm',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'URL kênh tiện ích mở rộng (HTTP của ứng dụng)',
+  'extension-copy-channel': 'Sao chép URL kênh',
+  'extension-rpc': 'URL RPC được tiện ích mở rộng sử dụng',
+  'extension-copy-rpc': 'Sao chép URL RPC',
+  'extension-tips': 'Cài đặt và bật tiện ích mở rộng trình duyệt để tự động bắt tải xuống',
+  'extension-intercept-all-downloads': 'Chặn tất cả tải xuống từ trình duyệt',
+  'extension-silent-download': 'Bắt đầu tải xuống trực tiếp mà không hiển thị hộp thêm tác vụ',
+  'extension-shift-toggle-enabled': 'Cho phép dùng phím Shift để tạm tắt/khôi phục việc chặn tải xuống',
+  'extension-skip-file-extensions': 'Không chặn các loại tệp sau (phần mở rộng)',
+  'extension-skip-file-extensions-tips': 'Ví dụ: exe,msi,zip; nhiều mục hãy ngăn cách bằng dấu phẩy hoặc xuống dòng',
+  'extension-download': 'Lấy tiện ích mở rộng',
+  'extension-download-tips': 'Nhấn để lưu tệp tiện ích mở rộng trình duyệt vào màn hình nền',
+  'extension-download-success': 'Đã lưu tệp tiện ích mở rộng',
+  'extension-download-failed': 'Lưu tệp tiện ích mở rộng thất bại',
+  'extension-file-not-found': 'Không tìm thấy tệp tiện ích mở rộng, vui lòng kiểm tra đường dẫn tệp'
 }

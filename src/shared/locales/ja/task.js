@@ -106,6 +106,7 @@ export default {
   'select-torrent': 'torrentファイルをドラッグ＆ドロップするか、ここをクリック',
   'task-info-dialog-title': '{{title}} の詳細',
   'download-start-message': '{{taskName}}のダウンロードを開始',
+  'download-start-browser-message': 'ブラウザからのダウンロードを受信しました',
   'download-pause-message': '{{taskName}}のダウンロードを一時停止',
   'download-stop-message': '{{taskName}} のダウンロードを中止',
   'download-error-message': '{{taskName}} のダウンロードにエラーが発生',

@@ -152,6 +152,19 @@ export default {
   'downloading-file-suffix': 'Sufix adăugat în timpul descărcării fișierului',
   'downloading-file-suffix-tips': 'Adăugați acest sufix la fișiere în timpul descărcării, acesta va fi eliminat automat după finalizarea',
   'downloading-file-suffix-format-warning': 'Sufixul de descărcare trebuie să înceapă cu ".", acesta va fi adăugat automat',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'URL canal extensie (HTTP aplicație)',
+  'extension-copy-channel': 'Copiați URL canal',
+  'extension-rpc': 'URL RPC utilizat de extensie',
+  'extension-copy-rpc': 'Copiați URL RPC',
+  'extension-tips': 'Instalați și activați extensia de browser pentru a intercepta automat descărcările',
+  'extension-intercept-all-downloads': 'Interceptați toate descărcările din browser',
+  'extension-silent-download': 'Porniți descărcarea direct, fără a afișa fereastra de adăugare a sarcinii',
+  'extension-shift-toggle-enabled': 'Permiteți folosirea tastei Shift pentru a dezactiva/reactiva temporar interceptarea',
+  'extension-skip-file-extensions': 'Nu interceptați următoarele tipuri de fișiere (extensii)',
+  'extension-skip-file-extensions-tips': 'Exemplu: exe,msi,zip; separați mai multe valori prin virgulă sau linie nouă',
+  'extension-download': 'Obțineți extensia',
+  'extension-download-tips': 'Faceți clic pentru a salva fișierul extensiei de browser pe desktop',
+  'extension-download-success': 'Fișierul extensiei a fost salvat',
+  'extension-download-failed': 'Salvarea fișierului extensiei a eșuat',
+  'extension-file-not-found': 'Fișierul extensiei nu există, verificați calea fișierului'
 }

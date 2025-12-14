@@ -153,7 +153,20 @@ export default {
   'engine-refreshing': 'กำลังดึงข้อมูลเครื่องยนต์...',
   'downloading-file-suffix': 'ตัวต่อที่เพิ่มในระหว่างดาวน์โหลดไฟล์',
   'downloading-file-suffix-tips': 'เพิ่มตัวต่อนี้ไปยังไฟล์ในระหว่างดาวน์โหลด จะถูกลบอัตโนมัติหลังจากเสร็จสิ้น',
-  'downloading-file-suffix-format-warning': 'ตัวต่อนการดาวน์โหลดต้องเริ่มต้นด้วย "." ซึ่งจะถูกเพิ่มอัตโนมัติ',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'downloading-file-suffix-format-warning': 'คำต่อท้ายการดาวน์โหลดต้องขึ้นต้นด้วย "." ซึ่งจะถูกเพิ่มให้อัตโนมัติ',
+  'extension-channel': 'URL ช่องส่วนขยาย (HTTP ของแอป)',
+  'extension-copy-channel': 'คัดลอก URL ช่อง',
+  'extension-rpc': 'URL RPC ที่ส่วนขยายใช้',
+  'extension-copy-rpc': 'คัดลอก URL RPC',
+  'extension-tips': 'ติดตั้งและเปิดใช้ส่วนขยายเบราว์เซอร์เพื่อดักการดาวน์โหลดโดยอัตโนมัติ',
+  'extension-intercept-all-downloads': 'ดักการดาวน์โหลดทั้งหมดจากเบราว์เซอร์',
+  'extension-silent-download': 'เริ่มดาวน์โหลดทันทีโดยไม่แสดงกล่องเพิ่มงานใหม่',
+  'extension-shift-toggle-enabled': 'อนุญาตให้ใช้ปุ่ม Shift ปิด/เปิดการดักชั่วคราว',
+  'extension-skip-file-extensions': 'ไม่ดักไฟล์ชนิดต่อไปนี้ (ส่วนขยาย)',
+  'extension-skip-file-extensions-tips': 'เช่น: exe,msi,zip; หลายรายการให้คั่นด้วยจุลภาคหรือขึ้นบรรทัดใหม่',
+  'extension-download': 'รับส่วนขยาย',
+  'extension-download-tips': 'คลิกเพื่อบันทึกไฟล์ส่วนขยายเบราว์เซอร์ไว้ที่เดสก์ท็อป',
+  'extension-download-success': 'บันทึกไฟล์ส่วนขยายเรียบร้อยแล้ว',
+  'extension-download-failed': 'บันทึกไฟล์ส่วนขยายไม่สำเร็จ',
+  'extension-file-not-found': 'ไม่พบไฟล์ส่วนขยาย โปรดตรวจสอบเส้นทางไฟล์'
 }

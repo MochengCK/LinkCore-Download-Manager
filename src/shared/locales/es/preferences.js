@@ -195,6 +195,16 @@ export default {
   'extension-rpc': 'URL RPC utilizada por la extensión',
   'extension-copy-rpc': 'Copiar URL RPC',
   'extension-tips': 'Instala y activa la extensión del navegador para interceptar descargas automáticamente',
+  'extension-intercept-all-downloads': 'Interceptar todas las descargas del navegador',
+  'extension-silent-download': 'Iniciar la descarga directamente sin mostrar el cuadro de nueva tarea',
+  'extension-shift-toggle-enabled': 'Permitir usar la tecla Shift para desactivar/restaurar temporalmente la interceptación',
+  'extension-skip-file-extensions': 'No interceptar los siguientes tipos de archivo (extensiones)',
+  'extension-skip-file-extensions-tips': 'Ejemplo: exe,msi,zip; separa varios con comas o saltos de línea',
+  'extension-download': 'Obtener extensión',
+  'extension-download-tips': 'Haz clic para guardar el archivo de extensión del navegador en el escritorio',
+  'extension-download-success': 'El archivo de la extensión se ha guardado',
+  'extension-download-failed': 'Error al guardar el archivo de la extensión',
+  'extension-file-not-found': 'El archivo de la extensión no existe, comprueba la ruta del archivo',
   'cancel': 'Cancelar',
   'save': 'Guardar'
 }

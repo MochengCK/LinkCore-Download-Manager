@@ -152,6 +152,19 @@ export default {
   'downloading-file-suffix': 'Suffix ditambahkan saat mengunduh file',
   'downloading-file-suffix-tips': 'Tambahkan suffix ini ke file selama pengunduhan, ini akan secara otomatis dihapus setelah selesai',
   'downloading-file-suffix-format-warning': 'Suffix pengunduhan harus dimulai dengan ".", ini akan ditambahkan secara otomatis',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'URL kanal ekstensi (HTTP aplikasi)',
+  'extension-copy-channel': 'Salin URL kanal',
+  'extension-rpc': 'URL RPC yang digunakan oleh ekstensi',
+  'extension-copy-rpc': 'Salin URL RPC',
+  'extension-tips': 'Instal dan aktifkan ekstensi browser untuk secara otomatis mencegat unduhan',
+  'extension-intercept-all-downloads': 'Mencegat semua unduhan dari browser',
+  'extension-silent-download': 'Mulai unduhan langsung tanpa menampilkan jendela tambah tugas',
+  'extension-shift-toggle-enabled': 'Izinkan menggunakan tombol Shift untuk sementara menonaktifkan/memulihkan pencegatan',
+  'extension-skip-file-extensions': 'Jangan mencegat jenis file berikut (ekstensi)',
+  'extension-skip-file-extensions-tips': 'Contoh: exe,msi,zip; pisahkan banyak nilai dengan koma atau baris baru',
+  'extension-download': 'Dapatkan ekstensi',
+  'extension-download-tips': 'Klik untuk menyimpan file ekstensi browser ke desktop',
+  'extension-download-success': 'File ekstensi berhasil disimpan',
+  'extension-download-failed': 'Gagal menyimpan file ekstensi',
+  'extension-file-not-found': 'File ekstensi tidak ada, periksa jalur file'
 }

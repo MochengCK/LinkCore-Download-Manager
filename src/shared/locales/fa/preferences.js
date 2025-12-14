@@ -111,6 +111,19 @@ export default {
   'not-saved': 'تنظیمات برگزیده ذخیره نشد',
   'not-saved-confirm': 'تنظیمات برگزیده تغییر یافته از بین خواهند رفت، آیا مطمئن هستید که می روید؟',
   'undo-change': 'لغو تغییر',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'نشانی کانال افزونه (HTTP برنامه)',
+  'extension-copy-channel': 'رونوشت نشانی کانال',
+  'extension-rpc': 'نشانی RPC مورد استفاده افزونه',
+  'extension-copy-rpc': 'رونوشت نشانی RPC',
+  'extension-tips': 'افزونه مرورگر را نصب و فعال کنید تا بارگیری‌ها به‌طور خودکار رهگیری شوند',
+  'extension-intercept-all-downloads': 'رهگیری همه بارگیری‌ها از مرورگر',
+  'extension-silent-download': 'آغاز بارگیری مستقیم بدون نمایش پنجره افزودن کار',
+  'extension-shift-toggle-enabled': 'اجازه استفاده از کلید Shift برای غیرفعال‌سازی/بازیابی موقت رهگیری',
+  'extension-skip-file-extensions': 'انواع فایل زیر (پسوندها) را رهگیری نکن',
+  'extension-skip-file-extensions-tips': 'مثال: exe,msi,zip؛ چند مقدار را با ویرگول یا خط تازه جدا کنید',
+  'extension-download': 'دریافت افزونه',
+  'extension-download-tips': 'برای ذخیره فایل افزونه مرورگر روی میزکار کلیک کنید',
+  'extension-download-success': 'فایل افزونه ذخیره شد',
+  'extension-download-failed': 'ذخیره فایل افزونه ناموفق بود',
+  'extension-file-not-found': 'فایل افزونه پیدا نشد، لطفاً مسیر فایل را بررسی کنید'
 }

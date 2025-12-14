@@ -152,6 +152,19 @@ export default {
   'downloading-file-suffix': 'Суфікс, додається під час завантаження файлу',
   'downloading-file-suffix-tips': 'Додайте цей суфікс до файлів під час завантаження, він буде автоматично видалено після завершення',
   'downloading-file-suffix-format-warning': 'Суфікс завантаження повинен починатися з ".", він буде автоматично додано',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'URL каналу розширення (HTTP додатка)',
+  'extension-copy-channel': 'Копіювати URL каналу',
+  'extension-rpc': 'RPC URL, що використовується розширенням',
+  'extension-copy-rpc': 'Копіювати RPC URL',
+  'extension-tips': 'Встановіть і увімкніть розширення браузера, щоб автоматично перехоплювати завантаження',
+  'extension-intercept-all-downloads': 'Перехоплювати всі завантаження з браузера',
+  'extension-silent-download': 'Починати завантаження одразу, не показуючи вікно додавання завдання',
+  'extension-shift-toggle-enabled': 'Дозволити тимчасово вимикати/вмикати перехоплення за допомогою клавіші Shift',
+  'extension-skip-file-extensions': 'Не перехоплювати такі типи файлів (розширення)',
+  'extension-skip-file-extensions-tips': 'Наприклад: exe,msi,zip; кілька значень розділяйте комами або переводом рядка',
+  'extension-download': 'Отримати розширення',
+  'extension-download-tips': 'Натисніть, щоб зберегти файл розширення браузера на робочий стіл',
+  'extension-download-success': 'Файл розширення збережено',
+  'extension-download-failed': 'Не вдалося зберегти файл розширення',
+  'extension-file-not-found': 'Файл розширення не знайдено, перевірте шлях до файлу'
 }

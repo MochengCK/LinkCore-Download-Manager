@@ -152,6 +152,19 @@ export default {
   'downloading-file-suffix': 'Fájl letöltésekor hozzáadott suffix',
   'downloading-file-suffix-tips': 'Adja hozzá ezt a suffix-et a fájlokhoz a letöltés során, automatikusan eltávolítódik a befejezés után',
   'downloading-file-suffix-format-warning': 'A letöltési suffixnek ponttal (.) kell kezdődnie, automatikusan hozzáadódik',
-  'extension-channel': 'Extension channel URL (App HTTP)',
-  'extension-copy-channel': 'Copy channel URL'
+  'extension-channel': 'Bővítmény csatorna URL (App HTTP)',
+  'extension-copy-channel': 'Csatorna URL másolása',
+  'extension-rpc': 'Bővítmény által használt RPC URL',
+  'extension-copy-rpc': 'RPC URL másolása',
+  'extension-tips': 'Telepítse és engedélyezze a böngésző bővítményt a letöltések automatikus elfogásához',
+  'extension-intercept-all-downloads': 'Minden böngésző letöltés elfogása',
+  'extension-silent-download': 'Letöltés indítása közvetlenül, új feladat ablak megjelenítése nélkül',
+  'extension-shift-toggle-enabled': 'Engedélyezze a Shift gomb használatát az elfogás ideiglenes kikapcsolásához/bekapcsolásához',
+  'extension-skip-file-extensions': 'Ne fogja el a következő fájltípusokat (kiterjesztések)',
+  'extension-skip-file-extensions-tips': 'Példa: exe,msi,zip; több értéket vesszővel vagy sortöréssel válasszon el',
+  'extension-download': 'Bővítmény letöltése',
+  'extension-download-tips': 'Kattintson a böngésző bővítmény fájlának mentéséhez az asztalra',
+  'extension-download-success': 'A bővítmény fájl mentve',
+  'extension-download-failed': 'A bővítmény fájl mentése sikertelen',
+  'extension-file-not-found': 'A bővítmény fájl nem létezik, ellenőrizze a fájl elérési útját'
 }
