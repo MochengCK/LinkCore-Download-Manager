@@ -8,16 +8,16 @@
 
 <p align="center">
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" />
+    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
+    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
   </a>
   <a href="#支持平台">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
+    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
   </a>
 </p>
 
@@ -106,28 +106,26 @@ LinkCore Download Manager（联芯下载管理器）是一款简洁易用的跨�
 
 ## 🖥️ 界面截图
 
-<div style="display: flex; justify-content: center; gap: 16px;">
-  <figure style="margin: 0; text-align: center; width: 49%;">
-    <img
-      src="./screenshots/linkcore-screenshot-task.png"
-      alt="深色模式 - 任务管理界面"
-      style="max-width: 100%;"
-    />
-    <figcaption>
-      <em>深色模式</em>
-    </figcaption>
-  </figure>
-  <figure style="margin: 0; text-align: center; width: 49%;">
-    <img
-      src="./screenshots/屏幕截图 2025-12-15 062122.png"
-      alt="浅色模式 - 任务管理界面"
-      style="max-width: 100%;"
-    />
-    <figcaption>
-      <em>浅色模式</em>
-    </figcaption>
-  </figure>
-</div>
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img
+        src="./screenshots/linkcore-screenshot-task.png"
+        alt="深色模式 - 任务管理界面"
+        style="max-width: 100%;"
+      />
+      <p><em>深色模式</em></p>
+    </td>
+    <td align="center" width="50%">
+      <img
+        src="./screenshots/屏幕截图 2025-12-15 062122.png"
+        alt="浅色模式 - 任务管理界面"
+        style="max-width: 100%;"
+      />
+      <p><em>浅色模式</em></p>
+    </td>
+  </tr>
+</table>
 
 ## 🚀 快速开始
 

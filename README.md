@@ -8,16 +8,16 @@
 
 <p align="center">
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg" alt="GitHub release" />
+    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg" alt="Total Downloads" />
+    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
   </a>
   <a href="#platforms">
-    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Support Platforms" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge" alt="Support Platforms" />
   </a>
   <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg" alt="License" />
+    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
   </a>
 </p>
 
@@ -108,28 +108,26 @@ LinkCore Download Manager is currently available for:
 
 ## 🖥️ Screenshots
 
-<div style="display: flex; justify-content: center; gap: 16px;">
-  <figure style="margin: 0; text-align: center; width: 49%;">
-    <img
-      src="./screenshots/linkcore-screenshot-task.png"
-      alt="Dark Mode - Task Management Interface"
-      style="max-width: 100%;"
-    />
-    <figcaption>
-      <em>Dark Mode</em>
-    </figcaption>
-  </figure>
-  <figure style="margin: 0; text-align: center; width: 49%;">
-    <img
-      src="./screenshots/屏幕截图 2025-12-15 062122.png"
-      alt="Light Mode - Task Management Interface"
-      style="max-width: 100%;"
-    />
-    <figcaption>
-      <em>Light Mode</em>
-    </figcaption>
-  </figure>
-</div>
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img
+        src="./screenshots/linkcore-screenshot-task.png"
+        alt="Dark Mode - Task Management Interface"
+        style="max-width: 100%;"
+      />
+      <p><em>Dark Mode</em></p>
+    </td>
+    <td align="center" width="50%">
+      <img
+        src="./screenshots/屏幕截图 2025-12-15 062122.png"
+        alt="Light Mode - Task Management Interface"
+        style="max-width: 100%;"
+      />
+      <p><em>Light Mode</em></p>
+    </td>
+  </tr>
+</table>
 
 ## 🚀 Quick Start
 
