@@ -258,6 +258,9 @@ if (chrome.commands && chrome.commands.onCommand) {
   })
 }
 
+// 确保在每次后台脚本加载时也会同步扩展配置
+startExtConfigPolling()
+
 // 当前已知的语言,用于检测变化
 let lastKnownLocale = null
 

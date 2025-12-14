@@ -258,6 +258,9 @@ if (chrome.commands && chrome.commands.onCommand) {
   })
 }
 
+// 确保在每次后台脚本加载时也会同步扩展配置
+startExtConfigPolling()
+
 // 当前已知的语言,用于检测变化
 let lastKnownLocale = null
 
@@ -453,13 +456,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg && msg.type === 'shiftHotkeyTriggered') {
-    if (extConfig && extConfig.shiftToggleEnabled) {
-      toggleAutoHijackOverride().then((disabled) => {
+    const handleShiftHotkey = async () => {
+      await syncExtConfigFromClient()
+      if (extConfig && extConfig.shiftToggleEnabled) {
+        const disabled = await toggleAutoHijackOverride()
         sendResponse({ disabled })
-      })
-    } else {
-      sendResponse({ disabled: null })
+      } else {
+        sendResponse({ disabled: null })
+      }
     }
+    handleShiftHotkey()
     return true
   }
 })
