@@ -13,6 +13,8 @@ const extConfigDefaults = {
 }
 
 let extConfig = { ...extConfigDefaults }
+let extConfigTimer = null
+let extConfigSyncedOnce = false
 const AUTO_HIJACK_OVERRIDE_KEY = 'autoHijackTemporarilyDisabled'
 
 const getConfig = () => {
@@ -153,19 +155,25 @@ const syncExtConfigFromClient = async () => {
       skipFileExtensions,
       shiftToggleEnabled
     }
-    const changed = JSON.stringify(extConfig) !== JSON.stringify(nextConfig)
     extConfig = nextConfig
+    extConfigSyncedOnce = true
+    if (extConfigTimer) {
+      clearInterval(extConfigTimer)
+      extConfigTimer = null
+    }
   } catch (e) {
   }
 }
 
-let extConfigTimer = null
 const startExtConfigPolling = () => {
   if (extConfigTimer) {
     clearInterval(extConfigTimer)
+    extConfigTimer = null
   }
   syncExtConfigFromClient()
-  extConfigTimer = setInterval(syncExtConfigFromClient, 3000)
+  if (!extConfigSyncedOnce) {
+    extConfigTimer = setInterval(syncExtConfigFromClient, 3000)
+  }
 }
 
 const addUri = async (url, referer) => {
@@ -324,16 +332,7 @@ const notifyLocaleChange = (browserLocale) => {
 // 定期轮询客户端语言
 let localePollingTimer = null
 const startLocalePolling = () => {
-  if (localePollingTimer) {
-    clearInterval(localePollingTimer)
-  }
-  
-  // 每2秒检查一次语言变化
-  localePollingTimer = setInterval(() => {
-    syncLocaleFromClient(false)
-  }, 2000)
-  
-  console.log('[Background] Started locale polling (every 3s)')
+  syncLocaleFromClient(false)
 }
 
 const stopLocalePolling = () => {
@@ -441,10 +440,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg && msg.type === 'getExtConfig') {
-    sendResponse({
-      bypassHotkeyEnabled: !!extConfig.bypassHotkeyEnabled,
-      bypassHotkey: extConfig.bypassHotkey || ''
-    })
+    const handleGetExtConfig = async () => {
+      await syncExtConfigFromClient()
+      const interceptAllDownloads = !!extConfig.interceptAllDownloads
+      const silentDownload = !!extConfig.silentDownload
+      const skipFileExtensions = Array.isArray(extConfig.skipFileExtensions) ? extConfig.skipFileExtensions : []
+      const shiftToggleEnabled = !!extConfig.shiftToggleEnabled
+      sendResponse({
+        interceptAllDownloads,
+        silentDownload,
+        skipFileExtensions,
+        shiftToggleEnabled
+      })
+    }
+    handleGetExtConfig()
     return true
   }
 
@@ -483,6 +492,7 @@ chrome.downloads.onCreated.addListener((item) => {
     if (overrideDisabled) {
       return
     }
+    await syncExtConfigFromClient()
     const cfg = await getConfig()
     const effectiveAutoHijack = !!cfg.autoHijack || !!extConfig.interceptAllDownloads
     if (!effectiveAutoHijack) return
