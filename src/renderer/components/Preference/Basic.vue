@@ -1171,11 +1171,19 @@
         this.form.dir = dir
         this.autoSaveForm()
       },
-      // 弹窗打开时初始化临时数据
       handleCategoryDialogOpen () {
-        // 深拷贝原始数据到临时数据
-        this.tempFileCategories = cloneDeep(this.form.fileCategories)
-        this.originalFileCategories = cloneDeep(this.form.fileCategories)
+        const source = this.form.fileCategories || {}
+        const temp = {}
+        Object.keys(source).forEach((key) => {
+          const category = source[key] || {}
+          const exts = Array.isArray(category.extensions) ? category.extensions : []
+          temp[key] = {
+            ...category,
+            extensions: exts.join(',')
+          }
+        })
+        this.tempFileCategories = temp
+        this.originalFileCategories = cloneDeep(temp)
       },
 
       // 弹窗关闭时清理临时数据
@@ -1192,11 +1200,30 @@
           return
         }
 
-        // 将临时数据同步到主表单
-        this.form.fileCategories = cloneDeep(this.tempFileCategories)
+        const normalizedCategories = {}
+        Object.keys(this.tempFileCategories || {}).forEach((key) => {
+          const category = this.tempFileCategories[key] || {}
+          const name = category.name ? `${category.name}`.trim() : ''
+          const rawExt = category.extensions || ''
+          const parts = `${rawExt}`.split(/[,\s]+/)
+          const extList = []
+          parts.forEach((part) => {
+            if (!part) return
+            const cleaned = part.replace(/\./g, '').trim().toLowerCase()
+            if (!cleaned) return
+            if (!extList.includes(cleaned)) {
+              extList.push(cleaned)
+            }
+          })
+          normalizedCategories[key] = {
+            ...category,
+            name,
+            extensions: extList
+          }
+        })
 
-        // 强制触发Vue响应式更新
-        this.$set(this.form, 'fileCategories', { ...this.form.fileCategories })
+        this.form.fileCategories = normalizedCategories
+        this.$set(this.form, 'fileCategories', { ...normalizedCategories })
 
         // 保存更改
         this.autoSaveForm()
@@ -1230,15 +1257,12 @@
         }
       },
 
-      // 添加新的分类规则
       addNewCategory () {
-        // 生成唯一的分类键
         const newCategoryKey = 'new_category_' + Date.now()
 
-        // 添加新的分类配置到临时数据
         this.$set(this.tempFileCategories, newCategoryKey, {
           name: this.$t('preferences.file-categories-new-folder-name'),
-          extensions: []
+          extensions: ''
         })
       },
       // 删除分类规则
@@ -1273,10 +1297,9 @@
         }
       },
 
-      // 验证分类数据
       validateCategories () {
-        for (const category of Object.values(this.form.fileCategories)) {
-          // 检查文件夹名称
+        const categories = this.tempFileCategories || {}
+        for (const [key, category] of Object.entries(categories)) {
           if (!category.name || category.name.trim() === '') {
             this.$message({
               type: 'error',
@@ -1285,17 +1308,23 @@
             return false
           }
 
-          // 检查扩展名格式
-          if (category.extensions && category.extensions.length > 0) {
-            for (const ext of category.extensions) {
-              if (ext && ext.includes('.')) {
-                this.$message({
-                  type: 'error',
-                  message: this.$t('preferences.file-categories-ext-format-error')
-                })
-                return false
-              }
+          const rawExt = category.extensions || ''
+          if (!rawExt) {
+            continue
+          }
+          const parts = `${rawExt}`.split(/[,\s]+/)
+          const normalized = []
+          parts.forEach((part) => {
+            if (!part) return
+            const cleaned = part.replace(/\./g, '').trim().toLowerCase()
+            if (!cleaned) return
+            if (!normalized.includes(cleaned)) {
+              normalized.push(cleaned)
             }
+          })
+          const normalizedString = normalized.join(',')
+          if (normalizedString !== rawExt) {
+            this.$set(this.tempFileCategories[key], 'extensions', normalizedString)
           }
         }
         return true
