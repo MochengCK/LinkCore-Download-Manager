@@ -62,7 +62,7 @@
             placement="left"
             :open-delay="500"
           >
-            <mo-icon name="task-pause" width="20" height="20" />
+            <mo-icon name="task-start" width="20" height="20" />
           </el-tooltip>
         </li>
         <li
@@ -75,7 +75,7 @@
             placement="left"
             :open-delay="500"
           >
-            <mo-icon name="task-stop" width="20" height="20" />
+            <mo-icon name="task-pause" width="20" height="20" />
           </el-tooltip>
         </li>
         <li
@@ -88,7 +88,7 @@
             placement="left"
             :open-delay="500"
           >
-            <mo-icon name="task-start" width="20" height="20" />
+            <mo-icon name="task-stop" width="20" height="20" />
           </el-tooltip>
         </li>
       </ul>

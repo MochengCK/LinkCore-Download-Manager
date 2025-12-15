@@ -390,7 +390,7 @@
                 v-model="form.maxConnectionPerServer"
                 @change="autoSaveForm"
                 controls-position="right"
-                :min="1"
+                :min="0"
                 :max="form.engineMaxConnectionPerServer"
                 :step="1"
                 :label="$t('preferences.max-connection-per-server')">
@@ -609,6 +609,18 @@
       subnavMode
     } = config
 
+    let normalizedEngineMax = engineMaxConnectionPerServer
+    if (typeof normalizedEngineMax !== 'number' || !Number.isFinite(normalizedEngineMax) || normalizedEngineMax < 0) {
+      normalizedEngineMax = 0
+    }
+    let normalizedMaxPerServer = maxConnectionPerServer
+    if (typeof normalizedMaxPerServer !== 'number' || !Number.isFinite(normalizedMaxPerServer) || normalizedMaxPerServer < 0) {
+      normalizedMaxPerServer = 0
+    }
+    if (normalizedEngineMax > 0 && normalizedMaxPerServer > normalizedEngineMax) {
+      normalizedMaxPerServer = normalizedEngineMax
+    }
+
     const btAutoDownloadContent = followTorrent &&
       followMetalink &&
       !pauseMetadata
@@ -622,7 +634,7 @@
       continue: config.continue,
       dir,
       downloadingFileSuffix,
-      engineMaxConnectionPerServer,
+      engineMaxConnectionPerServer: normalizedEngineMax,
       followMetalink,
       followTorrent,
       hideAppMenu,
@@ -630,7 +642,7 @@
       keepWindowState,
       locale,
       maxConcurrentDownloads,
-      maxConnectionPerServer,
+      maxConnectionPerServer: normalizedMaxPerServer,
       maxOverallDownloadLimit,
       maxOverallUploadLimit,
       newTaskShowDownloading,
@@ -846,6 +858,17 @@
           }
         },
         deep: true
+      },
+      'config.engineMaxConnectionPerServer' (val) {
+        if (val === undefined || val === null) {
+          return
+        }
+        this.form.engineMaxConnectionPerServer = val
+        this.formOriginal.engineMaxConnectionPerServer = val
+        if (this.form.maxConnectionPerServer > val) {
+          this.form.maxConnectionPerServer = val
+          this.formOriginal.maxConnectionPerServer = val
+        }
       },
       // 监控语言变化，更新localeChanged状态
       'form.locale' (newLocale, oldLocale) {

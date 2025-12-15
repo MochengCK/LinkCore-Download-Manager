@@ -274,6 +274,12 @@ export const getEngineList = (platform, arch) => {
         }
       })
 
+      const linkCoreRelative = 'src/LinkCore.exe'
+      const linkCoreFullPath = resolve(enginePath, linkCoreRelative)
+      if (existsSync(linkCoreFullPath) && !engines.includes(linkCoreRelative)) {
+        engines.push(linkCoreRelative)
+      }
+
       // 仅当默认引擎实际存在于引擎目录时，确保它位于列表首位
       const defaultBinPath = resolve(enginePath, binName)
       if (existsSync(defaultBinPath)) {

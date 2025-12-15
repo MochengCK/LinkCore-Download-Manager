@@ -32,6 +32,15 @@ export const initTaskForm = state => {
     newTaskShowDownloading,
     split
   } = state.preference.config
+
+  let initialSplit = maxConnectionPerServer
+  if (typeof initialSplit !== 'number' || !Number.isFinite(initialSplit) || initialSplit <= 0) {
+    initialSplit = split
+  }
+  if (typeof initialSplit !== 'number' || !Number.isFinite(initialSplit) || initialSplit <= 0) {
+    initialSplit = engineMaxConnectionPerServer
+  }
+
   const result = {
     allProxy,
     cookie: '',
@@ -45,7 +54,7 @@ export const initTaskForm = state => {
     customOuts: [],
     referer: '',
     selectFile: NONE_SELECTED_FILES,
-    split,
+    split: initialSplit,
     torrent: '',
     uris: addTaskUrl,
     userAgent: '',

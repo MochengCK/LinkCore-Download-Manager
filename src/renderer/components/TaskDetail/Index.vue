@@ -265,6 +265,9 @@
       },
       statusHintText () {
         const task = this.task || {}
+        if (this.isBT && this.isSeeder) {
+          return this.$t('task.bt-seeding-continue')
+        }
         const magnetText = this.magnetHintText
         if (magnetText) {
           return magnetText

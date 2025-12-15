@@ -45,6 +45,10 @@ export default class Engine {
       windowsHide: false,
       stdio: is.dev() ? 'pipe' : 'ignore'
     })
+
+    this.instance.on('error', (err) => {
+      logger.error('[Motrix] engine process error:', err && err.message ? err.message : err)
+    })
     const pid = this.instance.pid.toString()
     this.writePidFile(pidPath, pid)
 
@@ -111,6 +115,12 @@ export default class Engine {
         return stats.isFile() && file.includes('aria2c') &&
                !file.endsWith('.backup') && !file.endsWith('.tmp')
       })
+
+      const linkCoreRelative = 'src/LinkCore.exe'
+      const linkCoreFullPath = resolve(enginePath, linkCoreRelative)
+      if (existsSync(linkCoreFullPath)) {
+        availableEngines.push(linkCoreRelative)
+      }
     } catch (error) {
       logger.error('[Motrix] Failed to read engine directory:', error)
     }
@@ -180,17 +190,28 @@ export default class Engine {
       result = [...result, `--input-file=${sessionPath}`]
     }
 
+    const binPath = this.getEngineBinPath()
+    const is136 = /1\.36\.0/.test(binPath)
+    const isLinkCoreEngine = /LinkCore\.exe$/i.test(binPath)
+    let allowedMax = is136 ? 64 : 16
+    if (isLinkCoreEngine) {
+      allowedMax = 64
+    }
     const extraConfig = {
       ...this.systemConfig
     }
 
-    const desiredMax = Number(this.systemConfig['max-connection-per-server'] || 64)
-    const binPath = this.getEngineBinPath()
-    const is136 = /1\.36\.0/.test(binPath)
-    const allowedMax = is136 ? 64 : 16
+    const rawMax = this.systemConfig['max-connection-per-server']
+    let desiredMax = Number(rawMax)
+    if (!Number.isFinite(desiredMax) || desiredMax < 0) {
+      desiredMax = allowedMax
+    } else if (desiredMax === 0) {
+      desiredMax = allowedMax
+    }
     extraConfig['max-connection-per-server'] = Math.min(desiredMax, allowedMax)
     const desiredSplit = Number(this.systemConfig.split || 0)
-    extraConfig.split = desiredSplit >= 64 ? desiredSplit : 64
+    const baseSplit = desiredSplit >= 64 ? desiredSplit : 64
+    extraConfig.split = isLinkCoreEngine ? Math.min(baseSplit, 64) : baseSplit
 
     const keepSeeding = this.userConfig['keep-seeding']
     const seedRatio = this.systemConfig['seed-ratio']

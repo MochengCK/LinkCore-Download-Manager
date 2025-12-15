@@ -678,6 +678,7 @@
   import {
     EMPTY_STRING,
     ENGINE_RPC_PORT,
+    ENGINE_MAX_CONNECTION_PER_SERVER,
     LOG_LEVELS,
     TRACKER_SOURCE_OPTIONS,
     PROXY_SCOPE_OPTIONS
@@ -1939,6 +1940,21 @@
         // 而不是从后端重新获取，避免竞态条件导致配置被重置
         this.formOriginal = cloneDeep(this.form)
       },
+      getEngineMaxConnection (engineBinary) {
+        if (!engineBinary) {
+          return ENGINE_MAX_CONNECTION_PER_SERVER
+        }
+
+        if (engineBinary.includes('1.37.0')) {
+          return 16
+        }
+
+        if (/LinkCore\.exe$/i.test(engineBinary)) {
+          return 64
+        }
+
+        return ENGINE_MAX_CONNECTION_PER_SERVER
+      },
       submitForm (formName) {
         this.$refs[formName].validate((valid) => {
           if (!valid) {
@@ -1950,9 +1966,12 @@
             ...diffConfig(this.formOriginal, this.form)
           }
 
-          // 显式处理engineBinary字段，转换为kebab-case
           if ('engineBinary' in data) {
+            const engineBinary = data.engineBinary
+            const engineMaxConnectionPerServer = this.getEngineMaxConnection(engineBinary)
             data['engine-binary'] = data.engineBinary
+            data['engine-max-connection-per-server'] = engineMaxConnectionPerServer
+            data['max-connection-per-server'] = engineMaxConnectionPerServer
             delete data.engineBinary
           }
 

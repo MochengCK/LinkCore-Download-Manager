@@ -8,8 +8,14 @@
       :md="6"
       :lg="6"
     >
+      <div
+        v-if="seedingHintText"
+        class="task-magnet-hint task-magnet-hint--ellipsis"
+      >
+        {{ seedingHintText }}
+      </div>
       <el-tooltip
-        v-if="!magnetHintText && dataAccessHintText"
+        v-else-if="!magnetHintText && dataAccessHintText"
         effect="dark"
         :content="dataAccessHintText"
         placement="top"
@@ -144,6 +150,15 @@
       },
       isSeeder () {
         return checkTaskIsSeeder(this.task)
+      },
+      seedingHintText () {
+        if (!this.isBT) {
+          return ''
+        }
+        if (!this.isSeeder) {
+          return ''
+        }
+        return this.$t('task.bt-seeding-continue')
       },
       remaining () {
         const { totalLength, completedLength, downloadSpeed } = this.task
