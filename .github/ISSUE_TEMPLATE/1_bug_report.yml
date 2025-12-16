@@ -1,41 +1,73 @@
-name: 🐛 [NEW] Bug Report
-description: File a bug report here
-title: "[BUG]: "
+name: 🐛 Bug Report
+description: Report a bug in LinkCore Download Manager
+title: "[BUG] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report 🤗
-        Make sure there aren't any open/closed issues for this topic 😃
+        Thanks for taking the time to report a bug.
+        Please search existing issues first to avoid duplicates.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part is affected?
+      options:
+        - App (UI / Settings)
+        - Download / Engine (HTTP/FTP/BT/Magnet)
+        - Installation / Update
+        - Browser Extension
+        - Other
+    validations:
+      required: true
 
   - type: textarea
     id: bug-description
     attributes:
       label: Description of the bug
-      description: Give us a brief description of what happened and what should have happened
+      description: What happened? What should have happened?
     validations:
       required: true
 
-  - type: textarea
+  - type: input
     id: app-version
     attributes:
-      label: Motrix Version
-      description: Please provide detailed version information and installation method, such as macOS Apple silicon dmg, Windows Universal installation file, etc.
+      label: App Version
+      description: e.g. v1.8.15 (also include your installer type if relevant)
+      placeholder: v1.8.15
     validations:
       required: true
 
-  - type: textarea
+  - type: dropdown
+    id: os
     attributes:
-      label: Environment
-      description: |
-        Run this command in your project's root folder and paste the result:
+      label: OS
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
 
-        ```sh
-        npx envinfo --system --binaries --browsers
-        ```
-        add `| pbcopy` if you're in macOS for easy copy paste.
-        Alternatively, you can manually gather the version information from your environment.
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      placeholder: Windows 11 23H2 / macOS 15.x / Ubuntu 24.04 ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arch
+    attributes:
+      label: CPU Architecture
+      options:
+        - x64
+        - arm64
+        - Other
     validations:
       required: true
 
@@ -49,28 +81,40 @@ body:
         2. Click on '...'
         3. Scroll down to '...'
         4. See error
-        More info: A [minimal reproduction](https://stackoverflow.com/help/minimal-reproducible-example) is **required**, otherwise the issue might be closed without further notice. [**Why & How?**](https://antfu.me/posts/why-reproductions-are-required)
     validations:
       required: true
 
   - type: textarea
-    id: additional-information
+    id: expected
     attributes:
-      label: Additional Information
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
       description: |
-        Provide any additional information such as logs, screenshots, likes, scenarios in which the bug occurs so that it facilitates resolving the issue.
+        Provide logs and/or screenshots if possible.
+        If you paste logs, please wrap them in code fences.
 
   - type: checkboxes
     id: checkboxes
     attributes:
       label: Validations
-      description: Before submitting the issue, please make sure you do the following
+      description: Before submitting, please confirm:
       options:
-        - label: Follow our [Code of Conduct](https://github.com/agalwood/Motrix/blob/master/CODE_OF_CONDUCT.md)
+        - label: I searched existing issues and did not find a duplicate.
           required: true
-        - label: Check that there isn't already an issue that reports the same bug to avoid creating a duplicate.
-          required: true
-        - label: Check that this is a concrete bug. For Q&A, please open a [GitHub Discussion](https://github.com/agalwood/Motrix/discussions) instead.
-          required: true
-        - label: The provided reproduction is a [minimal reproducible](https://stackoverflow.com/help/minimal-reproducible-example) of the bug.
+        - label: I can reproduce this issue reliably with the steps provided.
           required: true
