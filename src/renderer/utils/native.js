@@ -68,6 +68,34 @@ export const getTaskFullPath = (task) => {
   return result
 }
 
+export const getTaskActualPath = (task, preferenceConfig = {}) => {
+  const path = getTaskFullPath(task)
+  if (!path) {
+    return path
+  }
+
+  if (existsSync(path)) {
+    return path
+  }
+
+  const config = preferenceConfig || {}
+  const autoCategorizeFiles = config.autoCategorizeFiles
+  const categories = config.fileCategories
+
+  if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
+    const filename = basename(path)
+    const baseDir = dirname(path)
+    const categorizedInfo = buildCategorizedPath(path, filename, categories, baseDir)
+    const categorizedPath = categorizedInfo.categorizedPath
+
+    if (existsSync(categorizedPath)) {
+      return categorizedPath
+    }
+  }
+
+  return path
+}
+
 export const moveTaskFilesToTrash = async (task, downloadingFileSuffix = '', preferenceConfig = {}) => {
   /**
    * For magnet link tasks, there is bittorrent, but there is no bittorrent.info.
@@ -82,41 +110,48 @@ export const moveTaskFilesToTrash = async (task, downloadingFileSuffix = '', pre
   const { dir, status } = task
   const path = getTaskFullPath(task)
   if (!path || dir === path) {
-    throw new Error('task.file-path-error')
+    console.warn('[Motrix] Invalid file path for task, skip deleting files')
+    return true
   }
 
   let deleted = false
 
-  if (existsSync(path)) {
-    console.log(`[Motrix] ${path} exists, deleting...`)
-    await shell.trashItem(path)
-    deleted = true
-  } else if (downloadingFileSuffix) {
-    const suffixedPath = `${path}${downloadingFileSuffix}`
-    if (existsSync(suffixedPath)) {
-      console.log(`[Motrix] ${suffixedPath} exists, deleting...`)
-      await shell.trashItem(suffixedPath)
+  try {
+    if (existsSync(path)) {
+      const target = resolve(path)
+      console.log(`[Motrix] ${target} exists, deleting...`)
+      await shell.trashItem(target)
       deleted = true
-    }
-  }
-
-  if (!deleted) {
-    const config = preferenceConfig || {}
-    const autoCategorizeFiles = config.autoCategorizeFiles
-    const categories = config.fileCategories
-
-    if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
-      const filename = basename(path)
-      const baseDir = dirname(path)
-      const categorizedInfo = buildCategorizedPath(path, filename, categories, baseDir)
-      const categorizedPath = categorizedInfo.categorizedPath
-
-      if (existsSync(categorizedPath)) {
-        console.log(`[Motrix] ${categorizedPath} exists, deleting...`)
-        await shell.trashItem(categorizedPath)
+    } else if (downloadingFileSuffix) {
+      const suffixedPath = `${path}${downloadingFileSuffix}`
+      if (existsSync(suffixedPath)) {
+        const target = resolve(suffixedPath)
+        console.log(`[Motrix] ${target} exists, deleting...`)
+        await shell.trashItem(target)
         deleted = true
       }
     }
+
+    if (!deleted) {
+      const config = preferenceConfig || {}
+      const autoCategorizeFiles = config.autoCategorizeFiles
+      const categories = config.fileCategories
+
+      if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
+        const filename = basename(path)
+        const baseDir = dirname(path)
+        const categorizedInfo = buildCategorizedPath(path, filename, categories, baseDir)
+        const categorizedPath = resolve(categorizedInfo.categorizedPath)
+
+        if (existsSync(categorizedPath)) {
+          console.log(`[Motrix] ${categorizedPath} exists, deleting...`)
+          await shell.trashItem(categorizedPath)
+          deleted = true
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('[Motrix] moveTaskFilesToTrash trashItem error:', error && error.message ? error.message : error)
   }
 
   // There is no configuration file for the completed task.
@@ -130,16 +165,21 @@ export const moveTaskFilesToTrash = async (task, downloadingFileSuffix = '', pre
   await new Promise(resolve => setTimeout(resolve, 100))
 
   // 检查.aria2文件是否存在，如果存在则删除
-  if (existsSync(extraFilePath)) {
-    console.log(`[Motrix] ${extraFilePath} exists, deleting...`)
-    await shell.trashItem(extraFilePath)
-  } else {
-    // 如果.aria2文件不存在，尝试再次检查，因为可能存在延迟
-    await new Promise(resolve => setTimeout(resolve, 100))
-    if (existsSync(extraFilePath)) {
-      console.log(`[Motrix] ${extraFilePath} exists after delay, deleting...`)
-      await shell.trashItem(extraFilePath)
+  try {
+    const extraResolved = resolve(extraFilePath)
+    if (existsSync(extraResolved)) {
+      console.log(`[Motrix] ${extraResolved} exists, deleting...`)
+      await shell.trashItem(extraResolved)
+    } else {
+      // 如果.aria2文件不存在，尝试再次检查，因为可能存在延迟
+      await new Promise(resolve => setTimeout(resolve, 100))
+      if (existsSync(extraResolved)) {
+        console.log(`[Motrix] ${extraResolved} exists after delay, deleting...`)
+        await shell.trashItem(extraResolved)
+      }
     }
+  } catch (error) {
+    console.warn('[Motrix] moveTaskFilesToTrash extra file trashItem error:', error && error.message ? error.message : error)
   }
 
   // 总是返回true，因为文件删除失败不应该影响任务删除流程

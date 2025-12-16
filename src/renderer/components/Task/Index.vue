@@ -219,16 +219,12 @@
         this.$store.dispatch('app/showAddTaskDialog', ADD_TASK_TYPE.URI)
       },
       async deleteTaskFiles (task) {
+        const config = this.$store.state.preference.config || {}
+        const downloadingFileSuffix = config.downloadingFileSuffix || ''
         try {
-          // 获取下载中文件后缀配置
-          const downloadingFileSuffix = this.$store.state.preference.config.downloadingFileSuffix || ''
-          const result = await moveTaskFilesToTrash(task, downloadingFileSuffix)
-
-          if (!result) {
-            throw new Error('task.remove-task-file-fail')
-          }
+          await moveTaskFilesToTrash(task, downloadingFileSuffix, config)
         } catch (err) {
-          this.$msg.error(this.$t(err.message))
+          console.warn('[Motrix] deleteTaskFiles error:', err)
         }
       },
       async removeTask (task, taskName, isRemoveWithFiles = false) {

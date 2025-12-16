@@ -49,7 +49,7 @@
     checkTaskIsSeeder,
     getTaskName
   } from '@shared/utils'
-  import { getTaskFullPath } from '@/utils/native'
+  import { getTaskActualPath } from '@/utils/native'
   import '@/components/Icons/task-start-line'
   import '@/components/Icons/task-pause-line'
   import '@/components/Icons/task-stop-line'
@@ -87,13 +87,14 @@
     },
     computed: {
       ...mapState('preference', {
-        noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask
+        noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask,
+        preferenceConfig: state => state.config
       }),
       taskName () {
         return getTaskName(this.task)
       },
       path () {
-        return getTaskFullPath(this.task)
+        return getTaskActualPath(this.task, this.preferenceConfig)
       },
       isSeeder () {
         return checkTaskIsSeeder(this.task)

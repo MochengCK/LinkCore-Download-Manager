@@ -160,24 +160,16 @@ export const buildUriPayload = (form, autoCategorize = false, categories = null)
 
   form = buildDefaultOptionsFromCurl(form, curlHeaders)
 
-  // 如果启用了自动分类功能，处理文件分类
-  let categorizedOuts = outs
-  let dirs = null
   if (shouldCategorizeFiles(autoCategorize, categories) && dir) {
     const categorizedPaths = buildCategorizedPaths(uris, outs, categories, dir)
-    // 对于每个文件，将outs设置为文件名，将options.dir设置为分类目录
-    // 这样aria2就不会将路径重复拼接
-    categorizedOuts = categorizedPaths.map(item => item.categorizedPath.split('/').pop())
-    dirs = categorizedPaths.map(item => item.categorizedDir)
-    const uniqueDirs = Array.from(new Set(dirs.filter(Boolean)))
+    const uniqueDirs = Array.from(new Set(
+      categorizedPaths.map(item => item.categorizedDir).filter(Boolean)
+    ))
     uniqueDirs.forEach(d => {
       if (!existsSync(d)) {
         try {
           mkdirSync(d, { recursive: true })
-          console.log(`[Motrix] Created category directory: ${d}`)
-        } catch (error) {
-          console.warn(`[Motrix] Failed to create category directory: ${error.message}`)
-        }
+        } catch (error) {}
       }
     })
   }
@@ -185,9 +177,9 @@ export const buildUriPayload = (form, autoCategorize = false, categories = null)
   const options = buildOption(ADD_TASK_TYPE.URI, form, uris)
   const result = {
     uris,
-    outs: categorizedOuts,
+    outs,
     options,
-    dirs,
+    dirs: null,
     priorities: Array.isArray(form.priorities) ? [...form.priorities] : null
 
   }

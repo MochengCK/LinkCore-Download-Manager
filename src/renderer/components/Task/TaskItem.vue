@@ -19,7 +19,7 @@
 <script>
   import { checkTaskIsSeeder, getTaskName } from '@shared/utils'
   import { TASK_STATUS } from '@shared/constants'
-  import { openItem, getTaskFullPath } from '@/utils/native'
+  import { openItem, getTaskActualPath } from '@/utils/native'
   import TaskItemActions from './TaskItemActions'
   import TaskProgress from './TaskProgress'
   import TaskProgressInfo from './TaskProgressInfo'
@@ -74,7 +74,8 @@
       async openTask () {
         const { taskName } = this
         this.$msg.info(this.$t('task.opening-task-message', { taskName }))
-        const fullPath = getTaskFullPath(this.task)
+        const config = this.$store.state.preference.config || {}
+        const fullPath = getTaskActualPath(this.task, config)
         const result = await openItem(fullPath)
         if (result) {
           this.$msg.error(this.$t('task.file-not-exist'))

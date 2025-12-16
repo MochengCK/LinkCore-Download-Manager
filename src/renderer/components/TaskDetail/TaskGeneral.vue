@@ -106,7 +106,7 @@
     localeDateTimeFormat
   } from '@shared/utils'
   import { APP_THEME, TASK_STATUS } from '@shared/constants'
-  import { getTaskFullPath } from '@/utils/native'
+  import { getTaskActualPath } from '@/utils/native'
   import ShowInFolder from '@/components/Native/ShowInFolder'
   import TaskStatus from '@/components/Task/TaskStatus'
   import '@/components/Icons/folder'
@@ -137,7 +137,8 @@
         systemTheme: state => state.systemTheme
       }),
       ...mapState('preference', {
-        theme: state => state.config.theme
+        theme: state => state.config.theme,
+        preferenceConfig: state => state.config
       }),
       currentTheme () {
         if (this.theme === APP_THEME.AUTO) {
@@ -170,7 +171,7 @@
         }
       },
       path () {
-        return getTaskFullPath(this.task)
+        return getTaskActualPath(this.task, this.preferenceConfig)
       },
       isBT () {
         return checkTaskIsBT(this.task)

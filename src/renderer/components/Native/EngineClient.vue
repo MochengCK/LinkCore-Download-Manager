@@ -8,13 +8,18 @@
   import api from '@/api'
   import {
     getTaskFullPath,
+    getTaskActualPath,
     showItemInFolder
   } from '@/utils/native'
 
   import { checkTaskIsBT, getTaskName, isMagnetTask } from '@shared/utils'
   import { existsSync, renameSync, mkdirSync, utimesSync, statSync } from 'node:fs'
   import { dirname, basename } from 'path'
-  import { autoCategorizeDownloadedFile } from '@shared/utils/file-categorize'
+  import {
+    autoCategorizeDownloadedFile,
+    buildCategorizedPath,
+    createCategoryDirectory
+  } from '@shared/utils/file-categorize'
 
   export default {
     name: 'mo-engine-client',
@@ -126,10 +131,8 @@
               }
             } catch (_) {}
 
-            // 自动创建目标文件夹
             this.ensureTargetDirectoryExists(task)
-
-            // 添加下载中文件后缀
+            this.ensureCategoryDirectoryForTask(task)
             this.addDownloadingSuffix(task)
           })
       },
@@ -205,7 +208,8 @@
       handleDownloadComplete (task, isBT) {
         this.$store.dispatch('task/saveSession')
 
-        const path = getTaskFullPath(task)
+        const cfg = this.$store.state.preference.config || {}
+        const path = getTaskActualPath(task, cfg)
         this.showTaskCompleteNotify(task, isBT, path)
         this.$electron.ipcRenderer.send('event', 'task-download-complete', task, path)
 
@@ -214,13 +218,8 @@
         this.autoCategorizeDownloadedFile(task)
       },
       ensureTargetDirectoryExists (task) {
-        // 获取任务完整路径
         const fullPath = getTaskFullPath(task)
-
-        // 获取目标文件夹路径
         const targetDir = dirname(fullPath)
-
-        // 检查文件夹是否存在，如果不存在则创建
         if (!existsSync(targetDir)) {
           try {
             mkdirSync(targetDir, { recursive: true })
@@ -231,18 +230,78 @@
         }
       },
 
+      ensureCategoryDirectoryForTask (task) {
+        const cfg = this.$store.state.preference.config || {}
+        const autoCategorizeEnabled = cfg.autoCategorizeFiles
+        const categories = cfg.fileCategories
+
+        if (!autoCategorizeEnabled || !categories || Object.keys(categories).length === 0) {
+          return
+        }
+
+        const categoryNames = Object.keys(categories).map(key => {
+          const categoryConfig = categories[key] || {}
+          return categoryConfig.name || key
+        })
+
+        const isBTTask = checkTaskIsBT(task)
+
+        if (isBTTask) {
+          const files = Array.isArray(task.files) ? task.files : []
+
+          files.forEach(file => {
+            const filePath = file.path || ''
+            if (!filePath) {
+              return
+            }
+
+            const baseDir = dirname(filePath)
+            const dirName = basename(baseDir)
+
+            if (categoryNames.includes(dirName)) {
+              return
+            }
+
+            const filename = basename(filePath)
+            const categorizedInfo = buildCategorizedPath(filePath, filename, categories, baseDir)
+            createCategoryDirectory(categorizedInfo.categorizedDir)
+          })
+
+          return
+        }
+
+        const filePath = getTaskFullPath(task)
+        if (!filePath) {
+          return
+        }
+
+        const baseDir = dirname(filePath)
+        const dirName = basename(baseDir)
+
+        if (categoryNames.includes(dirName)) {
+          return
+        }
+
+        const filename = basename(filePath)
+        const categorizedInfo = buildCategorizedPath(filePath, filename, categories, baseDir)
+        createCategoryDirectory(categorizedInfo.categorizedDir)
+      },
+
       addDownloadingSuffix (task) {
-        // 获取下载中文件后缀配置
         const downloadingFileSuffix = this.$store.state.preference.config.downloadingFileSuffix
 
-        // 获取任务完整路径
-        const originalPath = getTaskFullPath(task)
         if (checkTaskIsBT(task)) {
           return
         }
 
-        // 使用轮询方式检查文件是否存在，然后添加后缀
-        this.pollForFileAndAddSuffix(originalPath, downloadingFileSuffix, 0)
+        const gid = task && task.gid
+        if (!gid) {
+          const originalPath = getTaskFullPath(task)
+          this.pollForFileAndAddSuffix(originalPath, downloadingFileSuffix, 0)
+          return
+        }
+
+        this.pollForFileAndAddSuffixByGid(gid, downloadingFileSuffix, 0)
       },
 
       pollForFileAndAddSuffix (originalPath, suffix, attempt) {
@@ -253,21 +312,58 @@
           return
         }
 
-        // 检查文件是否存在
-        if (existsSync(originalPath) && !originalPath.endsWith(suffix)) {
+        if (!suffix || !originalPath || originalPath.endsWith(suffix)) {
+          return
+        }
+
+        if (existsSync(originalPath)) {
           const newPath = originalPath + suffix
           const ok = this.renamePreserveTimes(originalPath, newPath)
           if (ok) {
             console.log(`[Motrix] Added downloading suffix: ${originalPath} -> ${newPath}`)
-          } else {
-            console.warn(`[Motrix] Failed to add downloading suffix: ${originalPath} -> ${newPath}`)
+            return
           }
-        } else if (!originalPath.endsWith(suffix)) {
-          // 文件还不存在，继续轮询
-          setTimeout(() => {
-            this.pollForFileAndAddSuffix(originalPath, suffix, attempt + 1)
-          }, 1000) // 每秒检查一次
+          console.warn(`[Motrix] Failed to add downloading suffix: ${originalPath} -> ${newPath}`)
         }
+
+        setTimeout(() => {
+          this.pollForFileAndAddSuffix(originalPath, suffix, attempt + 1)
+        }, 1000)
+      },
+
+      pollForFileAndAddSuffixByGid (gid, suffix, attempt) {
+        const maxAttempts = 30
+
+        if (attempt >= maxAttempts) {
+          console.warn(`[Motrix] Failed to add downloading suffix after ${maxAttempts} attempts: gid=${gid}`)
+          return
+        }
+
+        this.fetchTaskItem({ gid })
+          .then((task) => {
+            if (!task || checkTaskIsBT(task)) {
+              return
+            }
+
+            const originalPath = getTaskFullPath(task)
+            if (!suffix || !originalPath || originalPath.endsWith(suffix)) {
+              return
+            }
+
+            if (existsSync(originalPath)) {
+              const newPath = originalPath + suffix
+              const ok = this.renamePreserveTimes(originalPath, newPath)
+              if (ok) {
+                console.log(`[Motrix] Added downloading suffix: ${originalPath} -> ${newPath}`)
+                return
+              }
+              console.warn(`[Motrix] Failed to add downloading suffix: ${originalPath} -> ${newPath}`)
+            }
+
+            setTimeout(() => {
+              this.pollForFileAndAddSuffixByGid(gid, suffix, attempt + 1)
+            }, 1000)
+          })
       },
 
       removeDownloadingSuffix (task) {
@@ -300,16 +396,118 @@
         }
       },
       autoCategorizeDownloadedFile (task) {
-        // 检查是否启用了自动分类功能
-        const autoCategorizeEnabled = this.$store.state.preference.config.autoCategorizeFiles
+        const cfg = this.$store.state.preference.config || {}
+        const autoCategorizeEnabled = cfg.autoCategorizeFiles
 
         if (!autoCategorizeEnabled) {
           console.log('[Motrix] Auto categorize files is disabled')
           return
         }
 
-        // 获取任务完整路径
-        const filePath = getTaskFullPath(task)
+        const categories = cfg.fileCategories
+        if (!categories || Object.keys(categories).length === 0) {
+          console.log('[Motrix] No file categories configured, skip auto categorize')
+          return
+        }
+
+        const downloadingFileSuffix = cfg.downloadingFileSuffix || ''
+        const categoryNames = Object.keys(categories).map(key => {
+          const categoryConfig = categories[key] || {}
+          return categoryConfig.name || key
+        })
+
+        const isBTTask = checkTaskIsBT(task)
+
+        if (isBTTask) {
+          const files = Array.isArray(task.files) ? task.files : []
+
+          files.forEach(file => {
+            const total = Number(file.length || 0)
+            const done = Number(file.completedLength || 0)
+            if (!total || done < total) {
+              return
+            }
+
+            let filePath = file.path || ''
+            if (!filePath) {
+              return
+            }
+
+            try {
+              if (downloadingFileSuffix) {
+                if (filePath.endsWith(downloadingFileSuffix) && existsSync(filePath)) {
+                  const originalPath = filePath.slice(0, -downloadingFileSuffix.length)
+                  const ok = this.renamePreserveTimes(filePath, originalPath)
+                  if (ok) {
+                    console.log(`[Motrix] Removed downloading suffix before categorize: ${filePath} -> ${originalPath}`)
+                    filePath = originalPath
+                  }
+                } else {
+                  const suffixedPath = filePath + downloadingFileSuffix
+                  if (!existsSync(filePath) && existsSync(suffixedPath)) {
+                    const ok = this.renamePreserveTimes(suffixedPath, filePath)
+                    if (ok) {
+                      console.log(`[Motrix] Restored downloading suffix before categorize: ${suffixedPath} -> ${filePath}`)
+                    }
+                  }
+                }
+              }
+            } catch (error) {
+              console.warn(`[Motrix] Failed to normalize downloading suffix before categorize: ${error.message}`)
+            }
+
+            if (!existsSync(filePath)) {
+              console.warn(`[Motrix] File not found for categorization: ${filePath}`)
+              return
+            }
+
+            try {
+              const baseDir = dirname(filePath)
+              const dirName = basename(baseDir)
+
+              if (categoryNames.includes(dirName)) {
+                console.log(`[Motrix] File already in category directory: ${filePath}`)
+                return
+              }
+
+              const result = autoCategorizeDownloadedFile(filePath, baseDir, categories)
+              if (result) {
+                console.log(`[Motrix] File categorized successfully: ${filePath}`)
+              } else {
+                console.warn('[Motrix] File categorization failed or file already in category')
+              }
+            } catch (error) {
+              console.error(`[Motrix] Error during auto categorization: ${error.message}`)
+            }
+          })
+
+          return
+        }
+
+        let filePath = getTaskFullPath(task)
+
+        try {
+          if (downloadingFileSuffix) {
+            if (filePath.endsWith(downloadingFileSuffix) && existsSync(filePath)) {
+              const originalPath = filePath.slice(0, -downloadingFileSuffix.length)
+              const ok = this.renamePreserveTimes(filePath, originalPath)
+              if (ok) {
+                console.log(`[Motrix] Removed downloading suffix before categorize: ${filePath} -> ${originalPath}`)
+                filePath = originalPath
+              }
+            } else {
+              const suffixedPath = filePath + downloadingFileSuffix
+              if (!existsSync(filePath) && existsSync(suffixedPath)) {
+                const ok = this.renamePreserveTimes(suffixedPath, filePath)
+                if (ok) {
+                  console.log(`[Motrix] Restored downloading suffix before categorize: ${suffixedPath} -> ${filePath}`)
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.warn(`[Motrix] Failed to normalize downloading suffix before categorize: ${error.message}`)
+        }
 
         if (!existsSync(filePath)) {
           console.warn(`[Motrix] File not found for categorization: ${filePath}`)
@@ -318,18 +516,7 @@
 
         try {
           const baseDir = dirname(filePath)
-          const categories = this.$store.state.preference.config.fileCategories
-
-          if (!categories || Object.keys(categories).length === 0) {
-            console.log('[Motrix] No file categories configured, skip auto categorize')
-            return
-          }
-
           const dirName = basename(baseDir)
-          const categoryNames = Object.keys(categories).map(key => {
-            const categoryConfig = categories[key] || {}
-            return categoryConfig.name || key
-          })
 
           if (categoryNames.includes(dirName)) {
             console.log(`[Motrix] File already in category directory: ${filePath}`)

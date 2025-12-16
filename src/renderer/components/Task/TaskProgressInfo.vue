@@ -140,16 +140,18 @@
         preferenceConfig: state => state.config
       }),
       isActive () {
-        return this.task.status === TASK_STATUS.ACTIVE
+        const task = this.task || {}
+        return task.status === TASK_STATUS.ACTIVE
       },
       isCompleted () {
-        return [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED].includes(this.task.status)
+        const task = this.task || {}
+        return [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED].includes(task.status)
       },
       isBT () {
-        return checkTaskIsBT(this.task)
+        return this.task ? checkTaskIsBT(this.task) : false
       },
       isSeeder () {
-        return checkTaskIsSeeder(this.task)
+        return this.task ? checkTaskIsSeeder(this.task) : false
       },
       seedingHintText () {
         if (!this.isBT) {
