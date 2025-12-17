@@ -66,10 +66,14 @@
 <style lang="scss">
 .webview-viewport {
   position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 .mo-webview {
-  display: inline-flex;;
-  flex: 1;
-  flex-basis: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
 }
 </style>

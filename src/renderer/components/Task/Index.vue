@@ -28,10 +28,34 @@
           :title="title"
           :subnavs="subnavs"
         />
+        <div
+          class="task-category-select"
+          @mouseenter="onCategoryMouseEnter"
+          @mouseleave="onCategoryMouseLeave"
+        >
+          <el-select
+            ref="categorySelect"
+            v-model="categoryFilter"
+            size="mini"
+            :placeholder="$t('task.category-all')"
+            @change="onCategoryChange"
+            @visible-change="onCategoryVisibleChange"
+            @mouseenter.native="openCategorySelect"
+            @mouseleave.native="onCategoryMouseLeave"
+          >
+            <el-option :label="$t('task.category-all')" value="" />
+            <el-option :label="$t('task.category-archives')" value="archives" />
+            <el-option :label="$t('task.category-programs')" value="programs" />
+            <el-option :label="$t('task.category-videos')" value="videos" />
+            <el-option :label="$t('task.category-music')" value="music" />
+            <el-option :label="$t('task.category-images')" value="images" />
+            <el-option :label="$t('task.category-documents')" value="documents" />
+          </el-select>
+        </div>
         <mo-task-actions />
       </el-header>
       <el-main class="panel-content">
-        <mo-task-list />
+        <mo-task-list :category="categoryFilter" />
       </el-main>
     </el-container>
     <div
@@ -132,6 +156,16 @@
         default: 'all'
       }
     },
+    data () {
+      return {
+        categoryFilter: '',
+        isHoveringCategoryPopper: false,
+        isCategoryPopperEventsBound: false,
+        categoryHoverCloseTimer: null,
+        categoryPopperMouseEnterHandler: null,
+        categoryPopperMouseLeaveHandler: null
+      }
+    },
     computed: {
       ...mapState('task', {
         taskList: state => state.taskList,
@@ -175,6 +209,124 @@
       status: 'onStatusChange'
     },
     methods: {
+      onCategoryMouseEnter () {
+        this.clearCategoryHoverCloseTimer()
+      },
+      onCategoryMouseLeave () {
+        this.scheduleCloseCategorySelect()
+      },
+      openCategorySelect () {
+        const select = this.$refs.categorySelect
+        if (!select || select.visible) {
+          return
+        }
+
+        select.toggleMenu()
+
+        this.$nextTick(() => {
+          this.bindCategoryPopperEvents()
+        })
+      },
+      clearCategoryHoverCloseTimer () {
+        if (!this.categoryHoverCloseTimer) {
+          return
+        }
+
+        clearTimeout(this.categoryHoverCloseTimer)
+        this.categoryHoverCloseTimer = null
+      },
+      scheduleCloseCategorySelect () {
+        this.clearCategoryHoverCloseTimer()
+        this.categoryHoverCloseTimer = setTimeout(() => {
+          const select = this.$refs.categorySelect
+          if (!select || !select.visible) {
+            return
+          }
+
+          if (this.isHoveringCategoryPopper) {
+            return
+          }
+
+          select.toggleMenu()
+          this.blurCategorySelect()
+        }, 120)
+      },
+      blurCategorySelect () {
+        const select = this.$refs.categorySelect
+        if (!select) {
+          return
+        }
+
+        if (select.blur) {
+          select.blur()
+          return
+        }
+
+        const input = select.$el && select.$el.querySelector('input')
+        if (input && input.blur) {
+          input.blur()
+        }
+      },
+      onCategoryVisibleChange (visible) {
+        if (visible) {
+          this.$nextTick(() => {
+            this.bindCategoryPopperEvents()
+          })
+          return
+        }
+
+        this.unbindCategoryPopperEvents()
+        this.blurCategorySelect()
+      },
+      bindCategoryPopperEvents () {
+        if (this.isCategoryPopperEventsBound) {
+          return
+        }
+
+        const select = this.$refs.categorySelect
+        const popper = select && select.popperElm
+        if (!popper) {
+          return
+        }
+
+        this.categoryPopperMouseEnterHandler = () => {
+          this.isHoveringCategoryPopper = true
+          this.clearCategoryHoverCloseTimer()
+        }
+        this.categoryPopperMouseLeaveHandler = () => {
+          this.isHoveringCategoryPopper = false
+          this.scheduleCloseCategorySelect()
+        }
+
+        popper.addEventListener('mouseenter', this.categoryPopperMouseEnterHandler)
+        popper.addEventListener('mouseleave', this.categoryPopperMouseLeaveHandler)
+        this.isCategoryPopperEventsBound = true
+      },
+      unbindCategoryPopperEvents () {
+        const select = this.$refs.categorySelect
+        const popper = select && select.popperElm
+        if (!popper) {
+          return
+        }
+
+        if (this.categoryPopperMouseEnterHandler) {
+          popper.removeEventListener('mouseenter', this.categoryPopperMouseEnterHandler)
+        }
+        if (this.categoryPopperMouseLeaveHandler) {
+          popper.removeEventListener('mouseleave', this.categoryPopperMouseLeaveHandler)
+        }
+
+        this.isCategoryPopperEventsBound = false
+        this.categoryPopperMouseEnterHandler = null
+        this.categoryPopperMouseLeaveHandler = null
+        this.isHoveringCategoryPopper = false
+      },
+      onCategoryChange () {
+        this.$store.dispatch('task/selectTasks', [])
+        this.$nextTick(() => {
+          this.blurCategorySelect()
+        })
+      },
       navStatus (status) {
         this.$router.push({
           path: `/task/${status}`
@@ -481,6 +633,8 @@
       commands.on('show-task-info', this.handleShowTaskInfo)
     },
     destroyed () {
+      this.clearCategoryHoverCloseTimer()
+      this.unbindCategoryPopperEvents()
       commands.off('pause-task', this.handlePauseTask)
       commands.off('resume-task', this.handleResumeTask)
       commands.off('stop-task-seeding', this.handleStopTaskSeeding)
@@ -496,6 +650,28 @@
 </script>
 
 <style lang="scss">
+.task-category-select {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.task-category-select .el-select {
+  width: 160px;
+  pointer-events: auto;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.task-category-select .el-select:hover,
+.task-category-select .el-select:focus-within {
+  opacity: 1;
+}
+
 .subnav-small-screen.subnav-right {
   position: fixed;
   right: 10px;

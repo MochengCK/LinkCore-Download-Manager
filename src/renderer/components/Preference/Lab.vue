@@ -1,30 +1,11 @@
 <template>
-  <el-container class="content panel" direction="vertical">
-    <el-header class="panel-header" height="84">
-      <h4
-        v-if="subnavMode !== 'title'"
-        class="hidden-xs-only"
-      >
-        {{ title }}
-      </h4>
-      <h4
-        v-if="subnavMode === 'floating'"
-        class="hidden-sm-and-up"
-      >
-        {{ title }}
-      </h4>
-      <mo-subnav-switcher
-        v-if="subnavMode === 'title'"
-        :title="title"
-        :subnavs="subnavs"
-      />
-    </el-header>
+  <el-main class="panel-content">
     <mo-browser
       v-if="isRenderer"
       class="lab-webview"
       :src="url"
     />
-  </el-container>
+  </el-main>
 </template>
 
 <script>
@@ -32,14 +13,12 @@
   import { mapState } from 'vuex'
 
   import { APP_THEME } from '@shared/constants'
-  import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import Browser from '@/components/Browser'
   import '@/components/Icons/info-square'
 
   export default {
     name: 'mo-preference-lab',
     components: {
-      [SubnavSwitcher.name]: SubnavSwitcher,
       [Browser.name]: Browser
     },
     data () {
@@ -68,32 +47,6 @@
         const { currentTheme, locale } = this
         const result = `https://motrix.app/lab?lite=true&theme=${currentTheme}&lang=${locale}`
         return result
-      },
-      title () {
-        return this.$t('preferences.lab')
-      },
-      subnavMode () {
-        const { config = {} } = this.$store.state.preference
-        return config.subnavMode || 'floating'
-      },
-      subnavs () {
-        return [
-          {
-            key: 'basic',
-            title: this.$t('preferences.basic'),
-            route: '/preference/basic'
-          },
-          {
-            key: 'advanced',
-            title: this.$t('preferences.advanced'),
-            route: '/preference/advanced'
-          },
-          {
-            key: 'lab',
-            title: this.$t('preferences.lab'),
-            route: '/preference/lab'
-          }
-        ]
       }
     }
   }
@@ -101,10 +54,9 @@
 
 <style lang="scss">
 .lab-webview {
-  display: inline-flex;;
-  flex: 1;
-  flex-basis: auto;
-  overflow: auto;
+  display: flex;
+  width: 100%;
+  height: 100%;
   box-sizing: border-box;
   padding: 0;
 }

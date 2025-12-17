@@ -1,25 +1,5 @@
 <template>
-  <el-container class="content panel" direction="vertical">
-    <el-header class="panel-header" height="84">
-      <h4
-        v-if="subnavMode !== 'title'"
-        class="hidden-xs-only"
-      >
-        {{ title }}
-      </h4>
-      <h4
-        v-if="subnavMode === 'floating'"
-        class="hidden-sm-and-up"
-      >
-        {{ title }}
-      </h4>
-      <mo-subnav-switcher
-        v-if="subnavMode === 'title'"
-        :title="title"
-        :subnavs="subnavs"
-      />
-    </el-header>
-    <el-main class="panel-content">
+  <el-main class="panel-content">
       <el-form
         class="form-preference"
         ref="advancedForm"
@@ -664,8 +644,7 @@
       <el-button type="primary" @click="addTrackerSourceFromInput">{{ $t('app.submit') }}</el-button>
     </div>
 
-    </el-main>
-  </el-container>
+  </el-main>
 </template>
 
 <script>
@@ -676,7 +655,6 @@
   import randomize from 'randomatic'
   import axios from 'axios'
   import ShowInFolder from '@/components/Native/ShowInFolder'
-  import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import userAgentMap from '@shared/ua'
   import {
     EMPTY_STRING,
@@ -781,7 +759,6 @@
   export default {
     name: 'mo-preference-advanced',
     components: {
-      [SubnavSwitcher.name]: SubnavSwitcher,
       [ShowInFolder.name]: ShowInFolder
     },
     data () {

@@ -1,8 +1,20 @@
 <template>
-  <el-dropdown @command="handleRoute" class="subnav-switch" size="medium">
+  <el-dropdown
+    @command="handleRoute"
+    @visible-change="onVisibleChange"
+    class="subnav-switch"
+    size="medium"
+    trigger="hover"
+    :show-timeout="0"
+  >
     <h4 class="subnav-title">
-      {{ title }}
-      <i class="el-icon-arrow-down el-icon--right" />
+      <transition name="subnav-title-switch" mode="out-in">
+        <span :key="title" class="subnav-title__text">{{ title }}</span>
+      </transition>
+      <i
+        class="el-icon-arrow-down el-icon--right subnav-title__icon"
+        :class="{ 'is-open': isDropdownVisible }"
+      />
     </h4>
     <el-dropdown-menu slot="dropdown" class="subnav-switch-dropdown">
       <el-dropdown-item :command="sn.route" v-for="sn in subnavs" :key="sn.key">
@@ -23,7 +35,15 @@
         type: Array
       }
     },
+    data () {
+      return {
+        isDropdownVisible: false
+      }
+    },
     methods: {
+      onVisibleChange (visible) {
+        this.isDropdownVisible = visible
+      },
       handleRoute (route) {
         this.$router.push({
           path: route
@@ -48,6 +68,31 @@
     color: $--subnav-action-color;
     font-size: 16px;
   }
+}
+
+.subnav-title__text {
+  display: inline-block;
+}
+
+.subnav-title__icon {
+  display: inline-block;
+  transform-origin: 50% 50%;
+  transition: transform 0.2s ease;
+}
+
+.subnav-title__icon.is-open {
+  transform: rotate(180deg);
+}
+
+.subnav-title-switch-enter-active,
+.subnav-title-switch-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.subnav-title-switch-enter,
+.subnav-title-switch-leave-to {
+  opacity: 0;
+  transform: translateY(2px);
 }
 .theme-dark {
   .subnav-switch-dropdown {

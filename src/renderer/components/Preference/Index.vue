@@ -1,6 +1,33 @@
 <template>
   <el-container class="main panel" direction="horizontal">
-    <router-view name="form" />
+    <el-container
+      class="content panel"
+      direction="vertical"
+    >
+      <el-header
+        class="panel-header"
+        height="84"
+      >
+        <h4
+          v-if="subnavMode !== 'title'"
+          class="hidden-xs-only"
+        >
+          <span class="subnav-title__text">{{ title }}</span>
+        </h4>
+        <h4
+          v-if="subnavMode === 'floating'"
+          class="hidden-sm-and-up"
+        >
+          <span class="subnav-title__text">{{ title }}</span>
+        </h4>
+        <mo-subnav-switcher
+          v-if="subnavMode === 'title'"
+          :title="title"
+          :subnavs="subnavs"
+        />
+      </el-header>
+      <router-view :key="$route.path" name="form" />
+    </el-container>
     <div
       v-if="subnavMode === 'floating'"
       class="subnav-small-screen subnav-right"
@@ -52,16 +79,46 @@
 
 <script>
   import { mapState } from 'vuex'
+  import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import '@/components/Icons/preference-basic'
   import '@/components/Icons/preference-advanced'
   import '@/components/Icons/preference-lab'
 
   export default {
     name: 'mo-content-preference',
+    components: {
+      [SubnavSwitcher.name]: SubnavSwitcher
+    },
     computed: {
       ...mapState('preference', {
         subnavMode: state => state.config.subnavMode || 'floating'
-      })
+      }),
+      subnavs () {
+        return [
+          {
+            key: 'basic',
+            title: this.$t('preferences.basic'),
+            route: '/preference/basic'
+          },
+          {
+            key: 'advanced',
+            title: this.$t('preferences.advanced'),
+            route: '/preference/advanced'
+          },
+          {
+            key: 'lab',
+            title: this.$t('preferences.lab'),
+            route: '/preference/lab'
+          }
+        ]
+      },
+      title () {
+        const rawPath = `${this.$route.path || ''}`
+        const m = rawPath.match(/^\/preference\/(basic|advanced|lab)(?:\/|$)/)
+        const key = m && m[1] ? m[1] : 'basic'
+        const subnav = this.subnavs.find((item) => item.key === key)
+        return subnav ? subnav.title : this.$t('preferences.basic')
+      }
     },
     methods: {
       navPreference (category) {

@@ -1,33 +1,13 @@
 <template>
-  <el-container class="content panel" direction="vertical">
-      <el-header class="panel-header" height="84">
-        <h4
-          v-if="subnavMode !== 'title'"
-          class="hidden-xs-only"
-        >
-          {{ title }}
-        </h4>
-        <h4
-          v-if="subnavMode === 'floating'"
-          class="hidden-sm-and-up"
-        >
-          {{ title }}
-        </h4>
-        <mo-subnav-switcher
-          v-if="subnavMode === 'title'"
-          :title="title"
-          :subnavs="subnavs"
-        />
-      </el-header>
-      <el-main class="panel-content">
-        <el-form
-          class="form-preference"
-          ref="basicForm"
-          label-position="right"
-          size="mini"
-          :model="form"
-          :rules="rules"
-        >
+  <el-main class="panel-content">
+    <el-form
+      class="form-preference"
+      ref="basicForm"
+      label-position="right"
+      size="mini"
+      :model="form"
+      :rules="rules"
+    >
         <!-- 外观设置卡片 -->
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.appearance') }}</h3>
@@ -534,17 +514,15 @@
       </el-button>
     </div>
 
-  </el-dialog>
+      </el-dialog>
 
-    </el-main>
-  </el-container>
+  </el-main>
 </template>
 
 <script>
   import is from 'electron-is'
   import { mapState } from 'vuex'
   import { cloneDeep, extend, isEmpty } from 'lodash'
-  import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import HistoryDirectory from '@/components/Preference/HistoryDirectory'
   import SelectDirectory from '@/components/Native/SelectDirectory'
   import ThemeSwitcher from '@/components/Preference/ThemeSwitcher'
@@ -681,7 +659,6 @@
   export default {
     name: 'mo-preference-basic',
     components: {
-      [SubnavSwitcher.name]: SubnavSwitcher,
       [HistoryDirectory.name]: HistoryDirectory,
       [SelectDirectory.name]: SelectDirectory,
       [ThemeSwitcher.name]: ThemeSwitcher
