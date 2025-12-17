@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync, writeFile, unlink } from 'node:fs'
+import { existsSync, writeFile, unlink, chmodSync } from 'node:fs'
 import { resolve } from 'node:path'
 import is from 'electron-is'
 
@@ -40,10 +40,22 @@ export default class Engine {
     }
 
     const binPath = this.getEngineBinPath()
+    if (platform === 'linux') {
+      try {
+        chmodSync(binPath, 0o755)
+      } catch (e) {
+        logger.warn('[Motrix] chmod engine bin failed:', e && e.message ? e.message : e)
+      }
+    }
     const args = this.getStartArgs()
+
+    const enableEngineLogs = is.dev() || is.linux()
+    logger.info('[Motrix] engine bin path:', binPath)
+    logger.info('[Motrix] engine start args:', args)
+
     this.instance = spawn(binPath, args, {
       windowsHide: false,
-      stdio: is.dev() ? 'pipe' : 'ignore'
+      stdio: enableEngineLogs ? 'pipe' : 'ignore'
     })
 
     this.instance.on('error', (err) => {
@@ -56,7 +68,8 @@ export default class Engine {
     const pid = String(this.instance.pid)
     this.writePidFile(pidPath, pid)
 
-    this.instance.once('close', () => {
+    this.instance.once('close', (code, signal) => {
+      logger.warn('[Motrix] engine process exited:', code, signal)
       try {
         unlink(pidPath, (err) => {
           if (err) {
