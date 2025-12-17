@@ -49,7 +49,11 @@ export default class Engine {
     this.instance.on('error', (err) => {
       logger.error('[Motrix] engine process error:', err && err.message ? err.message : err)
     })
-    const pid = this.instance.pid.toString()
+    if (typeof this.instance.pid !== 'number') {
+      logger.error('[Motrix] engine process pid is invalid:', this.instance.pid)
+      throw new Error(this.i18n.t('app.engine-damaged-message'))
+    }
+    const pid = String(this.instance.pid)
     this.writePidFile(pidPath, pid)
 
     this.instance.once('close', () => {
