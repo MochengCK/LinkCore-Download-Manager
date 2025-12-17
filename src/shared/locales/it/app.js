@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 giorno',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Piano attività',
+  'task-plan-select-placeholder': 'Seleziona un piano',
+  'task-plan-action-shutdown': 'Spegni il computer',
+  'task-plan-action-sleep': 'Sospendi',
+  'task-plan-action-quit': 'Esci dall’app',
+  'task-plan-cancelled-message': 'Piano attività annullato',
+  'task-plan-select-warning': 'Seleziona un piano',
+  'task-plan-set-message': 'Impostato: {{action}}'
 }

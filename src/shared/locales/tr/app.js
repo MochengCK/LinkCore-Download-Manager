@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 gün',
   'hour': 'S',
   'minute': 'd',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Görev planı',
+  'task-plan-select-placeholder': 'Bir plan seçin',
+  'task-plan-action-shutdown': 'Bilgisayarı kapat',
+  'task-plan-action-sleep': 'Uyku moduna al',
+  'task-plan-action-quit': 'Uygulamadan çık',
+  'task-plan-cancelled-message': 'Görev planı iptal edildi',
+  'task-plan-select-warning': 'Bir plan seçin',
+  'task-plan-set-message': 'Ayarlandı: {{action}}'
 }

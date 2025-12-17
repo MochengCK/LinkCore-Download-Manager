@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 day',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Task Plan',
+  'task-plan-select-placeholder': 'Select a plan',
+  'task-plan-action-shutdown': 'Shut down computer',
+  'task-plan-action-sleep': 'Sleep',
+  'task-plan-action-quit': 'Quit application',
+  'task-plan-cancelled-message': 'Task plan cancelled',
+  'task-plan-select-warning': 'Please select a plan',
+  'task-plan-set-message': 'Set: {{action}}'
 }

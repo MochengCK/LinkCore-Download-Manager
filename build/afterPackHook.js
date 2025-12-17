@@ -31,6 +31,7 @@
 
 const fs = require('node:fs')
 const { spawn } = require('node:child_process')
+const { join } = require('node:path')
 const { chdir } = require('node:process')
 
 const pkg = require('../package.json')
@@ -73,22 +74,33 @@ const linuxTargets = [
 
 module.exports = async function (context) {
   console.warn('after build; disable sandbox')
-  const isLinux = context.targets.find(
-    target => linuxTargets.includes(target)
-  )
-  if (!isLinux) {
+  if (context.electronPlatformName !== 'linux') {
     return
   }
   const originalDir = process.cwd()
   const dirname = context.appOutDir
   chdir(dirname)
 
-  await exec('mv', [binName, binName + '.bin'])
-  const wrapperScript = `#!/bin/bash
-    "\${BASH_SOURCE%/*}"/${binName}.bin "$@" --no-sandbox
-  `
-  fs.writeFileSync(binName, wrapperScript)
-  await exec('chmod', ['+x', binName])
+  const wrapperPath = join(dirname, binName)
+  const realBinPath = join(dirname, `${binName}.bin`)
+
+  if (fs.existsSync(wrapperPath) && !fs.existsSync(realBinPath)) {
+    fs.renameSync(wrapperPath, realBinPath)
+  }
+  const wrapperScript = `#!/usr/bin/env bash
+SOURCE="${'${BASH_SOURCE[0]}'}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+"$DIR"/${binName}.bin --no-sandbox "$@"
+`
+  fs.writeFileSync(wrapperPath, wrapperScript)
+  try {
+    fs.chmodSync(wrapperPath, 0o755)
+  } catch (e) {}
 
   chdir(originalDir)
 }

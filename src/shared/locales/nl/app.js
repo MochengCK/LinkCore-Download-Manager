@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 dag',
   'hour': 'u',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Takenplan',
+  'task-plan-select-placeholder': 'Kies een plan',
+  'task-plan-action-shutdown': 'Computer afsluiten',
+  'task-plan-action-sleep': 'Slaapstand',
+  'task-plan-action-quit': 'App afsluiten',
+  'task-plan-cancelled-message': 'Takenplan geannuleerd',
+  'task-plan-select-warning': 'Kies een plan',
+  'task-plan-set-message': 'Ingesteld: {{action}}'
 }

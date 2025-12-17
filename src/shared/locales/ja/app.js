@@ -31,5 +31,13 @@ export default {
   'gt1d': '一日を超える',
   'hour': '時',
   'minute': '分',
-  'second': '秒'
+  'second': '秒',
+  'task-plan': 'タスクプラン',
+  'task-plan-select-placeholder': 'プランを選択',
+  'task-plan-action-shutdown': 'PCをシャットダウン',
+  'task-plan-action-sleep': 'スリープ',
+  'task-plan-action-quit': 'アプリを終了',
+  'task-plan-cancelled-message': 'タスクプランを解除しました',
+  'task-plan-select-warning': 'プランを選択してください',
+  'task-plan-set-message': '設定しました：{{action}}'
 }

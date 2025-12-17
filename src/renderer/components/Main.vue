@@ -2,7 +2,7 @@
   <el-container id="container">
     <router-view />
     <mo-floating-bar />
-    <el-tooltip effect="dark" content="任务计划" placement="top" :open-delay="500">
+    <el-tooltip effect="dark" :content="$t('app.task-plan')" placement="top" :open-delay="500">
       <button
         class="mo-task-plan"
         :class="{ 'is-planned': isTaskPlanPlanned }"
@@ -13,7 +13,7 @@
       </button>
     </el-tooltip>
     <el-dialog
-      title="任务计划"
+      :title="$t('app.task-plan')"
       :visible.sync="taskPlanVisible"
       width="360px"
       custom-class="task-plan-dialog"
@@ -21,10 +21,10 @@
     >
       <el-form label-position="top">
         <el-form-item>
-          <el-select v-model="taskPlanAction" placeholder="请选择计划">
-            <el-option label="电脑关机" value="shutdown" />
-            <el-option label="电脑休眠" value="sleep" />
-            <el-option label="退出程序" value="quit" />
+          <el-select v-model="taskPlanAction" :placeholder="$t('app.task-plan-select-placeholder')">
+            <el-option :label="$t('app.task-plan-action-shutdown')" value="shutdown" />
+            <el-option :label="$t('app.task-plan-action-sleep')" value="sleep" />
+            <el-option :label="$t('app.task-plan-action-quit')" value="quit" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -156,7 +156,7 @@
           this.$store.dispatch('preference/save', { taskPlanAction: 'none' })
           this.taskPlanAction = 'none'
           this.taskPlanVisible = false
-          this.$msg.success('已取消任务计划')
+          this.$msg.success(this.$t('app.task-plan-cancelled-message'))
           return
         }
         this.taskPlanAction = this.normalizeTaskPlanAction(this.taskPlanActionFromConfig)
@@ -165,17 +165,18 @@
       saveTaskPlan () {
         const action = this.normalizeTaskPlanAction(this.taskPlanAction)
         if (!action) {
-          this.$msg.warning('请选择计划')
+          this.$msg.warning(this.$t('app.task-plan-select-warning'))
           return
         }
         this.$store.dispatch('preference/save', { taskPlanAction: action })
         this.taskPlanVisible = false
-        const label = {
-          shutdown: '电脑关机',
-          sleep: '电脑休眠',
-          quit: '退出程序'
-        }[action] || '退出程序'
-        this.$msg.success(`已设置：${label}`)
+        const labelKey = {
+          shutdown: 'app.task-plan-action-shutdown',
+          sleep: 'app.task-plan-action-sleep',
+          quit: 'app.task-plan-action-quit'
+        }[action] || 'app.task-plan-action-quit'
+        const label = this.$t(labelKey)
+        this.$msg.success(this.$t('app.task-plan-set-message', { action: label }))
       }
     },
     mounted () {

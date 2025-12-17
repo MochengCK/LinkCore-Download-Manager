@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 nap',
   'hour': 'ó',
   'minute': 'p',
-  'second': 'm'
+  'second': 'm',
+  'task-plan': 'Feladatütemezés',
+  'task-plan-select-placeholder': 'Válasszon tervet',
+  'task-plan-action-shutdown': 'Számítógép leállítása',
+  'task-plan-action-sleep': 'Alvó mód',
+  'task-plan-action-quit': 'Kilépés az alkalmazásból',
+  'task-plan-cancelled-message': 'Feladatütemezés törölve',
+  'task-plan-select-warning': 'Válasszon tervet',
+  'task-plan-set-message': 'Beállítva: {{action}}'
 }

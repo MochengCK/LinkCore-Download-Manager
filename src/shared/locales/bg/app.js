@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 ден',
   'hour': 'ч',
   'minute': 'м',
-  'second': 'с'
+  'second': 'с',
+  'task-plan': 'План на задачите',
+  'task-plan-select-placeholder': 'Изберете план',
+  'task-plan-action-shutdown': 'Изключване на компютъра',
+  'task-plan-action-sleep': 'Приспиване',
+  'task-plan-action-quit': 'Изход от приложението',
+  'task-plan-cancelled-message': 'Планът на задачите е отменен',
+  'task-plan-select-warning': 'Изберете план',
+  'task-plan-set-message': 'Зададено: {{action}}'
 }

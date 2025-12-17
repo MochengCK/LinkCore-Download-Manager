@@ -31,5 +31,13 @@ export default {
   'gt1d': '> یک روز',
   'hour': 'ساعت',
   'minute': 'دقیقه',
-  'second': 'ثانیه'
+  'second': 'ثانیه',
+  'task-plan': 'برنامهٔ وظایف',
+  'task-plan-select-placeholder': 'یک برنامه را انتخاب کنید',
+  'task-plan-action-shutdown': 'خاموش کردن رایانه',
+  'task-plan-action-sleep': 'حالت خواب',
+  'task-plan-action-quit': 'خروج از برنامه',
+  'task-plan-cancelled-message': 'برنامهٔ وظایف لغو شد',
+  'task-plan-select-warning': 'یک برنامه را انتخاب کنید',
+  'task-plan-set-message': 'تنظیم شد: {{action}}'
 }

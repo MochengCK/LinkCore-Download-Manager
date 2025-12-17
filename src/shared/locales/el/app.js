@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 μέρα',
   'hour': 'ωρ',
   'minute': 'λ',
-  'second': 'δ'
+  'second': 'δ',
+  'task-plan': 'Σχέδιο εργασιών',
+  'task-plan-select-placeholder': 'Επιλέξτε σχέδιο',
+  'task-plan-action-shutdown': 'Τερματισμός υπολογιστή',
+  'task-plan-action-sleep': 'Αναστολή λειτουργίας',
+  'task-plan-action-quit': 'Έξοδος από την εφαρμογή',
+  'task-plan-cancelled-message': 'Το σχέδιο εργασιών ακυρώθηκε',
+  'task-plan-select-warning': 'Επιλέξτε σχέδιο',
+  'task-plan-set-message': 'Ορίστηκε: {{action}}'
 }

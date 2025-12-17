@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1일',
   'hour': '시간',
   'minute': '분',
-  'second': '초'
+  'second': '초',
+  'task-plan': '작업 계획',
+  'task-plan-select-placeholder': '계획을 선택하세요',
+  'task-plan-action-shutdown': '컴퓨터 종료',
+  'task-plan-action-sleep': '절전 모드',
+  'task-plan-action-quit': '앱 종료',
+  'task-plan-cancelled-message': '작업 계획이 취소되었습니다',
+  'task-plan-select-warning': '계획을 선택하세요',
+  'task-plan-set-message': '설정됨: {{action}}'
 }

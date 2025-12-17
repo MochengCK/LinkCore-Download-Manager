@@ -31,5 +31,13 @@ export default {
   'gt1d': 'أكثر من يوم',
   'hour': 'س',
   'minute': 'د',
-  'second': 'ث'
+  'second': 'ث',
+  'task-plan': 'خطة المهام',
+  'task-plan-select-placeholder': 'اختر خطة',
+  'task-plan-action-shutdown': 'إيقاف تشغيل الكمبيوتر',
+  'task-plan-action-sleep': 'وضع السكون',
+  'task-plan-action-quit': 'إنهاء التطبيق',
+  'task-plan-cancelled-message': 'تم إلغاء خطة المهام',
+  'task-plan-select-warning': 'يرجى اختيار خطة',
+  'task-plan-set-message': 'تم الإعداد: {{action}}'
 }

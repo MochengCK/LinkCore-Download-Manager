@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 วัน',
   'hour': 'ชม.',
   'minute': 'น.',
-  'second': 'วิ'
+  'second': 'วิ',
+  'task-plan': 'แผนงาน',
+  'task-plan-select-placeholder': 'เลือกแผน',
+  'task-plan-action-shutdown': 'ปิดเครื่องคอมพิวเตอร์',
+  'task-plan-action-sleep': 'โหมดสลีป',
+  'task-plan-action-quit': 'ออกจากแอป',
+  'task-plan-cancelled-message': 'ยกเลิกแผนงานแล้ว',
+  'task-plan-select-warning': 'กรุณาเลือกแผน',
+  'task-plan-set-message': 'ตั้งค่าแล้ว: {{action}}'
 }

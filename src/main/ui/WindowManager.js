@@ -65,7 +65,7 @@ export default class WindowManager extends EventEmitter {
     // fix AppImage Dock Icon Missing
     // https://github.com/AppImage/AppImageKit/wiki/Bundling-Electron-apps
     if (is.linux()) {
-      result.attrs.icon = join(__static, './512x512.png')
+      result.attrs.icon = join(__static, './L512.png')
     }
 
     // Set window icon for Windows platform

@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 zi',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Plan de sarcini',
+  'task-plan-select-placeholder': 'Selectează un plan',
+  'task-plan-action-shutdown': 'Oprește computerul',
+  'task-plan-action-sleep': 'Repaus',
+  'task-plan-action-quit': 'Ieși din aplicație',
+  'task-plan-cancelled-message': 'Planul de sarcini a fost anulat',
+  'task-plan-select-warning': 'Selectează un plan',
+  'task-plan-set-message': 'Setat: {{action}}'
 }

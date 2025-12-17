@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 dia',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Pla de tasques',
+  'task-plan-select-placeholder': 'Seleccioneu un pla',
+  'task-plan-action-shutdown': 'Apaga l’ordinador',
+  'task-plan-action-sleep': 'Posa en repòs',
+  'task-plan-action-quit': 'Surt de l’aplicació',
+  'task-plan-cancelled-message': 'S\'ha cancel·lat el pla de tasques',
+  'task-plan-select-warning': 'Seleccioneu un pla',
+  'task-plan-set-message': 'S\'ha establert: {{action}}'
 }

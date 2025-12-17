@@ -144,6 +144,7 @@
     },
     "linux": {
       "category": "Network",
+      "icon": "./static/L512.png",
       "mimeTypes": [
         "application/x-bittorrent",
         "x-scheme-handler/magnet"

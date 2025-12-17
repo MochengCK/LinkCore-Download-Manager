@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 jour',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Planification des tâches',
+  'task-plan-select-placeholder': 'Sélectionnez un plan',
+  'task-plan-action-shutdown': 'Éteindre l’ordinateur',
+  'task-plan-action-sleep': 'Mettre en veille',
+  'task-plan-action-quit': 'Quitter l’application',
+  'task-plan-cancelled-message': 'Planification annulée',
+  'task-plan-select-warning': 'Veuillez sélectionner un plan',
+  'task-plan-set-message': 'Défini : {{action}}'
 }

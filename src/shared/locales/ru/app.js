@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 день',
   'hour': 'ч',
   'minute': 'м',
-  'second': 'с'
+  'second': 'с',
+  'task-plan': 'План задач',
+  'task-plan-select-placeholder': 'Выберите план',
+  'task-plan-action-shutdown': 'Выключить компьютер',
+  'task-plan-action-sleep': 'Спящий режим',
+  'task-plan-action-quit': 'Выйти из приложения',
+  'task-plan-cancelled-message': 'План задач отменён',
+  'task-plan-select-warning': 'Выберите план',
+  'task-plan-set-message': 'Установлено: {{action}}'
 }

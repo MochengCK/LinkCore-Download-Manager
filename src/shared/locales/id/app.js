@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 hari',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Rencana tugas',
+  'task-plan-select-placeholder': 'Pilih rencana',
+  'task-plan-action-shutdown': 'Matikan komputer',
+  'task-plan-action-sleep': 'Mode tidur',
+  'task-plan-action-quit': 'Keluar dari aplikasi',
+  'task-plan-cancelled-message': 'Rencana tugas dibatalkan',
+  'task-plan-select-warning': 'Pilih rencana',
+  'task-plan-set-message': 'Diatur: {{action}}'
 }

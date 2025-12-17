@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 Tag',
   'hour': 'h',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Aufgabenplan',
+  'task-plan-select-placeholder': 'Plan auswählen',
+  'task-plan-action-shutdown': 'Computer herunterfahren',
+  'task-plan-action-sleep': 'Energiesparmodus',
+  'task-plan-action-quit': 'Programm beenden',
+  'task-plan-cancelled-message': 'Aufgabenplan aufgehoben',
+  'task-plan-select-warning': 'Bitte einen Plan auswählen',
+  'task-plan-set-message': 'Eingestellt: {{action}}'
 }

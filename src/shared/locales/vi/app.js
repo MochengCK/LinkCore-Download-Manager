@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 ngày',
   'hour': ' giờ',
   'minute': ' phút',
-  'second': ' giây'
+  'second': ' giây',
+  'task-plan': 'Kế hoạch tác vụ',
+  'task-plan-select-placeholder': 'Chọn kế hoạch',
+  'task-plan-action-shutdown': 'Tắt máy',
+  'task-plan-action-sleep': 'Ngủ',
+  'task-plan-action-quit': 'Thoát ứng dụng',
+  'task-plan-cancelled-message': 'Đã hủy kế hoạch tác vụ',
+  'task-plan-select-warning': 'Vui lòng chọn kế hoạch',
+  'task-plan-set-message': 'Đã đặt: {{action}}'
 }

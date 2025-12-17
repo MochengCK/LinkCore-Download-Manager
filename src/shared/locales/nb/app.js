@@ -31,5 +31,13 @@ export default {
   'gt1d': '> 1 dag',
   'hour': 't',
   'minute': 'm',
-  'second': 's'
+  'second': 's',
+  'task-plan': 'Oppgaveplan',
+  'task-plan-select-placeholder': 'Velg en plan',
+  'task-plan-action-shutdown': 'Slå av datamaskinen',
+  'task-plan-action-sleep': 'Hvilemodus',
+  'task-plan-action-quit': 'Avslutt programmet',
+  'task-plan-cancelled-message': 'Oppgaveplan avbrutt',
+  'task-plan-select-warning': 'Velg en plan',
+  'task-plan-set-message': 'Satt: {{action}}'
 }
