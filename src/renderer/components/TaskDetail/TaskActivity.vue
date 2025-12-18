@@ -147,8 +147,6 @@
         formLabelWidth: calcFormLabelWidth(locale),
         locale,
         graphicWidth: 0,
-        // 平均速度计算相关
-        speedSamples: [],
         // 记录开始采样时的已下载量，用于计算增量
         initialCompletedLength: 0,
         downloadStartTime: null,
@@ -157,6 +155,12 @@
     },
     computed: {
       isRenderer: () => is.renderer(),
+      speedSamples () {
+        const gid = this.task && this.task.gid ? `${this.task.gid}` : ''
+        const map = this.$store.state.task.taskSpeedSamples || {}
+        const samples = gid && Array.isArray(map[gid]) ? map[gid] : []
+        return samples
+      },
       isBT () {
         return checkTaskIsBT(this.task)
       },
@@ -193,6 +197,10 @@
         return ratio
       },
       averageDownloadSpeed () {
+        if (!this.isActive && this.task && this.task.averageDownloadSpeed != null) {
+          const v = Number(this.task.averageDownloadSpeed)
+          return Number.isFinite(v) && v >= 0 ? v : 0
+        }
         if (this.speedSamples.length === 0) {
           return 0
         }
@@ -206,6 +214,10 @@
         return Math.round(sum / validSamples.length)
       },
       speedSampleCount () {
+        if (!this.isActive && this.task && this.task.averageSpeedSampleCount != null) {
+          const v = Number(this.task.averageSpeedSampleCount)
+          return Number.isFinite(v) && v >= 0 ? v : 0
+        }
         return this.speedSamples
           .map(s => Number(s))
           .filter(s => Number.isFinite(s) && s > 0).length
@@ -219,6 +231,9 @@
       'task.downloadSpeed': {
         handler (newSpeed) {
           // 采样当前下载速度
+          if (!this.isActive) {
+            return
+          }
           const speed = Number(newSpeed)
           if (Number.isFinite(speed) && speed >= 0) {
             this.addSpeedSample(speed)
@@ -250,7 +265,7 @@
             this.downloadEndTime = Date.now()
           }
           if (newStatus === TASK_STATUS.ACTIVE && oldStatus !== TASK_STATUS.ACTIVE) {
-            this.speedSamples = []
+            this.resetSpeedSamples()
             this.downloadStartTime = Date.now()
             this.initialCompletedLength = Number(this.task ? this.task.completedLength : 0) || 0
             this.downloadEndTime = null
@@ -259,9 +274,10 @@
       },
       'task.gid': {
         handler (newGid, oldGid) {
-          // 任务切换时重置采样数据
           if (newGid !== oldGid) {
-            this.resetSpeedSamples()
+            this.downloadStartTime = null
+            this.initialCompletedLength = 0
+            this.downloadEndTime = null
           }
         }
       }
@@ -296,15 +312,17 @@
         return width - paddingLeft - paddingRight
       },
       addSpeedSample (speed) {
-        // 保留最近 60 个采样点（约 1 分钟的数据，假设每秒采样一次）
-        const MAX_SAMPLES = 60
-        this.speedSamples.push(speed)
-        if (this.speedSamples.length > MAX_SAMPLES) {
-          this.speedSamples.shift()
+        const gid = this.task && this.task.gid ? `${this.task.gid}` : ''
+        if (!gid) {
+          return
         }
+        this.$store.dispatch('task/addTaskSpeedSample', { gid, sample: speed, maxSamples: 60 })
       },
       resetSpeedSamples () {
-        this.speedSamples = []
+        const gid = this.task && this.task.gid ? `${this.task.gid}` : ''
+        if (gid) {
+          this.$store.dispatch('task/resetTaskSpeedSamples', gid)
+        }
         this.downloadStartTime = null
         this.initialCompletedLength = 0
       }

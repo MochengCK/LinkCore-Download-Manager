@@ -15,7 +15,8 @@ const state = {
   selectedGidList: [],
   magnetStatuses: {},
   dataAccessStatuses: {},
-  taskPriorities: {}
+  taskPriorities: {},
+  taskSpeedSamples: {}
 }
 
 const getters = {
@@ -74,6 +75,34 @@ const mutations = {
   },
   UPDATE_TASK_PRIORITIES (state, mapping) {
     state.taskPriorities = { ...state.taskPriorities, ...mapping }
+  },
+  UPDATE_TASK_SPEED_SAMPLES (state, payload) {
+    const { gid, samples } = payload || {}
+    if (!gid) {
+      return
+    }
+    state.taskSpeedSamples = { ...state.taskSpeedSamples, [gid]: Array.isArray(samples) ? samples : [] }
+  },
+  ADD_TASK_SPEED_SAMPLE (state, payload) {
+    const { gid, sample, maxSamples = 60 } = payload || {}
+    if (!gid) {
+      return
+    }
+    const prev = Array.isArray(state.taskSpeedSamples[gid]) ? state.taskSpeedSamples[gid] : []
+    const next = [...prev, sample]
+    const cap = Number(maxSamples) > 0 ? Number(maxSamples) : 60
+    if (next.length > cap) {
+      next.splice(0, next.length - cap)
+    }
+    state.taskSpeedSamples = { ...state.taskSpeedSamples, [gid]: next }
+  },
+  CLEAR_TASK_SPEED_SAMPLES (state, gid) {
+    if (!gid) {
+      return
+    }
+    const next = { ...state.taskSpeedSamples }
+    delete next[gid]
+    state.taskSpeedSamples = next
   }
 }
 
@@ -205,6 +234,15 @@ const actions = {
   },
   updateCurrentTaskGid ({ commit }, gid) {
     commit('UPDATE_CURRENT_TASK_GID', gid)
+  },
+  updateTaskSpeedSamples ({ commit }, payload) {
+    commit('UPDATE_TASK_SPEED_SAMPLES', payload)
+  },
+  addTaskSpeedSample ({ commit }, payload) {
+    commit('ADD_TASK_SPEED_SAMPLE', payload)
+  },
+  resetTaskSpeedSamples ({ commit }, gid) {
+    commit('CLEAR_TASK_SPEED_SAMPLES', gid)
   },
   addUri ({ dispatch, commit, rootState }, data) {
     const { uris, outs, options, dirs, priorities } = data

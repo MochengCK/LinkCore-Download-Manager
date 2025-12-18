@@ -14,7 +14,7 @@
             :open-delay="500"
           >
             <i @click.stop="onVerifyClick">
-              <mo-icon name="select-all" width="14" height="14" />
+              <mo-icon name="verify-file" width="14" height="14" />
             </i>
           </el-tooltip>
         </li>
@@ -55,6 +55,9 @@
           <i v-if="action ==='INFO'" @click.stop="onInfoClick">
             <mo-icon name="info-circle" width="14" height="14" />
           </i>
+          <i v-if="action ==='VERIFY'" @click.stop="onVerifyClick">
+            <mo-icon name="verify-file" width="14" height="14" />
+          </i>
         </el-tooltip>
       </li>
     </ul>
@@ -84,7 +87,7 @@
   import '@/components/Icons/folder'
   import '@/components/Icons/link'
   import '@/components/Icons/info-circle'
-  import '@/components/Icons/select-all'
+  import '@/components/Icons/verify-file'
   import '@/components/Icons/trash'
 
   const taskActionsMap = {
@@ -150,20 +153,34 @@
         return result
       },
       taskActions () {
-        const { taskStatus, taskCommonActions } = this
+        const { taskStatus, taskCommonActions, hasExistingTaskFile } = this
         const actions = taskActionsMap[taskStatus] || []
         const result = [...actions, ...taskCommonActions]
           .filter(action => (is.renderer() ? true : action !== 'VERIFY'))
+          .filter(action => (action === 'VERIFY' ? hasExistingTaskFile : true))
           .reverse()
         return result
       },
       showVerifyBar () {
-        const { taskActions } = this
-        return taskActions.indexOf('VERIFY') !== -1
+        const { taskActions, verifyCanSlideOut } = this
+        return verifyCanSlideOut && taskActions.indexOf('VERIFY') !== -1
+      },
+      verifyCanSlideOut () {
+        const { path } = this
+        return !!(path && existsSync(path))
+      },
+      hasExistingTaskFile () {
+        const { task } = this
+        const files = Array.isArray(task && task.files) ? task.files : []
+        if (!files.length) return false
+        return files.some(file => {
+          const filePath = this.getActualFilePath(file && file.path ? file.path : '')
+          return !!(filePath && existsSync(filePath))
+        })
       },
       primaryActions () {
-        const { taskActions } = this
-        return taskActions.filter(action => action !== 'VERIFY')
+        const { taskActions, showVerifyBar } = this
+        return taskActions.filter(action => action !== 'VERIFY' || !showVerifyBar)
       }
     },
     methods: {
@@ -430,6 +447,20 @@
 .verify-slide-enter-to {
   transform: translateX(0);
   opacity: 1;
+}
+
+.verify-slide-leave-active {
+  transition: transform 0.25s ease-in, opacity 0.25s ease-in;
+}
+
+.verify-slide-leave {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.verify-slide-leave-to {
+  transform: translateX(24px);
+  opacity: 0;
 }
 
 .theme-dark {

@@ -61,6 +61,34 @@ class TaskHistory {
     return taskHistoryStore.get('tasks', [])
   }
 
+  updateTask (gid, patch = {}, fallbackTask = null) {
+    if (!gid) {
+      return
+    }
+
+    const currentHistory = this.getHistory()
+    const idx = currentHistory.findIndex(task => task.gid === gid)
+    const now = Date.now()
+
+    if (idx === -1) {
+      const base = fallbackTask && typeof fallbackTask === 'object' ? fallbackTask : { gid }
+      taskHistoryStore.set('tasks', [
+        ...currentHistory,
+        {
+          ...base,
+          ...patch,
+          savedAt: base.savedAt || now
+        }
+      ])
+      return
+    }
+
+    const prev = currentHistory[idx] || {}
+    const next = [...currentHistory]
+    next[idx] = { ...prev, ...patch, savedAt: prev.savedAt || now }
+    taskHistoryStore.set('tasks', next)
+  }
+
   /**
    * 从历史记录中移除任务
    * @param {string} gid - 任务的GID

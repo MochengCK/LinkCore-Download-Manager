@@ -288,13 +288,19 @@ export default class Api {
             const currentGids = new Set(result.map(task => task.gid))
             const newHistoryTasks = historyTasks.filter(task => !currentGids.has(task.gid))
 
-            // 为从aria2获取的已停止任务添加savedAt时间戳
+            // 为从aria2获取的已停止任务合并历史字段（如 savedAt/平均速度）
             const historyMap = new Map(historyTasks.map(task => [task.gid, task]))
             result = result.map(task => {
               if ([TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED].includes(task.status)) {
                 const historyTask = historyMap.get(task.gid)
-                if (historyTask && historyTask.savedAt) {
-                  return { ...task, savedAt: historyTask.savedAt }
+                if (historyTask) {
+                  const { savedAt, averageDownloadSpeed, averageSpeedSampleCount } = historyTask
+                  return {
+                    ...task,
+                    ...(savedAt ? { savedAt } : {}),
+                    ...(averageDownloadSpeed != null ? { averageDownloadSpeed } : {}),
+                    ...(averageSpeedSampleCount != null ? { averageSpeedSampleCount } : {})
+                  }
                 }
               }
               return task
@@ -332,13 +338,19 @@ export default class Api {
           const currentGids = new Set(stoppedTasks.map(task => task.gid))
           const newHistoryTasks = historyTasks.filter(task => !currentGids.has(task.gid))
 
-          // 为从aria2获取的已停止任务添加savedAt时间戳
+          // 为从aria2获取的已停止任务合并历史字段（如 savedAt/平均速度）
           const updatedHistoryTasks = taskHistory.getHistory()
           const historyMap = new Map(updatedHistoryTasks.map(task => [task.gid, task]))
           stoppedTasks = stoppedTasks.map(task => {
             const historyTask = historyMap.get(task.gid)
-            if (historyTask && historyTask.savedAt) {
-              return { ...task, savedAt: historyTask.savedAt }
+            if (historyTask) {
+              const { savedAt, averageDownloadSpeed, averageSpeedSampleCount } = historyTask
+              return {
+                ...task,
+                ...(savedAt ? { savedAt } : {}),
+                ...(averageDownloadSpeed != null ? { averageDownloadSpeed } : {}),
+                ...(averageSpeedSampleCount != null ? { averageSpeedSampleCount } : {})
+              }
             }
             return task
           })

@@ -6,6 +6,7 @@
   import is from 'electron-is'
   import { mapState } from 'vuex'
   import api from '@/api'
+  import taskHistory from '@/api/TaskHistory'
   import {
     getTaskFullPath,
     getTaskActualPath,
@@ -207,6 +208,7 @@
       },
       handleDownloadComplete (task, isBT) {
         this.$store.dispatch('task/saveSession')
+        this.persistAverageSpeedToHistory(task)
 
         const cfg = this.$store.state.preference.config || {}
         const path = getTaskActualPath(task, cfg)
@@ -216,6 +218,27 @@
         this.setFileMtimeOnComplete(task)
 
         this.autoCategorizeDownloadedFile(task)
+      },
+      persistAverageSpeedToHistory (task) {
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (!gid) {
+            return
+          }
+
+          const map = this.$store.state.task.taskSpeedSamples || {}
+          const samples = Array.isArray(map[gid]) ? map[gid] : []
+          if (samples.length === 0) {
+            return
+          }
+
+          const numeric = samples.map(s => Number(s)).filter(s => Number.isFinite(s) && s >= 0)
+          const avg = numeric.length > 0 ? Math.round(numeric.reduce((a, b) => a + b, 0) / numeric.length) : 0
+          const count = samples.map(s => Number(s)).filter(s => Number.isFinite(s) && s > 0).length
+
+          taskHistory.updateTask(gid, { averageDownloadSpeed: avg, averageSpeedSampleCount: count }, task)
+        } catch (_) {
+        }
       },
       ensureTargetDirectoryExists (task) {
         const fullPath = getTaskFullPath(task)
