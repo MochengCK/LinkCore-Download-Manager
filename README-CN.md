@@ -1,6 +1,12 @@
-<p align="right"><a href="./README.md">English</a>
-  
->本项目由 Mo"moXC 个人维护，隶属于 HuanXinStudio
+
+<div align="center">
+  <table width="100%">
+    <tr>
+      <td align="left">>本项目由 Mo"moXC 个人维护，隶属于 HuanXinStudio</td>
+      <td align="right"><a href="./README.md">English</a></td>
+    </tr>
+  </table>
+</div>
 
 <p align="center">
   <img src="./screenshots/屏幕截图 2025-12-09 052141.png" width="1100" alt="LinkCore Download Manager Logo" />
