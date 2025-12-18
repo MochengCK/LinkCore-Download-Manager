@@ -2,7 +2,7 @@
 <div align="center">
   <table width="100%">
     <tr>
-      <td align="left">>Maintained by **Mo"moXC**, under **HuanXinStudio**</td>
+      <td align="left">Maintained by Mo"moXC, under **HuanXinStudio**</td>
       <td align="right"><a href="./README-CN.md">简体中文</a></td>
     </tr>
   </table>
