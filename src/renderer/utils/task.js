@@ -160,8 +160,9 @@ export const buildUriPayload = (form, autoCategorize = false, categories = null)
 
   form = buildDefaultOptionsFromCurl(form, curlHeaders)
 
+  let categorizedPaths = []
   if (shouldCategorizeFiles(autoCategorize, categories) && dir) {
-    const categorizedPaths = buildCategorizedPaths(uris, outs, categories, dir)
+    categorizedPaths = buildCategorizedPaths(uris, outs, categories, dir)
     const uniqueDirs = Array.from(new Set(
       categorizedPaths.map(item => item.categorizedDir).filter(Boolean)
     ))
@@ -179,7 +180,7 @@ export const buildUriPayload = (form, autoCategorize = false, categories = null)
     uris,
     outs,
     options,
-    dirs: null,
+    dirs: categorizedPaths.length > 0 ? categorizedPaths.map(item => item.categorizedDir) : null,
     priorities: Array.isArray(form.priorities) ? [...form.priorities] : null
 
   }

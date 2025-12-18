@@ -1,6 +1,6 @@
 import api from '@/api'
 import { EMPTY_STRING, TASK_STATUS } from '@shared/constants'
-import { checkTaskIsBT, intersection } from '@shared/utils'
+import { checkTaskIsBT, getFileNameFromFile, intersection } from '@shared/utils'
 
 const state = {
   currentList: 'all',
@@ -16,7 +16,8 @@ const state = {
   magnetStatuses: {},
   dataAccessStatuses: {},
   taskPriorities: {},
-  taskSpeedSamples: {}
+  taskSpeedSamples: {},
+  taskDisplayNames: {}
 }
 
 const getters = {
@@ -103,10 +104,37 @@ const mutations = {
     const next = { ...state.taskSpeedSamples }
     delete next[gid]
     state.taskSpeedSamples = next
+  },
+  UPDATE_TASK_DISPLAY_NAME (state, payload) {
+    const { gid, name } = payload || {}
+    if (!gid || !name) {
+      return
+    }
+    if (state.taskDisplayNames[gid] === name) {
+      return
+    }
+    state.taskDisplayNames = { ...state.taskDisplayNames, [gid]: name }
+  },
+  CLEAR_TASK_DISPLAY_NAME (state, gid) {
+    if (!gid) {
+      return
+    }
+    if (!state.taskDisplayNames[gid]) {
+      return
+    }
+    const next = { ...state.taskDisplayNames }
+    delete next[gid]
+    state.taskDisplayNames = next
   }
 }
 
 const actions = {
+  setTaskDisplayName ({ commit }, payload) {
+    commit('UPDATE_TASK_DISPLAY_NAME', payload)
+  },
+  clearTaskDisplayName ({ commit }, gid) {
+    commit('CLEAR_TASK_DISPLAY_NAME', gid)
+  },
   changeCurrentList ({ commit, dispatch }, currentList) {
     commit('CHANGE_CURRENT_LIST', currentList)
     commit('UPDATE_SELECTED_GID_LIST', [])
@@ -246,7 +274,45 @@ const actions = {
   },
   addUri ({ dispatch, commit, rootState }, data) {
     const { uris, outs, options, dirs, priorities } = data
-    return api.addUri({ uris, outs, options, dirs })
+
+    // Handle downloading file suffix
+    const config = rootState.preference.config || {}
+    const suffix = config.downloadingFileSuffix
+    const safeGetNameFromUri = (uri) => {
+      try {
+        return getFileNameFromFile({ uris: [{ uri }] })
+      } catch (_) {
+        return ''
+      }
+    }
+
+    const shouldDeriveOutsForSuffix = !!(suffix && Array.isArray(uris) && uris.length > 0 && (!Array.isArray(outs) || outs.length === 0))
+    const baseOuts = shouldDeriveOutsForSuffix
+      ? uris.map((uri) => {
+        if (!uri || `${uri}`.startsWith('magnet:')) {
+          return null
+        }
+        const name = safeGetNameFromUri(`${uri}`)
+        return name || null
+      })
+      : outs
+
+    let newOuts = baseOuts
+
+    if (suffix && Array.isArray(baseOuts)) {
+      newOuts = baseOuts.map((out, index) => {
+        const uri = uris[index]
+        // Only append suffix if out is present and uri is not a magnet link
+        if (out && uri && !uri.startsWith('magnet:')) {
+          if (!out.endsWith(suffix)) {
+            return out + suffix
+          }
+        }
+        return out
+      })
+    }
+
+    return api.addUri({ uris, outs: newOuts, options, dirs })
       .then((res) => {
         if (Array.isArray(res)) {
           const gids = res.map(r => r && r[0]).filter(Boolean)
@@ -262,7 +328,7 @@ const actions = {
               const persist = { ...existing }
               for (let i = 0; i < gids.length; i++) {
                 const dir = Array.isArray(dirs) && dirs[i] ? dirs[i] : (options && options.dir) || (rootState.preference && rootState.preference.config && rootState.preference.config.dir) || ''
-                const out = Array.isArray(outs) && outs[i] ? outs[i] : ''
+                const out = Array.isArray(baseOuts) && baseOuts[i] ? baseOuts[i] : ''
                 if (dir && out) {
                   const key = `${dir}|${out}`
                   persist[key] = Number(priorities[i]) || 0
@@ -312,6 +378,7 @@ const actions = {
 
     return api.removeTask({ gid })
       .finally(() => {
+        dispatch('clearTaskDisplayName', gid)
         dispatch('fetchList')
         dispatch('saveSession')
       })
@@ -436,6 +503,7 @@ const actions = {
         // 忽略Aria2删除失败的错误，继续执行
       })
       .finally(() => {
+        dispatch('clearTaskDisplayName', gid)
         dispatch('fetchList')
       })
   },

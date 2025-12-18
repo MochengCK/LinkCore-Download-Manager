@@ -219,6 +219,28 @@ export default class Api {
     return this.client.call('addMetalink', ...args)
   }
 
+  _mergeHistoryToTasks (tasks) {
+    const historyTasks = taskHistory.getHistory()
+    if (historyTasks.length === 0) {
+      return tasks
+    }
+
+    const historyMap = new Map(historyTasks.map(task => [task.gid, task]))
+    return tasks.map(task => {
+      const historyTask = historyMap.get(task.gid)
+      if (historyTask) {
+        const { savedAt, averageDownloadSpeed, averageSpeedSampleCount } = historyTask
+        return {
+          ...task,
+          ...(savedAt ? { savedAt } : {}),
+          ...(averageDownloadSpeed != null ? { averageDownloadSpeed } : {}),
+          ...(averageSpeedSampleCount != null ? { averageSpeedSampleCount } : {})
+        }
+      }
+      return task
+    })
+  }
+
   fetchDownloadingTaskList (params = {}) {
     const { offset = 0, num = 20, keys } = params
     const activeArgs = compactUndefined([keys])
@@ -229,7 +251,8 @@ export default class Api {
         ['aria2.tellWaiting', ...waitingArgs]
       ]).then((data) => {
         console.log('[Motrix] fetch downloading task list data:', data)
-        const result = mergeTaskResult(data)
+        let result = mergeTaskResult(data)
+        result = this._mergeHistoryToTasks(result)
         resolve(result)
       }).catch((err) => {
         console.log('[Motrix] fetch downloading task list fail:', err)
@@ -242,6 +265,7 @@ export default class Api {
     const { offset = 0, num = 20, keys } = params
     const args = compactUndefined([offset, num, keys])
     return this.client.call('tellWaiting', ...args)
+      .then(data => this._mergeHistoryToTasks(data))
   }
 
   fetchStoppedTaskList (params = {}) {

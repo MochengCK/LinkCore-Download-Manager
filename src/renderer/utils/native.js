@@ -8,7 +8,7 @@ import {
   isMagnetTask
 } from '@shared/utils'
 import { buildCategorizedPath } from '@shared/utils/file-categorize'
-import { APP_THEME, TASK_STATUS } from '@shared/constants'
+import { APP_THEME } from '@shared/constants'
 
 export const showItemInFolder = (fullPath, { errorMsg }) => {
   if (!fullPath) {
@@ -71,28 +71,67 @@ export const getTaskFullPath = (task) => {
   return result
 }
 
+export const getPathCandidates = (originPath, suffix, config) => {
+  const candidates = new Set()
+  if (!originPath) return []
+
+  // 1. Determine Logical Paths (Original and Suffix-removed)
+  const logicalPaths = new Set()
+  logicalPaths.add(originPath)
+
+  if (suffix && originPath.endsWith(suffix)) {
+    logicalPaths.add(originPath.slice(0, -suffix.length))
+  }
+
+  // 2. Determine Base Paths (Logical + Categorized)
+  const basePaths = new Set(logicalPaths)
+
+  const autoCategorizeFiles = config && config.autoCategorizeFiles
+  const categories = config && config.fileCategories
+
+  if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
+    for (const p of logicalPaths) {
+      try {
+        const filename = basename(p)
+        const baseDir = dirname(p)
+        const categorizedInfo = buildCategorizedPath(p, filename, categories, baseDir)
+        if (categorizedInfo && categorizedInfo.categorizedPath) {
+          basePaths.add(categorizedInfo.categorizedPath)
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  // 3. Generate Physical Paths (Base + Suffix variants)
+  for (const p of basePaths) {
+    candidates.add(p)
+    if (suffix) {
+      candidates.add(`${p}${suffix}`)
+      if (p.endsWith(suffix)) {
+        candidates.add(p.slice(0, -suffix.length))
+      }
+    }
+  }
+
+  return Array.from(candidates)
+}
+
 export const getTaskActualPath = (task, preferenceConfig = {}) => {
   const path = getTaskFullPath(task)
   if (!path) {
     return path
   }
 
-  if (existsSync(path)) {
-    return path
-  }
-
   const config = preferenceConfig || {}
-  const autoCategorizeFiles = config.autoCategorizeFiles
-  const categories = config.fileCategories
+  const suffix = config.downloadingFileSuffix
 
-  if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
-    const filename = basename(path)
-    const baseDir = dirname(path)
-    const categorizedInfo = buildCategorizedPath(path, filename, categories, baseDir)
-    const categorizedPath = categorizedInfo.categorizedPath
+  const candidates = getPathCandidates(path, suffix, config)
 
-    if (existsSync(categorizedPath)) {
-      return categorizedPath
+  for (const p of candidates) {
+    if (existsSync(p)) {
+      return p
     }
   }
 
@@ -110,83 +149,42 @@ export const moveTaskFilesToTrash = async (task, downloadingFileSuffix = '', pre
     return true
   }
 
-  const { dir, status } = task
+  const { dir } = task
   const path = getTaskFullPath(task)
   if (!path || dir === path) {
     console.warn('[Motrix] Invalid file path for task, skip deleting files')
     return true
   }
 
-  let deleted = false
+  const config = preferenceConfig || {}
+  const suffix = downloadingFileSuffix || config.downloadingFileSuffix || ''
+  const candidates = getPathCandidates(path, suffix, config)
 
-  try {
-    if (existsSync(path)) {
-      const target = resolve(path)
-      console.log(`[Motrix] ${target} exists, deleting...`)
-      await shell.trashItem(target)
-      deleted = true
-    } else if (downloadingFileSuffix) {
-      const suffixedPath = `${path}${downloadingFileSuffix}`
-      if (existsSync(suffixedPath)) {
-        const target = resolve(suffixedPath)
+  for (const p of candidates) {
+    // Delete main file
+    try {
+      if (existsSync(p)) {
+        const target = resolve(p)
         console.log(`[Motrix] ${target} exists, deleting...`)
         await shell.trashItem(target)
-        deleted = true
       }
+    } catch (e) {
+      console.warn(`[Motrix] Failed to trash ${p}:`, e)
     }
 
-    if (!deleted) {
-      const config = preferenceConfig || {}
-      const autoCategorizeFiles = config.autoCategorizeFiles
-      const categories = config.fileCategories
-
-      if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
-        const filename = basename(path)
-        const baseDir = dirname(path)
-        const categorizedInfo = buildCategorizedPath(path, filename, categories, baseDir)
-        const categorizedPath = resolve(categorizedInfo.categorizedPath)
-
-        if (existsSync(categorizedPath)) {
-          console.log(`[Motrix] ${categorizedPath} exists, deleting...`)
-          await shell.trashItem(categorizedPath)
-          deleted = true
-        }
+    // Delete .aria2 file
+    // Check for .aria2 file corresponding to this candidate
+    const aria2Path = `${p}.aria2`
+    try {
+      if (existsSync(aria2Path)) {
+        console.log(`[Motrix] ${aria2Path} exists, deleting...`)
+        await shell.trashItem(aria2Path)
       }
+    } catch (e) {
+      console.warn(`[Motrix] Failed to trash ${aria2Path}:`, e)
     }
-  } catch (error) {
-    console.warn('[Motrix] moveTaskFilesToTrash trashItem error:', error && error.message ? error.message : error)
   }
 
-  // There is no configuration file for the completed task.
-  if (status === TASK_STATUS.COMPLETE) {
-    return true
-  }
-
-  const extraFilePath = `${path}.aria2`
-  // 等待一段时间，确保.aria2文件有足够的时间被创建
-  // 这是解决任务刚开始时.aria2文件未创建的问题的关键
-  await new Promise(resolve => setTimeout(resolve, 100))
-
-  // 检查.aria2文件是否存在，如果存在则删除
-  try {
-    const extraResolved = resolve(extraFilePath)
-    if (existsSync(extraResolved)) {
-      console.log(`[Motrix] ${extraResolved} exists, deleting...`)
-      await shell.trashItem(extraResolved)
-    } else {
-      // 如果.aria2文件不存在，尝试再次检查，因为可能存在延迟
-      await new Promise(resolve => setTimeout(resolve, 100))
-      if (existsSync(extraResolved)) {
-        console.log(`[Motrix] ${extraResolved} exists after delay, deleting...`)
-        await shell.trashItem(extraResolved)
-      }
-    }
-  } catch (error) {
-    console.warn('[Motrix] moveTaskFilesToTrash extra file trashItem error:', error && error.message ? error.message : error)
-  }
-
-  // 总是返回true，因为文件删除失败不应该影响任务删除流程
-  // 即使文件删除失败，任务也应该被从列表中移除
   return true
 }
 

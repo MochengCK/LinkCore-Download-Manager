@@ -69,7 +69,7 @@
   import is from 'electron-is'
   import { createReadStream, existsSync } from 'node:fs'
   import { createHash } from 'node:crypto'
-  import { basename, dirname, isAbsolute, resolve } from 'node:path'
+  import { isAbsolute, resolve } from 'node:path'
 
   import { commands } from '@/components/CommandManager/instance'
   import { TASK_STATUS } from '@shared/constants'
@@ -77,8 +77,7 @@
     checkTaskIsSeeder,
     getTaskName
   } from '@shared/utils'
-  import { getTaskActualPath } from '@/utils/native'
-  import { buildCategorizedPath } from '@shared/utils/file-categorize'
+  import { getTaskActualPath, getPathCandidates } from '@/utils/native'
   import '@/components/Icons/task-start-line'
   import '@/components/Icons/task-pause-line'
   import '@/components/Icons/task-stop-line'
@@ -162,8 +161,16 @@
         return result
       },
       showVerifyBar () {
-        const { taskActions, verifyCanSlideOut } = this
-        return verifyCanSlideOut && taskActions.indexOf('VERIFY') !== -1
+        const { taskActions, isSeeder, path } = this
+        const canVerify = taskActions.indexOf('VERIFY') !== -1
+
+        if (!canVerify || isSeeder) {
+          return false
+        }
+
+        // 确保文件存在才显示校验按钮
+        // path 已经是通过 getTaskActualPath 获取的，处理了后缀和分类
+        return path && existsSync(path)
       },
       verifyCanSlideOut () {
         const { path } = this
@@ -212,20 +219,13 @@
         const target = this.resolveTaskFilePath(filePath)
         if (!target) return target
 
-        if (existsSync(target)) {
-          return target
-        }
-
         const config = this.preferenceConfig || {}
-        const autoCategorizeFiles = config.autoCategorizeFiles
-        const categories = config.fileCategories
-        if (autoCategorizeFiles && categories && Object.keys(categories).length > 0) {
-          const filename = basename(target)
-          const baseDir = dirname(target)
-          const categorizedInfo = buildCategorizedPath(target, filename, categories, baseDir)
-          const categorizedPath = categorizedInfo.categorizedPath
-          if (categorizedPath && existsSync(categorizedPath)) {
-            return categorizedPath
+        const suffix = config.downloadingFileSuffix
+        const candidates = getPathCandidates(target, suffix, config)
+
+        for (const p of candidates) {
+          if (existsSync(p)) {
+            return p
           }
         }
 

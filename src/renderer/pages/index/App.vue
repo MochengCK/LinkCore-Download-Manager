@@ -94,7 +94,7 @@
             message: this.$t('app.update-available-message'),
             duration: 0,
             onClick: () => {
-              this.$router.push({ path: '/preference' }).catch(() => {})
+              this.$router.push({ path: '/preference/advanced' }).catch(() => {})
             }
           })
           this._updateMessageShown = true

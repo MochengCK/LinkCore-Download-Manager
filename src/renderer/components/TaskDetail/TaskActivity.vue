@@ -197,21 +197,31 @@
         return ratio
       },
       averageDownloadSpeed () {
+        // 如果任务不是活跃状态，或者任务中有已保存的平均速度且我们没有样本（例如刚恢复）
         if (!this.isActive && this.task && this.task.averageDownloadSpeed != null) {
           const v = Number(this.task.averageDownloadSpeed)
           return Number.isFinite(v) && v >= 0 ? v : 0
         }
-        if (this.speedSamples.length === 0) {
-          return 0
+
+        // 如果有样本，计算当前样本的平均速度
+        if (this.speedSamples.length > 0) {
+          const validSamples = this.speedSamples
+            .map(s => Number(s))
+            .filter(s => Number.isFinite(s) && s >= 0)
+
+          if (validSamples.length > 0) {
+            const sum = validSamples.reduce((a, b) => a + b, 0)
+            return Math.round(sum / validSamples.length)
+          }
         }
-        const validSamples = this.speedSamples
-          .map(s => Number(s))
-          .filter(s => Number.isFinite(s) && s >= 0)
-        if (validSamples.length === 0) {
-          return 0
+
+        // 如果没有样本（例如刚启动应用，samples还未累积），但有历史记录
+        if (this.task && this.task.averageDownloadSpeed != null) {
+          const v = Number(this.task.averageDownloadSpeed)
+          return Number.isFinite(v) && v >= 0 ? v : 0
         }
-        const sum = validSamples.reduce((a, b) => a + b, 0)
-        return Math.round(sum / validSamples.length)
+
+        return 0
       },
       speedSampleCount () {
         if (!this.isActive && this.task && this.task.averageSpeedSampleCount != null) {

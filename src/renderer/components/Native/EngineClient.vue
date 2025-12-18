@@ -14,6 +14,7 @@
   } from '@/utils/native'
 
   import { checkTaskIsBT, getTaskName, isMagnetTask } from '@shared/utils'
+  import { TASK_STATUS } from '@shared/constants'
   import { existsSync, renameSync, mkdirSync, utimesSync, statSync } from 'node:fs'
   import { dirname, basename, resolve, isAbsolute } from 'node:path'
   import {
@@ -29,7 +30,8 @@
         magnetZeroMap: {},
         magnetAlertedSet: new Set(),
         dataAccessZeroMap: {},
-        dataAccessLastCompletedMap: {}
+        dataAccessLastCompletedMap: {},
+        pollingCount: 0
       }
     },
     computed: {
@@ -134,7 +136,6 @@
 
             this.ensureTargetDirectoryExists(task)
             this.ensureCategoryDirectoryForTask(task)
-            this.addDownloadingSuffix(task)
           })
       },
       onDownloadPause (event) {
@@ -207,17 +208,39 @@
           })
       },
       handleDownloadComplete (task, isBT) {
+        const finalPath = this.removeDownloadingSuffix(task)
+
         this.$store.dispatch('task/saveSession')
         this.persistAverageSpeedToHistory(task)
 
         const cfg = this.$store.state.preference.config || {}
         const path = getTaskActualPath(task, cfg)
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (gid) {
+            let name = ''
+            if (isBT) {
+              name = getTaskName(task, { maxLen: -1 })
+            } else {
+              const base = basename(finalPath || path || '')
+              const suffix = cfg.downloadingFileSuffix || ''
+              if (suffix && base.endsWith(suffix)) {
+                name = base.slice(0, -suffix.length)
+              } else {
+                name = base
+              }
+            }
+            if (name) {
+              this.$store.dispatch('task/setTaskDisplayName', { gid, name })
+            }
+          }
+        } catch (_) {}
         this.showTaskCompleteNotify(task, isBT, path)
         this.$electron.ipcRenderer.send('event', 'task-download-complete', task, path)
 
-        this.setFileMtimeOnComplete(task)
+        this.setFileMtimeOnComplete(task, finalPath)
 
-        this.autoCategorizeDownloadedFile(task)
+        this.autoCategorizeDownloadedFile(task, finalPath)
       },
       persistAverageSpeedToHistory (task) {
         try {
@@ -310,85 +333,6 @@
         createCategoryDirectory(categorizedInfo.categorizedDir)
       },
 
-      addDownloadingSuffix (task) {
-        const downloadingFileSuffix = this.$store.state.preference.config.downloadingFileSuffix
-
-        if (checkTaskIsBT(task)) {
-          return
-        }
-
-        const gid = task && task.gid
-        if (!gid) {
-          const originalPath = getTaskFullPath(task)
-          this.pollForFileAndAddSuffix(originalPath, downloadingFileSuffix, 0)
-          return
-        }
-
-        this.pollForFileAndAddSuffixByGid(gid, downloadingFileSuffix, 0)
-      },
-
-      pollForFileAndAddSuffix (originalPath, suffix, attempt) {
-        const maxAttempts = 30 // 最多尝试30次（约30秒）
-
-        if (attempt >= maxAttempts) {
-          console.warn(`[Motrix] Failed to add downloading suffix after ${maxAttempts} attempts: ${originalPath}`)
-          return
-        }
-
-        if (!suffix || !originalPath || originalPath.endsWith(suffix)) {
-          return
-        }
-
-        if (existsSync(originalPath)) {
-          const newPath = originalPath + suffix
-          const ok = this.renamePreserveTimes(originalPath, newPath)
-          if (ok) {
-            console.log(`[Motrix] Added downloading suffix: ${originalPath} -> ${newPath}`)
-            return
-          }
-          console.warn(`[Motrix] Failed to add downloading suffix: ${originalPath} -> ${newPath}`)
-        }
-
-        setTimeout(() => {
-          this.pollForFileAndAddSuffix(originalPath, suffix, attempt + 1)
-        }, 1000)
-      },
-
-      pollForFileAndAddSuffixByGid (gid, suffix, attempt) {
-        const maxAttempts = 30
-
-        if (attempt >= maxAttempts) {
-          console.warn(`[Motrix] Failed to add downloading suffix after ${maxAttempts} attempts: gid=${gid}`)
-          return
-        }
-
-        this.fetchTaskItem({ gid })
-          .then((task) => {
-            if (!task || checkTaskIsBT(task)) {
-              return
-            }
-
-            const originalPath = getTaskFullPath(task)
-            if (!suffix || !originalPath || originalPath.endsWith(suffix)) {
-              return
-            }
-
-            if (existsSync(originalPath)) {
-              const newPath = originalPath + suffix
-              const ok = this.renamePreserveTimes(originalPath, newPath)
-              if (ok) {
-                console.log(`[Motrix] Added downloading suffix: ${originalPath} -> ${newPath}`)
-                return
-              }
-              console.warn(`[Motrix] Failed to add downloading suffix: ${originalPath} -> ${newPath}`)
-            }
-
-            setTimeout(() => {
-              this.pollForFileAndAddSuffixByGid(gid, suffix, attempt + 1)
-            }, 1000)
-          })
-      },
-
       removeDownloadingSuffix (task) {
         // 获取下载中文件后缀配置
         const downloadingFileSuffix = this.$store.state.preference.config.downloadingFileSuffix
@@ -396,15 +340,28 @@
         // 获取任务完整路径
         const currentPath = getTaskFullPath(task)
 
+        if (!downloadingFileSuffix) {
+          return currentPath
+        }
+
         // 如果文件有下载中后缀，则移除后缀
         if (currentPath.endsWith(downloadingFileSuffix)) {
           const originalPath = currentPath.slice(0, -downloadingFileSuffix.length)
-          const ok = this.renamePreserveTimes(currentPath, originalPath)
-          if (ok) {
-            console.log(`[Motrix] Removed downloading suffix: ${currentPath} -> ${originalPath}`)
-          } else {
-            console.warn(`[Motrix] Failed to remove downloading suffix: ${currentPath} -> ${originalPath}`)
+          // 尝试重命名
+          if (existsSync(currentPath)) {
+            const ok = this.renamePreserveTimes(currentPath, originalPath)
+            if (ok) {
+              console.log(`[Motrix] Removed downloading suffix: ${currentPath} -> ${originalPath}`)
+              return originalPath
+            } else {
+              console.warn(`[Motrix] Failed to remove downloading suffix: ${currentPath} -> ${originalPath}`)
+            }
+          } else if (existsSync(originalPath)) {
+            // 如果原文件已存在（可能已经被重命名），直接返回原路径
+            return originalPath
           }
+          // 如果都不存在，假设原路径是目标路径
+          return originalPath
         } else {
           // 检查是否有带后缀的文件存在（可能文件已经被重命名）
           const suffixedPath = currentPath + downloadingFileSuffix
@@ -412,13 +369,15 @@
             const ok = this.renamePreserveTimes(suffixedPath, currentPath)
             if (ok) {
               console.log(`[Motrix] Removed downloading suffix: ${suffixedPath} -> ${currentPath}`)
+              return currentPath
             } else {
               console.warn(`[Motrix] Failed to remove downloading suffix: ${suffixedPath} -> ${currentPath}`)
             }
           }
+          return currentPath
         }
       },
-      autoCategorizeDownloadedFile (task) {
+      autoCategorizeDownloadedFile (task, manualPath = null) {
         const cfg = this.$store.state.preference.config || {}
         const autoCategorizeEnabled = cfg.autoCategorizeFiles
 
@@ -442,6 +401,7 @@
         const isBTTask = checkTaskIsBT(task)
 
         if (isBTTask) {
+          // ... BT task logic ...
           const files = Array.isArray(task.files) ? task.files : []
           const taskDir = task && task.dir ? resolve(task.dir) : ''
           const btName = task && task.bittorrent && task.bittorrent.info && task.bittorrent.info.name
@@ -449,6 +409,7 @@
             : ''
 
           files.forEach(file => {
+            // ... logic unchanged for BT tasks as they usually don't use simple suffix ...
             const total = Number(file.length || 0)
             const done = Number(file.completedLength || 0)
             if (!total || done < total) {
@@ -470,6 +431,7 @@
               }
             }
 
+            // 对于 BT 任务，我们也尝试处理后缀
             let filePath = candidates.find(p => existsSync(p)) || ''
             if (!filePath && downloadingFileSuffix) {
               filePath = candidates
@@ -480,6 +442,7 @@
               filePath = candidates[0] || ''
             }
 
+            // ... rename logic for BT ...
             try {
               if (downloadingFileSuffix) {
                 if (filePath.endsWith(downloadingFileSuffix) && existsSync(filePath)) {
@@ -489,14 +452,6 @@
                     console.log(`[Motrix] Removed downloading suffix before categorize: ${filePath} -> ${originalPath}`)
                     filePath = originalPath
                   }
-                } else {
-                  const suffixedPath = filePath + downloadingFileSuffix
-                  if (!existsSync(filePath) && existsSync(suffixedPath)) {
-                    const ok = this.renamePreserveTimes(suffixedPath, filePath)
-                    if (ok) {
-                      console.log(`[Motrix] Restored downloading suffix before categorize: ${suffixedPath} -> ${filePath}`)
-                    }
-                  }
                 }
               }
             } catch (error) {
@@ -504,7 +459,6 @@
             }
 
             if (!existsSync(filePath)) {
-              console.warn(`[Motrix] File not found for categorization: ${filePath}`)
               return
             }
 
@@ -513,15 +467,12 @@
               const dirName = basename(baseDir)
 
               if (categoryNames.includes(dirName)) {
-                console.log(`[Motrix] File already in category directory: ${filePath}`)
                 return
               }
 
               const result = autoCategorizeDownloadedFile(filePath, baseDir, categories)
               if (result) {
                 console.log(`[Motrix] File categorized successfully: ${filePath}`)
-              } else {
-                console.warn('[Motrix] File categorization failed or file already in category')
               }
             } catch (error) {
               console.error(`[Motrix] Error during auto categorization: ${error.message}`)
@@ -531,29 +482,33 @@
           return
         }
 
-        let filePath = getTaskFullPath(task)
+        let filePath = manualPath || getTaskFullPath(task)
 
-        try {
-          if (downloadingFileSuffix) {
-            if (filePath.endsWith(downloadingFileSuffix) && existsSync(filePath)) {
-              const originalPath = filePath.slice(0, -downloadingFileSuffix.length)
-              const ok = this.renamePreserveTimes(filePath, originalPath)
-              if (ok) {
-                console.log(`[Motrix] Removed downloading suffix before categorize: ${filePath} -> ${originalPath}`)
-                filePath = originalPath
-              }
-            } else {
-              const suffixedPath = filePath + downloadingFileSuffix
-              if (!existsSync(filePath) && existsSync(suffixedPath)) {
-                const ok = this.renamePreserveTimes(suffixedPath, filePath)
+        // 如果手动传入了路径，我们假设它已经是处理过后缀的正确路径
+        // 如果没有传入，我们需要像以前一样尝试查找和处理后缀
+        if (!manualPath) {
+          try {
+            if (downloadingFileSuffix) {
+              if (filePath.endsWith(downloadingFileSuffix) && existsSync(filePath)) {
+                const originalPath = filePath.slice(0, -downloadingFileSuffix.length)
+                const ok = this.renamePreserveTimes(filePath, originalPath)
                 if (ok) {
-                  console.log(`[Motrix] Restored downloading suffix before categorize: ${suffixedPath} -> ${filePath}`)
+                  console.log(`[Motrix] Removed downloading suffix before categorize: ${filePath} -> ${originalPath}`)
+                  filePath = originalPath
+                }
+              } else {
+                const suffixedPath = filePath + downloadingFileSuffix
+                if (!existsSync(filePath) && existsSync(suffixedPath)) {
+                  const ok = this.renamePreserveTimes(suffixedPath, filePath)
+                  if (ok) {
+                    console.log(`[Motrix] Restored downloading suffix before categorize: ${suffixedPath} -> ${filePath}`)
+                  }
                 }
               }
             }
+          } catch (error) {
+            console.warn(`[Motrix] Failed to normalize downloading suffix before categorize: ${error.message}`)
           }
-        } catch (error) {
-          console.warn(`[Motrix] Failed to normalize downloading suffix before categorize: ${error.message}`)
         }
 
         if (!existsSync(filePath)) {
@@ -580,14 +535,14 @@
           console.error(`[Motrix] Error during auto categorization: ${error.message}`)
         }
       },
-      setFileMtimeOnComplete (task) {
+      setFileMtimeOnComplete (task, manualPath = null) {
         const enabled = this.$store.state.preference.config.setFileMtimeOnComplete
         if (!enabled) {
           return
         }
 
         try {
-          const filePath = getTaskFullPath(task)
+          const filePath = manualPath || getTaskFullPath(task)
           if (!existsSync(filePath)) {
             return
           }
@@ -664,13 +619,17 @@
         }, this.interval)
       },
       polling () {
+        this.pollingCount = (this.pollingCount || 0) + 1
+        // 每30次polling（约30秒）保存一次平均速度
+        if (this.pollingCount % 30 === 0) {
+          this.persistAllActiveTasksAverageSpeed()
+        }
+
         this.$store.dispatch('app/fetchGlobalStat')
         this.$store.dispatch('app/fetchProgress')
         this.$store.dispatch('task/fetchList').then(() => {
           this.checkMagnetAlerts()
           this.checkDataAccessStatus()
-          const list = this.$store.state.task.taskList || []
-          list.forEach(task => this.maybeRestoreSuffixNearCompletion(task))
         })
 
         if (this.taskDetailVisible && this.currentTaskGid) {
@@ -710,6 +669,74 @@
             }
           }
         } catch (_) {}
+      },
+      restoreSuffixFilesForActiveTasks () {
+        const suffix = this.$store.state.preference.config.downloadingFileSuffix
+        if (!suffix) {
+          return
+        }
+
+        api.fetchTaskList({ type: 'all' }).then((tasks) => {
+          tasks.forEach(task => {
+            if ([TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED].includes(task.status)) {
+              return
+            }
+
+            if (checkTaskIsBT(task)) {
+              return
+            }
+
+            try {
+              const finalPath = getTaskFullPath(task)
+              const suffixedPath = finalPath + suffix
+
+              // 如果存在后缀文件，且原文件不存在或大小为0
+              if (existsSync(suffixedPath)) {
+                let shouldRestore = false
+                if (!existsSync(finalPath)) {
+                  shouldRestore = true
+                } else {
+                  try {
+                    const st = statSync(finalPath)
+                    if (st.size === 0) {
+                      shouldRestore = true
+                    }
+                  } catch (e) {
+                    shouldRestore = true
+                  }
+                }
+
+                if (shouldRestore) {
+                  // 如果原文件存在但大小为0，先删除
+                  if (existsSync(finalPath)) {
+                    try {
+                      require('fs').unlinkSync(finalPath)
+                    } catch (e) {
+                      console.warn(`[Motrix] Failed to remove empty file: ${finalPath}`, e)
+                    }
+                  }
+
+                  const ok = this.renamePreserveTimes(suffixedPath, finalPath)
+                  if (ok) {
+                    console.log(`[Motrix] Restored suffix on startup: ${suffixedPath} -> ${finalPath}`)
+                  } else {
+                    console.warn(`[Motrix] Failed to restore suffix on startup: ${suffixedPath} -> ${finalPath}`)
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn(`[Motrix] restoreSuffixFilesForActiveTasks error for task ${task.gid}:`, err)
+            }
+          })
+        })
+      },
+      persistAllActiveTasksAverageSpeed () {
+        const list = this.$store.state.task.taskList || []
+        list.forEach(task => {
+          if (task.status === TASK_STATUS.ACTIVE) {
+            this.persistAverageSpeedToHistory(task)
+          }
+        })
       },
       async alertMagnetStatus (task) {
         try {

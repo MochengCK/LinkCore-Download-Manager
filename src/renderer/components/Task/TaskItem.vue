@@ -17,7 +17,9 @@
 </template>
 
 <script>
-  import { checkTaskIsSeeder, getTaskName } from '@shared/utils'
+  import { mapState } from 'vuex'
+  import { basename } from 'node:path'
+  import { checkTaskIsSeeder, getTaskName, ellipsis } from '@shared/utils'
   import { TASK_STATUS } from '@shared/constants'
   import { openItem, getTaskActualPath } from '@/utils/native'
   import TaskItemActions from './TaskItemActions'
@@ -36,15 +38,51 @@
         type: Object
       }
     },
+    watch: {
+      'task.status': {
+        immediate: true,
+        handler (val) {
+          if (val === TASK_STATUS.COMPLETE) {
+            this.ensureFixedDisplayName()
+          }
+        }
+      }
+    },
     computed: {
+      ...mapState('preference', {
+        preferenceConfig: state => state.config
+      }),
+      ...mapState('task', {
+        taskDisplayNames: state => state.taskDisplayNames
+      }),
       taskFullName () {
-        return getTaskName(this.task, {
+        const { task } = this
+        if (task && task.status === TASK_STATUS.COMPLETE) {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          const cached = gid && this.taskDisplayNames ? this.taskDisplayNames[gid] : ''
+          if (cached) {
+            return cached
+          }
+          return this.getCompletedDisplayName(task)
+        }
+
+        return getTaskName(task, {
           defaultName: this.$t('task.get-task-name'),
           maxLen: -1
         })
       },
       taskName () {
-        return getTaskName(this.task, {
+        const { task } = this
+        if (task && task.status === TASK_STATUS.COMPLETE) {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          const cached = gid && this.taskDisplayNames ? this.taskDisplayNames[gid] : ''
+          if (cached) {
+            return ellipsis(cached, 64)
+          }
+          return ellipsis(this.getCompletedDisplayName(task), 64)
+        }
+
+        return getTaskName(task, {
           defaultName: this.$t('task.get-task-name')
         })
       },
@@ -62,6 +100,31 @@
 
     },
     methods: {
+      getCompletedDisplayName (task) {
+        const config = this.preferenceConfig || {}
+        const suffix = config.downloadingFileSuffix || ''
+        const path = getTaskActualPath(task, config)
+        const base = basename(path || '')
+        if (suffix && base.endsWith(suffix)) {
+          return base.slice(0, -suffix.length)
+        }
+        return base
+      },
+      ensureFixedDisplayName () {
+        const { task } = this
+        const gid = task && task.gid ? `${task.gid}` : ''
+        if (!gid) {
+          return
+        }
+        const cached = this.taskDisplayNames ? this.taskDisplayNames[gid] : ''
+        if (cached) {
+          return
+        }
+        const name = this.getCompletedDisplayName(task)
+        if (name) {
+          this.$store.dispatch('task/setTaskDisplayName', { gid, name })
+        }
+      },
       onDbClick () {
         const { status } = this.task
         const { COMPLETE, WAITING, PAUSED } = TASK_STATUS

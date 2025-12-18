@@ -63,6 +63,9 @@
         taskList: state => state.taskList,
         selectedGidList: state => state.selectedGidList
       }),
+      ...mapState('preference', {
+        preferenceConfig: state => state.config
+      }),
       displayTaskList () {
         if (!this.category) {
           return this.taskList
@@ -117,9 +120,13 @@
       },
       getTaskFileExtensions (task) {
         const files = (task && task.files) || []
+        const suffix = (this.preferenceConfig && this.preferenceConfig.downloadingFileSuffix) || ''
         const result = []
         files.forEach((file) => {
-          const name = getFileNameFromFile(file)
+          let name = getFileNameFromFile(file)
+          if (suffix && name && name.endsWith(suffix)) {
+            name = name.slice(0, -suffix.length)
+          }
           const ext = `${getFileExtension(name)}`.toLowerCase()
           if (ext) {
             result.push(ext)
