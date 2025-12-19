@@ -59,6 +59,7 @@
       const box = this.createBox()
       let start = { x: 0, y: 0 }
       let end = { x: 0, y: 0 }
+      let childrenRects = []
 
       function touchStart (e) {
         e.preventDefault()
@@ -72,7 +73,12 @@
 
       function startDrag (e) {
         containerRect = container.getBoundingClientRect()
-        self.children = container.querySelectorAll('[' + self.attribute + ']')
+        const children = container.querySelectorAll('[' + self.attribute + ']')
+        childrenRects = Array.from(children).map(child => ({
+          el: child,
+          rect: child.getBoundingClientRect()
+        }))
+        self.children = children
         start = getCoords(e, containerRect)
         end = start
         document.addEventListener('mousemove', drag)
@@ -82,7 +88,7 @@
         box.style.left = start.x + 'px'
 
         container.prepend(box)
-        self.intersection(box)
+        self.intersection(box, childrenRects)
       }
 
       function drag (e) {
@@ -98,7 +104,7 @@
         box.style.width = dimensions.width + 'px'
         box.style.height = dimensions.height + 'px'
 
-        self.intersection(box)
+        self.intersection(box, childrenRects)
       }
 
       function endDrag () {
@@ -137,16 +143,27 @@
 
         return box
       },
-      intersection (box) {
+      intersection (box, childrenRects) {
         const { children } = this
         const rect = box.getBoundingClientRect()
         const intersected = []
 
-        for (let i = 0; i < children.length; i++) {
-          if (collisionCheck(rect, children[i].getBoundingClientRect())) {
-            const attr = children[i].getAttribute(this.attribute)
-            if (children[i].hasAttribute(this.attribute)) {
-              intersected.push(attr)
+        if (childrenRects) {
+          childrenRects.forEach(({ el, rect: childRect }) => {
+            if (collisionCheck(rect, childRect)) {
+              const attr = el.getAttribute(this.attribute)
+              if (el.hasAttribute(this.attribute)) {
+                intersected.push(attr)
+              }
+            }
+          })
+        } else {
+          for (let i = 0; i < children.length; i++) {
+            if (collisionCheck(rect, children[i].getBoundingClientRect())) {
+              const attr = children[i].getAttribute(this.attribute)
+              if (children[i].hasAttribute(this.attribute)) {
+                intersected.push(attr)
+              }
             }
           }
         }

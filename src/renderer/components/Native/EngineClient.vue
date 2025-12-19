@@ -62,6 +62,14 @@
     },
     watch: {
       speed (val) {
+        // Throttle speed updates to avoid excessive IPC calls
+        // Only update if it's been more than 800ms since last update
+        const now = Date.now()
+        if (this.lastSpeedUpdate && now - this.lastSpeedUpdate < 800) {
+          return
+        }
+        this.lastSpeedUpdate = now
+
         const { uploadSpeed, downloadSpeed } = this
         this.$electron.ipcRenderer.send('event', 'speed-change', {
           uploadSpeed,

@@ -1,3 +1,4 @@
+import Vue from 'vue'
 import api from '@/api'
 import { EMPTY_STRING, TASK_STATUS } from '@shared/constants'
 import { checkTaskIsBT, getFileNameFromFile, intersection } from '@shared/utils'
@@ -28,7 +29,26 @@ const mutations = {
     state.seedingList = seedingList
   },
   UPDATE_TASK_LIST (state, taskList) {
-    state.taskList = taskList
+    const oldList = state.taskList
+    const oldMap = new Map(oldList.map(t => [t.gid, t]))
+    const newList = []
+
+    taskList.forEach(newTask => {
+      const oldTask = oldMap.get(newTask.gid)
+      if (oldTask) {
+        // Update existing task properties
+        Object.keys(newTask).forEach(key => {
+          if (oldTask[key] !== newTask[key]) {
+            Vue.set(oldTask, key, newTask[key])
+          }
+        })
+        newList.push(oldTask)
+      } else {
+        newList.push(newTask)
+      }
+    })
+
+    state.taskList = newList
   },
   UPDATE_SELECTED_GID_LIST (state, gidList) {
     state.selectedGidList = gidList
