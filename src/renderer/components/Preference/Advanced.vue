@@ -28,10 +28,10 @@
                 }}
                 <span
                   class="action-link"
-                  :class="{ 'action-link--disabled': isCheckingUpdate || updateAvailable }"
-                  @click.prevent="(isCheckingUpdate || updateAvailable) ? null : onCheckUpdateClick()"
+                  :class="{ 'action-link--disabled': isCheckingUpdate }"
+                  @click.prevent="isCheckingUpdate ? null : (updateAvailable ? onPreviewUpdateClick() : onCheckUpdateClick())"
                 >
-                  {{ $t('app.check-updates-now') }}
+                  {{ updateAvailable ? $t('app.preview-update') : $t('app.check-updates-now') }}
                 </span>
               </div>
               <div
@@ -643,6 +643,16 @@
     <div v-if="trackerSourceConfigVisible" class="mo-tracker-source-submit">
       <el-button type="primary" @click="addTrackerSourceFromInput">{{ $t('app.submit') }}</el-button>
     </div>
+    <div v-if="updatePreviewVisible" class="update-preview-mask">
+      <div class="update-preview-body">
+        {{ updatePreviewContent }}
+      </div>
+    </div>
+    <div v-if="updatePreviewVisible" class="update-preview-confirm">
+      <el-button type="primary" @click="closeUpdatePreview">
+        {{ $t('app.yes') || 'OK' }}
+      </el-button>
+    </div>
 
   </el-main>
 </template>
@@ -800,12 +810,14 @@
           'dir'
         ],
         aria2ConfRawText: '',
-        appVersion: ''
+        appVersion: '',
+        updatePreviewVisible: false,
+        updatePreviewContent: ''
       }
     },
     computed: {
       ...mapState('app', ['isCheckingUpdate']),
-      ...mapState('preference', ['updateAvailable', 'newVersion', 'isDownloadingUpdate', 'downloadProgress']),
+      ...mapState('preference', ['updateAvailable', 'newVersion', 'isDownloadingUpdate', 'downloadProgress', 'releaseNotes']),
       ...mapState('app', {
         storeEngineInfo: state => state.engineInfo
       }),
@@ -1354,12 +1366,13 @@
           this.$store.dispatch('preference/updateLastCheckUpdateTime', Date.now())
         }
 
-        const onUpdateAvailable = (event, version) => {
+        const onUpdateAvailable = (event, version, releaseNotes) => {
           this.$msg.info(this.$t('app.update-available-message'))
           this.updateCheckingUpdate(false)
           this.$store.dispatch('preference/updateUpdateAvailable', true)
           this.$store.dispatch('preference/updateNewVersion', version)
           this.$store.dispatch('preference/updateLastCheckUpdateTime', Date.now())
+          this.$store.dispatch('preference/updateReleaseNotes', releaseNotes || '')
         }
 
         // 使用once监听事件，确保事件只处理一次
@@ -1403,6 +1416,42 @@
             const { lastCheckUpdateTime } = config
             this.form.lastCheckUpdateTime = lastCheckUpdateTime
           })
+      },
+      async onPreviewUpdateClick () {
+        try {
+          const normalizeReleaseNotes = (html) => {
+            if (!html || typeof html !== 'string') {
+              return ''
+            }
+            let text = html
+            text = text.replace(/<\/(p|h[1-6]|li|ul|ol)>/gi, '\n')
+            text = text.replace(/<br\s*\/?>/gi, '\n')
+            text = text.replace(/<li[^>]*>/gi, '• ')
+            text = text.replace(/<[^>]+>/g, '')
+            text = text.replace(/&nbsp;/gi, ' ')
+            text = text.replace(/&amp;/gi, '&')
+            text = text.replace(/&lt;/gi, '<')
+            text = text.replace(/&gt;/gi, '>')
+            text = text.replace(/&quot;/gi, '"')
+            text = text.replace(/&#39;/gi, '\'')
+            text = text.replace(/\r\n/g, '\n')
+            text = text.replace(/\n{3,}/g, '\n\n')
+            return text.trim()
+          }
+          const raw = this.releaseNotes
+          const normalized = raw ? normalizeReleaseNotes(raw) : ''
+          const displayContent = normalized || this.$t('app.release-notes-not-found')
+          this.updatePreviewContent = displayContent
+          this.updatePreviewVisible = true
+        } catch (e) {
+          console.error('[Motrix] Preview update failed', e)
+          if (this.$msg) {
+            this.$msg.error(this.$t('app.update-error-message'))
+          }
+        }
+      },
+      closeUpdatePreview () {
+        this.updatePreviewVisible = false
       },
       syncTrackerFromSource () {
         this.trackerSyncing = true
@@ -2112,6 +2161,48 @@
   right: 14px;
   bottom: 24px;
   z-index: 3001;
+}
+
+.update-preview-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3099;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.update-preview-body {
+  max-width: 720px;
+  width: 100%;
+  max-height: 70vh;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #303133;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.update-preview-confirm {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 3100;
+}
+
+.theme-dark .update-preview-body {
+  background: $--dk-panel-background;
+  color: #f2f2f2;
 }
 
 .el-dialog.aria2conf-editor-dialog {

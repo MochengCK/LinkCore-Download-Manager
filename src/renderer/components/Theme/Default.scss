@@ -10,6 +10,8 @@ body {
     "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-variant: tabular-nums;
   font-size: $--font-size-medium;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 ::-webkit-scrollbar {

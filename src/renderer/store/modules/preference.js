@@ -17,7 +17,8 @@ const state = {
   newVersion: '',
   lastCheckUpdateTime: 0,
   isDownloadingUpdate: false,
-  downloadProgress: 0
+  downloadProgress: 0,
+  releaseNotes: ''
 }
 
 const getters = {
@@ -60,6 +61,9 @@ const mutations = {
   },
   UPDATE_DOWNLOAD_PROGRESS (state, downloadProgress) {
     state.downloadProgress = downloadProgress
+  },
+  UPDATE_RELEASE_NOTES (state, releaseNotes) {
+    state.releaseNotes = releaseNotes
   }
 }
 
@@ -174,6 +178,9 @@ const actions = {
   },
   updateDownloadProgress ({ commit }, downloadProgress) {
     commit('UPDATE_DOWNLOAD_PROGRESS', downloadProgress)
+  },
+  updateReleaseNotes ({ commit }, releaseNotes) {
+    commit('UPDATE_RELEASE_NOTES', releaseNotes)
   },
   fetchBtTracker (_, trackerSource = []) {
     const { proxy = { enable: false } } = state.config

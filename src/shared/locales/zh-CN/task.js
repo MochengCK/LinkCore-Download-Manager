@@ -208,7 +208,10 @@ export default {
   'verify-no-files': '没有可校验的文件',
   'verify-missing-files': '有 {{count}} 个文件不存在',
   'verify-size-mismatch': '有 {{count}} 个文件大小不一致',
+  'verify-by-size': '文件大小',
   'verify-success-multi': '校验通过（已校验 {{count}} 个文件大小）',
   'verify-success-sha256': '校验通过，SHA-256 已复制：{{sha256}}',
-  'verify-hash-fail': '计算 SHA-256 失败'
+  'verify-success-hash': '校验通过，{{algorithm}} 已复制：{{hash}}',
+  'verify-success-hash-list': '校验通过，{{algorithm}} 列表已复制（{{count}} 个文件）',
+  'verify-hash-fail': '计算 {{algorithm}} 失败'
 }

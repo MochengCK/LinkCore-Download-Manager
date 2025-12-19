@@ -145,7 +145,10 @@ export default {
   'verify-no-files': '沒有可校驗的檔案',
   'verify-missing-files': '有 {{count}} 個檔案不存在',
   'verify-size-mismatch': '有 {{count}} 個檔案大小不一致',
+  'verify-by-size': '檔案大小',
   'verify-success-multi': '校驗通過（已校驗 {{count}} 個檔案大小）',
   'verify-success-sha256': '校驗通過，SHA-256 已複製：{{sha256}}',
-  'verify-hash-fail': '計算 SHA-256 失敗'
+  'verify-success-hash': '校驗通過，{{algorithm}} 已複製：{{hash}}',
+  'verify-success-hash-list': '校驗通過，{{algorithm}} 列表已複製（{{count}} 個檔案）',
+  'verify-hash-fail': '計算 {{algorithm}} 失敗'
 }

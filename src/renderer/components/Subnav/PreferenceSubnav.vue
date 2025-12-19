@@ -56,7 +56,7 @@
     },
     computed: {
       ...mapState('app', ['isCheckingUpdate']),
-      ...mapState('preference', ['updateAvailable', 'newVersion', 'isDownloadingUpdate', 'downloadProgress']),
+      ...mapState('preference', ['updateAvailable', 'newVersion', 'isDownloadingUpdate', 'downloadProgress', 'releaseNotes']),
       title () {
         return this.$t('subnav.preferences')
       },
@@ -78,13 +78,14 @@
         this.updateCheckingUpdate(true)
       })
 
-      this.$electron.ipcRenderer.on('update-available', (event, version) => {
+      this.$electron.ipcRenderer.on('update-available', (event, version, releaseNotes) => {
         const cfg = (this.$store.state.preference && this.$store.state.preference.config) || {}
         const autoCheckEnabled = !!cfg.autoCheckUpdate
         if (autoCheckEnabled) {
           this.updateUpdateAvailable(true)
           this.updateNewVersion(version)
           this.updateLastCheckUpdateTime(Date.now())
+          this.updateReleaseNotes(releaseNotes || '')
         }
         this.updateCheckingUpdate(false)
       })
@@ -120,7 +121,7 @@
     },
     methods: {
       ...mapActions('app', ['updateCheckingUpdate']),
-      ...mapActions('preference', ['updateUpdateAvailable', 'updateNewVersion', 'updateLastCheckUpdateTime', 'updateIsDownloadingUpdate', 'updateDownloadProgress']),
+      ...mapActions('preference', ['updateUpdateAvailable', 'updateNewVersion', 'updateLastCheckUpdateTime', 'updateIsDownloadingUpdate', 'updateDownloadProgress', 'updateReleaseNotes']),
       nav (category = 'basic') {
         this.$router.push({
           path: `/preference/${category}`
@@ -183,12 +184,13 @@
           this.updateLastCheckUpdateTime(Date.now())
         }
 
-        const onUpdateAvailable = (event, version) => {
+        const onUpdateAvailable = (event, version, releaseNotes) => {
           this.showMessage('info', this.$t('app.update-available-message'))
           this.updateCheckingUpdate(false)
           this.updateUpdateAvailable(true)
           this.updateNewVersion(version)
           this.updateLastCheckUpdateTime(Date.now())
+          this.updateReleaseNotes(releaseNotes || '')
         }
 
         // 使用once监听事件，确保事件只处理一次

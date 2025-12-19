@@ -208,7 +208,10 @@ export default {
   'verify-no-files': 'No files to verify',
   'verify-missing-files': '{{count}} file(s) are missing',
   'verify-size-mismatch': '{{count}} file(s) size mismatch',
+  'verify-by-size': 'File size',
   'verify-success-multi': 'Verification passed (checked {{count}} file size(s))',
   'verify-success-sha256': 'Verification passed. SHA-256 copied: {{sha256}}',
-  'verify-hash-fail': 'Failed to calculate SHA-256'
+  'verify-success-hash': 'Verification passed. {{algorithm}} copied: {{hash}}',
+  'verify-success-hash-list': 'Verification passed. {{algorithm}} list copied ({{count}} file(s))',
+  'verify-hash-fail': 'Failed to calculate {{algorithm}}'
 }

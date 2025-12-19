@@ -81,23 +81,14 @@
     },
     mounted () {
       this._updateMessageShown = false
-      const onUpdateAvailable = (event, version) => {
+      const onUpdateAvailable = (event, version, releaseNotes) => {
         const cfg = (this.$store.state.preference && this.$store.state.preference.config) || {}
         const autoCheckEnabled = !!cfg.autoCheckUpdate
         if (autoCheckEnabled) {
           this.$store.dispatch('preference/updateUpdateAvailable', true)
           this.$store.dispatch('preference/updateNewVersion', version)
           this.$store.dispatch('preference/updateLastCheckUpdateTime', Date.now())
-        }
-        if (this.$msg && autoCheckEnabled && !this._updateMessageShown) {
-          this.$msg.info({
-            message: this.$t('app.update-available-message'),
-            duration: 0,
-            onClick: () => {
-              this.$router.push({ path: '/preference/advanced' }).catch(() => {})
-            }
-          })
-          this._updateMessageShown = true
+          this.$store.dispatch('preference/updateReleaseNotes', releaseNotes || '')
         }
       }
       const onUpdateNotAvailable = () => {
@@ -109,13 +100,7 @@
           this.$store.dispatch('preference/updateLastCheckUpdateTime', Date.now())
         }
       }
-      const onUpdateError = () => {
-        const cfg = (this.$store.state.preference && this.$store.state.preference.config) || {}
-        const autoCheckEnabled = !!cfg.autoCheckUpdate
-        if (autoCheckEnabled && this.$msg) {
-          this.$msg.error(this.$t('app.update-error-message'))
-        }
-      }
+      const onUpdateError = () => {}
       this.$electron.ipcRenderer.on('update-available', onUpdateAvailable)
       this.$electron.ipcRenderer.on('update-not-available', onUpdateNotAvailable)
       this.$electron.ipcRenderer.on('update-error', onUpdateError)

@@ -151,9 +151,39 @@ export default class UpdateManager extends EventEmitter {
         }
       }
     }
+    let releaseNotes = ''
+    const rawNotes = (data && typeof data === 'object')
+      ? (data.releaseNotes || (data.updateInfo && data.updateInfo.releaseNotes))
+      : ''
+    if (Array.isArray(rawNotes)) {
+      const matched = rawNotes.find((item) => {
+        if (!item || typeof item !== 'object') {
+          return false
+        }
+        if (item.version && typeof item.version === 'string') {
+          return item.version === finalVersion || item.version === versionPrimary
+        }
+        return false
+      })
+      if (matched && typeof matched.note === 'string') {
+        releaseNotes = matched.note
+      } else {
+        releaseNotes = rawNotes
+          .map((item) => {
+            if (!item) return ''
+            if (typeof item === 'string') return item
+            if (typeof item.note === 'string') return item.note
+            return ''
+          })
+          .filter(Boolean)
+          .join('\n\n')
+      }
+    } else if (typeof rawNotes === 'string') {
+      releaseNotes = rawNotes
+    }
     logger.info('[Motrix] Sending update-available with version:', finalVersion)
     windows.forEach(window => {
-      window.webContents.send('update-available', finalVersion)
+      window.webContents.send('update-available', finalVersion, releaseNotes)
     })
     if (global.application?.configManager) {
       global.application.configManager.setUserConfig('update-available', true)
