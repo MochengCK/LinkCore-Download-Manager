@@ -310,6 +310,9 @@
 .action-link {
   cursor: pointer;
   color: $--link-color;
+  &.update-available {
+    font-weight: bold;
+  }
   &:hover {
     color: $--link-hover-color;
     text-decoration: underline;

@@ -28,7 +28,10 @@
                 }}
                 <span
                   class="action-link"
-                  :class="{ 'action-link--disabled': isCheckingUpdate }"
+                  :class="{
+                    'action-link--disabled': isCheckingUpdate,
+                    'update-available': updateAvailable && !isCheckingUpdate
+                  }"
                   @click.prevent="isCheckingUpdate ? null : (updateAvailable ? onPreviewUpdateClick() : onCheckUpdateClick())"
                 >
                   {{ updateAvailable ? $t('app.preview-update') : $t('app.check-updates-now') }}
@@ -643,9 +646,13 @@
     <div v-if="trackerSourceConfigVisible" class="mo-tracker-source-submit">
       <el-button type="primary" @click="addTrackerSourceFromInput">{{ $t('app.submit') }}</el-button>
     </div>
-    <div v-if="updatePreviewVisible" class="update-preview-mask">
-      <div class="update-preview-body">
-        {{ updatePreviewContent }}
+    <div
+      v-if="updatePreviewVisible"
+      class="update-preview-mask"
+      @click.self="closeUpdatePreview"
+    >
+      <div class="update-preview-body" @click="handleUpdatePreviewClick">
+        <div class="update-preview-html" v-html="updatePreviewContent" />
       </div>
     </div>
     <div v-if="updatePreviewVisible" class="update-preview-confirm">
@@ -1419,28 +1426,87 @@
       },
       async onPreviewUpdateClick () {
         try {
-          const normalizeReleaseNotes = (html) => {
-            if (!html || typeof html !== 'string') {
+          const buildReleaseNotesHtml = (raw) => {
+            if (!raw || typeof raw !== 'string') {
               return ''
             }
-            let text = html
-            text = text.replace(/<\/(p|h[1-6]|li|ul|ol)>/gi, '\n')
-            text = text.replace(/<br\s*\/?>/gi, '\n')
-            text = text.replace(/<li[^>]*>/gi, '• ')
-            text = text.replace(/<[^>]+>/g, '')
-            text = text.replace(/&nbsp;/gi, ' ')
-            text = text.replace(/&amp;/gi, '&')
-            text = text.replace(/&lt;/gi, '<')
-            text = text.replace(/&gt;/gi, '>')
-            text = text.replace(/&quot;/gi, '"')
-            text = text.replace(/&#39;/gi, '\'')
-            text = text.replace(/\r\n/g, '\n')
-            text = text.replace(/\n{3,}/g, '\n\n')
-            return text.trim()
+            let s = `${raw}`.trim()
+            if (!s) {
+              return ''
+            }
+            const looksLikeHtml = /<\/?(p|h[1-6]|ul|ol|li|pre|code|strong|em|a|table|thead|tbody|tr|td|th)[\s>]/i.test(s) || /<br\s*\/?>/i.test(s)
+            let html = ''
+            if (looksLikeHtml) {
+              html = s
+            } else {
+              s = s.replace(/\r\n/g, '\n')
+              const escapeHtml = (text) => {
+                return `${text}`
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+              }
+              const escapeAttr = (text) => {
+                return `${text}`
+                  .replace(/&/g, '&amp;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+              }
+              const blocks = s.split(/\n{2,}/)
+              html = blocks.map(block => {
+                const lines = block.split('\n')
+                const trimmedLines = lines.map(l => l.trim()).filter(l => l.length > 0)
+                if (!trimmedLines.length) {
+                  return ''
+                }
+                if (trimmedLines.length === 1) {
+                  const imgMatch = /^!\[([^\]]*)\]\(([^)]+)\)/.exec(trimmedLines[0])
+                  if (imgMatch) {
+                    const altRaw = imgMatch[1] || ''
+                    const srcRaw = imgMatch[2] || ''
+                    const srcTrimmed = `${srcRaw}`.trim()
+                    const safeSrc = /^https?:\/\//i.test(srcTrimmed) ? srcTrimmed : srcTrimmed
+                    return `<p><img src="${escapeAttr(safeSrc)}" alt="${escapeAttr(altRaw)}"></p>`
+                  }
+                }
+                const allBullet = trimmedLines.every(l => /^[-*]\s+/.test(l))
+                const allNumbered = trimmedLines.every(l => /^\d+\.\s+/.test(l))
+                if (allBullet) {
+                  const items = trimmedLines.map(l => {
+                    const text = l.replace(/^[-*]\s+/, '')
+                    return `<li>${escapeHtml(text)}</li>`
+                  }).join('')
+                  return `<ul>${items}</ul>`
+                }
+                if (allNumbered) {
+                  const items = trimmedLines.map(l => {
+                    const text = l.replace(/^\d+\.\s+/, '')
+                    return `<li>${escapeHtml(text)}</li>`
+                  }).join('')
+                  return `<ol>${items}</ol>`
+                }
+                const inner = trimmedLines.map(line => escapeHtml(line)).join('<br>')
+                return `<p>${inner}</p>`
+              }).filter(Boolean).join('')
+            }
+            html = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+            html = html.replace(/<style[\s\S]*?<\/style>/gi, '')
+            html = html.replace(/\son\w+="[^"]*"/gi, '')
+            html = html.replace(/\son\w+='[^']*'/gi, '')
+            html = html.replace(/href="javascript:[^"]*"/gi, 'href="#"')
+            html = html.replace(/href='javascript:[^']*'/gi, "href='#'")
+            if (!looksLikeHtml) {
+              html = html.replace(
+                /(https?:\/\/[^\s<]+)/gi,
+                '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+              )
+            }
+            return html.trim()
           }
           const raw = this.releaseNotes
-          const normalized = raw ? normalizeReleaseNotes(raw) : ''
-          const displayContent = normalized || this.$t('app.release-notes-not-found')
+          const html = raw ? buildReleaseNotesHtml(raw) : ''
+          const displayContent = html || `<p>${this.$t('app.release-notes-not-found')}</p>`
           this.updatePreviewContent = displayContent
           this.updatePreviewVisible = true
         } catch (e) {
@@ -1452,6 +1518,33 @@
       },
       closeUpdatePreview () {
         this.updatePreviewVisible = false
+      },
+      handleUpdatePreviewClick (event) {
+        const root = event.currentTarget
+        let el = event.target
+        while (el && el !== root) {
+          if (el.tagName && el.tagName.toLowerCase() === 'a') {
+            break
+          }
+          el = el.parentNode
+        }
+        if (!el || el === root) {
+          return
+        }
+        const href = el.getAttribute('href') || ''
+        if (!href || href.charAt(0) === '#') {
+          return
+        }
+        event.preventDefault()
+        event.stopPropagation()
+        if (!/^https?:\/\//i.test(href)) {
+          return
+        }
+        try {
+          this.$electron.ipcRenderer.send('command', 'application:open-external', href)
+        } catch (e) {
+          console.error('[Motrix] open external url failed:', href, e)
+        }
       },
       syncTrackerFromSource () {
         this.trackerSyncing = true
@@ -2200,9 +2293,107 @@
   z-index: 3100;
 }
 
+.update-preview-html {
+  white-space: normal;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.update-preview-html h1 {
+  font-size: 20px;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.update-preview-html h2 {
+  font-size: 18px;
+  margin: 16px 0 8px;
+  font-weight: 600;
+}
+
+.update-preview-html h3 {
+  font-size: 16px;
+  margin: 14px 0 6px;
+  font-weight: 600;
+}
+
+.update-preview-html p {
+  margin: 0 0 10px;
+}
+
+.update-preview-html ul,
+.update-preview-html ol {
+  margin: 0 0 10px 0;
+  padding-left: 1.5em;
+}
+
+.update-preview-html li {
+  margin: 2px 0;
+}
+
+.update-preview-html a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.update-preview-html a:hover {
+  text-decoration: underline;
+}
+
+.update-preview-html code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: rgba(27, 31, 35, 0.05);
+}
+
+.update-preview-html pre {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  margin: 0 0 12px;
+  border-radius: 4px;
+  background: rgba(27, 31, 35, 0.06);
+  overflow: auto;
+}
+
+.update-preview-html pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.update-preview-html blockquote {
+  margin: 0 0 10px;
+  padding-left: 12px;
+  border-left: 4px solid rgba(0, 0, 0, 0.1);
+  color: #6a737d;
+}
+
+.update-preview-html img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+  border-radius: 4px;
+}
+
 .theme-dark .update-preview-body {
   background: $--dk-panel-background;
   color: #f2f2f2;
+}
+
+.theme-dark .update-preview-html a {
+  color: #58a6ff;
+}
+
+.theme-dark .update-preview-html code {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .update-preview-html pre {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .el-dialog.aria2conf-editor-dialog {
