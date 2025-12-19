@@ -1434,10 +1434,105 @@
             if (!s) {
               return ''
             }
+            const sanitizeHtml = (dirtyHtml) => {
+              try {
+                const parser = new DOMParser()
+                const doc = parser.parseFromString(`<div>${dirtyHtml}</div>`, 'text/html')
+                const root = doc.body && doc.body.firstElementChild
+                if (!root) {
+                  return ''
+                }
+
+                const allowedTags = new Set([
+                  'p', 'br',
+                  'ul', 'ol', 'li',
+                  'pre', 'code',
+                  'strong', 'em',
+                  'a',
+                  'img',
+                  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+                ])
+
+                const isBlockedTag = (tag) => {
+                  const t = `${tag || ''}`.toLowerCase()
+                  return ['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta'].includes(t)
+                }
+
+                const normalizeUrlAttr = (value) => {
+                  const v = `${value || ''}`.trim()
+                  if (!v) return ''
+                  if (/^https?:\/\//i.test(v)) return v
+                  return ''
+                }
+
+                const sanitizeNode = (node, outDoc) => {
+                  if (!node) return null
+                  if (node.nodeType === Node.TEXT_NODE) {
+                    return outDoc.createTextNode(node.textContent || '')
+                  }
+                  if (node.nodeType !== Node.ELEMENT_NODE) {
+                    return null
+                  }
+
+                  const tag = (node.tagName || '').toLowerCase()
+                  if (isBlockedTag(tag)) {
+                    return null
+                  }
+                  if (!allowedTags.has(tag)) {
+                    const frag = outDoc.createDocumentFragment()
+                    Array.from(node.childNodes || []).forEach(child => {
+                      const cleaned = sanitizeNode(child, outDoc)
+                      if (cleaned) frag.appendChild(cleaned)
+                    })
+                    return frag
+                  }
+
+                  const el = outDoc.createElement(tag)
+
+                  if (tag === 'a') {
+                    const href = normalizeUrlAttr(node.getAttribute('href'))
+                    if (!href) {
+                      el.setAttribute('href', '#')
+                    } else {
+                      el.setAttribute('href', href)
+                    }
+                    el.setAttribute('target', '_blank')
+                    el.setAttribute('rel', 'noopener noreferrer')
+                  } else if (tag === 'img') {
+                    const src = normalizeUrlAttr(node.getAttribute('src'))
+                    if (!src) {
+                      return null
+                    }
+                    el.setAttribute('src', src)
+                    const alt = node.getAttribute('alt')
+                    if (alt) {
+                      el.setAttribute('alt', `${alt}`)
+                    }
+                  }
+
+                  Array.from(node.childNodes || []).forEach(child => {
+                    const cleaned = sanitizeNode(child, outDoc)
+                    if (cleaned) el.appendChild(cleaned)
+                  })
+                  return el
+                }
+
+                const outDoc = document.implementation.createHTMLDocument('')
+                const container = outDoc.createElement('div')
+                Array.from(root.childNodes || []).forEach(child => {
+                  const cleaned = sanitizeNode(child, outDoc)
+                  if (cleaned) container.appendChild(cleaned)
+                })
+                return container.innerHTML
+              } catch (_) {
+                return ''
+              }
+            }
             const looksLikeHtml = /<\/?(p|h[1-6]|ul|ol|li|pre|code|strong|em|a|table|thead|tbody|tr|td|th)[\s>]/i.test(s) || /<br\s*\/?>/i.test(s)
             let html = ''
             if (looksLikeHtml) {
-              html = s
+              html = sanitizeHtml(s)
             } else {
               s = s.replace(/\r\n/g, '\n')
               const escapeHtml = (text) => {
@@ -1466,7 +1561,10 @@
                     const altRaw = imgMatch[1] || ''
                     const srcRaw = imgMatch[2] || ''
                     const srcTrimmed = `${srcRaw}`.trim()
-                    const safeSrc = /^https?:\/\//i.test(srcTrimmed) ? srcTrimmed : srcTrimmed
+                    const safeSrc = /^https?:\/\//i.test(srcTrimmed) ? srcTrimmed : ''
+                    if (!safeSrc) {
+                      return `<p>${escapeHtml(trimmedLines[0])}</p>`
+                    }
                     return `<p><img src="${escapeAttr(safeSrc)}" alt="${escapeAttr(altRaw)}"></p>`
                   }
                 }
@@ -1490,18 +1588,13 @@
                 return `<p>${inner}</p>`
               }).filter(Boolean).join('')
             }
-            html = html.replace(/<script[\s\S]*?<\/script>/gi, '')
-            html = html.replace(/<style[\s\S]*?<\/style>/gi, '')
-            html = html.replace(/\son\w+="[^"]*"/gi, '')
-            html = html.replace(/\son\w+='[^']*'/gi, '')
-            html = html.replace(/href="javascript:[^"]*"/gi, 'href="#"')
-            html = html.replace(/href='javascript:[^']*'/gi, "href='#'")
             if (!looksLikeHtml) {
               html = html.replace(
                 /(https?:\/\/[^\s<]+)/gi,
                 '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
               )
             }
+            html = sanitizeHtml(html)
             return html.trim()
           }
           const raw = this.releaseNotes
