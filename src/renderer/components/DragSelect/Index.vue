@@ -54,12 +54,15 @@
     mounted () {
       const { container } = this.$refs
       const self = this
+      const minDragDistance = 4
 
       let containerRect = container.getBoundingClientRect()
       const box = this.createBox()
       let start = { x: 0, y: 0 }
       let end = { x: 0, y: 0 }
       let childrenRects = []
+      let activated = false
+      let boxAttached = false
 
       function touchStart (e) {
         e.preventDefault()
@@ -81,19 +84,30 @@
         self.children = children
         start = getCoords(e, containerRect)
         end = start
+        activated = false
+        boxAttached = false
         document.addEventListener('mousemove', drag)
         document.addEventListener('touchmove', touchMove)
-
-        box.style.top = start.y + 'px'
-        box.style.left = start.x + 'px'
-
-        container.prepend(box)
-        self.intersection(box, childrenRects)
       }
 
       function drag (e) {
         end = getCoords(e, containerRect)
         const dimensions = getDimensions(start, end)
+
+        if (!activated) {
+          if (dimensions.width < minDragDistance && dimensions.height < minDragDistance) {
+            return
+          }
+          activated = true
+          box.style.top = start.y + 'px'
+          box.style.left = start.x + 'px'
+          box.style.width = '0px'
+          box.style.height = '0px'
+          if (!boxAttached) {
+            container.prepend(box)
+            boxAttached = true
+          }
+        }
 
         if (end.x < start.x) {
           box.style.left = end.x + 'px'
@@ -104,19 +118,25 @@
         box.style.width = dimensions.width + 'px'
         box.style.height = dimensions.height + 'px'
 
-        self.intersection(box, childrenRects)
+        if (activated) {
+          self.intersection(box, childrenRects)
+        }
       }
 
       function endDrag () {
         start = { x: 0, y: 0 }
         end = { x: 0, y: 0 }
+        activated = false
 
         box.style.width = 0
         box.style.height = 0
 
         document.removeEventListener('mousemove', drag)
         document.removeEventListener('touchmove', touchMove)
-        box.remove()
+        if (boxAttached) {
+          boxAttached = false
+          box.remove()
+        }
       }
 
       container.addEventListener('mousedown', startDrag)
@@ -140,6 +160,7 @@
         box.style.backgroundColor = this.color
         box.style.opacity = this.opacity
         box.style.zIndex = 1000
+        box.style.pointerEvents = 'none'
 
         return box
       },

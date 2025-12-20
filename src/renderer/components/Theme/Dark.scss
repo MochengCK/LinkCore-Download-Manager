@@ -223,6 +223,37 @@
     color: $--dk-preference-form-text-color;
   }
 
+  .el-radio-button__inner {
+    background-color: #5b5b5b;
+    border-color: #606060;
+    color: #e6e6e6;
+    box-shadow: -1px 0 0 0 #606060;
+  }
+
+  .el-radio-button:first-child .el-radio-button__inner {
+    border-left: 1px solid #606060;
+    box-shadow: none;
+  }
+
+  .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+    background-color: $--color-primary;
+    border-color: $--color-primary;
+    color: #fff;
+    box-shadow: -1px 0 0 0 $--color-primary;
+  }
+
+  .el-radio-button__orig-radio:disabled + .el-radio-button__inner {
+    background-color: #3d3d3d;
+    border-color: #606060;
+    color: #888;
+  }
+
+  .el-radio-button__orig-radio:disabled:checked + .el-radio-button__inner {
+    background-color: rgba($--color-primary, 0.55);
+    border-color: rgba($--color-primary, 0.55);
+    color: rgba(#fff, 0.85);
+  }
+
   .el-switch__core,
   .el-checkbox__inner {
     border-color: #606060;
@@ -236,6 +267,42 @@
   .el-select-dropdown {
     background-color: #3d3d3d;
     border-color: #606060;
+  }
+
+  .el-time-panel,
+  .el-time-range-picker {
+    background-color: #3d3d3d;
+    border-color: #606060;
+    color: #eee;
+  }
+
+  .el-time-panel__content::before,
+  .el-time-panel__content::after {
+    border-color: #606060;
+  }
+
+  .el-time-spinner__item {
+    color: #e6e6e6;
+    &.active:not(.disabled) {
+      color: $--color-primary;
+    }
+    &:hover:not(.disabled) {
+      background-color: #333;
+    }
+    &.disabled {
+      color: #777;
+    }
+  }
+
+  .el-time-panel__footer {
+    border-top-color: #606060;
+  }
+
+  .el-time-panel__btn {
+    color: #e6e6e6;
+    &.confirm {
+      color: $--color-primary;
+    }
   }
 
   .el-select-dropdown__item {

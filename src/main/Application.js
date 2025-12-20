@@ -50,6 +50,8 @@ export default class Application extends EventEmitter {
     this._updateStatusInitialized = false
     this._taskPlanTriggered = false
     this._taskPlanCheckTimer = null
+    this._taskPlanScheduleTimer = null
+    this._taskPlanScheduledNotBeforeTime = null
     this.init()
   }
 
@@ -1304,8 +1306,15 @@ export default class Application extends EventEmitter {
     if (!isEmpty(user)) {
       console.info('[Motrix] main save user config: ', user)
       this.configManager.setUserConfig(user)
-      if (Object.prototype.hasOwnProperty.call(user, 'task-plan-action')) {
+      if (
+        Object.prototype.hasOwnProperty.call(user, 'task-plan-action') ||
+        Object.prototype.hasOwnProperty.call(user, 'task-plan-type') ||
+        Object.prototype.hasOwnProperty.call(user, 'task-plan-time') ||
+        Object.prototype.hasOwnProperty.call(user, 'task-plan-gids') ||
+        Object.prototype.hasOwnProperty.call(user, 'task-plan-only-when-idle')
+      ) {
         this._taskPlanTriggered = false
+        this._taskPlanScheduledNotBeforeTime = null
         this.scheduleCheckTaskPlan(0)
       }
     }
@@ -1314,10 +1323,115 @@ export default class Application extends EventEmitter {
   getTaskPlanAction () {
     const raw = this.configManager.getUserConfig('task-plan-action', 'none')
     const action = `${raw || 'none'}`
-    if (['none', 'shutdown', 'sleep', 'quit'].includes(action)) {
+    if ([
+      'none',
+      'resume-selected',
+      'resume-all',
+      'pause-selected',
+      'pause-all',
+      'shutdown',
+      'sleep',
+      'quit'
+    ].includes(action)) {
       return action
     }
     return 'none'
+  }
+
+  getTaskPlanGids () {
+    const raw = this.configManager.getUserConfig('task-plan-gids', [])
+    const list = Array.isArray(raw) ? raw : []
+    return list.map(x => `${x || ''}`.trim()).filter(Boolean)
+  }
+
+  getTaskPlanOnlyWhenIdle () {
+    return !!this.configManager.getUserConfig('task-plan-only-when-idle', false)
+  }
+
+  getTaskPlanType () {
+    const raw = this.configManager.getUserConfig('task-plan-type', 'complete')
+    const type = `${raw || 'complete'}`
+    if (['complete', 'scheduled'].includes(type)) {
+      return type
+    }
+    return 'complete'
+  }
+
+  getTaskPlanTime () {
+    const raw = this.configManager.getUserConfig('task-plan-time', '')
+    const value = `${raw || ''}`
+    if (!value) {
+      return ''
+    }
+    const m = value.match(/^(\d{2}):(\d{2})$/)
+    if (!m) {
+      return ''
+    }
+    const hh = Number(m[1])
+    const mm = Number(m[2])
+    if (Number.isNaN(hh) || Number.isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+      return ''
+    }
+    return value
+  }
+
+  getTaskPlanScheduledDelayMs (time) {
+    const m = `${time || ''}`.match(/^(\d{2}):(\d{2})$/)
+    if (!m) {
+      return null
+    }
+    const hh = Number(m[1])
+    const mm = Number(m[2])
+    if (Number.isNaN(hh) || Number.isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+      return null
+    }
+    const now = new Date()
+    const target = new Date(now.getTime())
+    target.setHours(hh, mm, 0, 0)
+    if (target.getTime() <= now.getTime()) {
+      target.setDate(target.getDate() + 1)
+    }
+    return target.getTime() - now.getTime()
+  }
+
+  async triggerScheduledTaskPlan () {
+    try {
+      const action = this.getTaskPlanAction()
+      const type = this.getTaskPlanType()
+      const time = this.getTaskPlanTime()
+      const onlyWhenIdle = this.getTaskPlanOnlyWhenIdle()
+
+      if (action === 'none' || type !== 'scheduled' || !time) {
+        this._taskPlanTriggered = false
+        this._taskPlanScheduledNotBeforeTime = null
+        return
+      }
+
+      if (this._taskPlanTriggered) {
+        return
+      }
+      if (onlyWhenIdle) {
+        this._taskPlanScheduledNotBeforeTime = Date.now()
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(0)
+        return
+      }
+
+      this._taskPlanTriggered = true
+
+      try {
+        await this.engineClient.call('saveSession')
+      } catch (e) {}
+
+      const ok = await this.executeTaskPlanAction(action)
+      if (!ok) {
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(2000)
+      }
+    } catch (e) {
+      this._taskPlanTriggered = false
+      throw e
+    }
   }
 
   isActiveTaskDownloaded (task = {}) {
@@ -1336,7 +1450,67 @@ export default class Application extends EventEmitter {
         clearTimeout(this._taskPlanCheckTimer)
         this._taskPlanCheckTimer = null
       }
+      if (this._taskPlanScheduleTimer) {
+        clearTimeout(this._taskPlanScheduleTimer)
+        this._taskPlanScheduleTimer = null
+      }
+      this._taskPlanTriggered = false
+      this._taskPlanScheduledNotBeforeTime = null
       return
+    }
+
+    const type = this.getTaskPlanType()
+    if (type === 'scheduled') {
+      const onlyWhenIdle = this.getTaskPlanOnlyWhenIdle()
+      const notBefore = this._taskPlanScheduledNotBeforeTime
+      if (onlyWhenIdle && notBefore && Date.now() >= notBefore) {
+        if (this._taskPlanScheduleTimer) {
+          clearTimeout(this._taskPlanScheduleTimer)
+          this._taskPlanScheduleTimer = null
+        }
+        if (this._taskPlanCheckTimer) {
+          clearTimeout(this._taskPlanCheckTimer)
+        }
+        this._taskPlanCheckTimer = setTimeout(() => {
+          this._taskPlanCheckTimer = null
+          this.checkTaskPlanIdle().catch((e) => {
+            this._taskPlanTriggered = false
+            logger.warn('[Motrix] checkTaskPlanIdle failed:', e && e.message ? e.message : e)
+          })
+        }, delay)
+        return
+      }
+
+      this._taskPlanScheduledNotBeforeTime = null
+      if (this._taskPlanCheckTimer) {
+        clearTimeout(this._taskPlanCheckTimer)
+        this._taskPlanCheckTimer = null
+      }
+      if (this._taskPlanScheduleTimer) {
+        clearTimeout(this._taskPlanScheduleTimer)
+      }
+      const time = this.getTaskPlanTime()
+      const delayMs = this.getTaskPlanScheduledDelayMs(time)
+      if (delayMs === null) {
+        this._taskPlanTriggered = false
+        return
+      }
+      this._taskPlanScheduleTimer = setTimeout(() => {
+        this._taskPlanScheduleTimer = null
+        this.triggerScheduledTaskPlan().catch((e) => {
+          this._taskPlanTriggered = false
+          logger.warn('[Motrix] triggerScheduledTaskPlan failed:', e && e.message ? e.message : e)
+        })
+      }, delayMs)
+      if (this._taskPlanScheduleTimer && typeof this._taskPlanScheduleTimer.unref === 'function') {
+        this._taskPlanScheduleTimer.unref()
+      }
+      return
+    }
+
+    if (this._taskPlanScheduleTimer) {
+      clearTimeout(this._taskPlanScheduleTimer)
+      this._taskPlanScheduleTimer = null
     }
 
     if (this._taskPlanCheckTimer) {
@@ -1404,7 +1578,70 @@ export default class Application extends EventEmitter {
       }
       this._taskPlanTriggered = true
       await this.engineClient.call('saveSession')
-      this.executeTaskPlanAction(action)
+      const ok = await this.executeTaskPlanAction(action)
+      if (!ok) {
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(2000)
+      }
+    } catch (e) {
+      this._taskPlanTriggered = false
+      throw e
+    }
+  }
+
+  async checkTaskPlanIdle () {
+    try {
+      const action = this.getTaskPlanAction()
+      const type = this.getTaskPlanType()
+      const onlyWhenIdle = this.getTaskPlanOnlyWhenIdle()
+      const notBefore = this._taskPlanScheduledNotBeforeTime
+
+      if (action === 'none') {
+        this._taskPlanTriggered = false
+        this._taskPlanScheduledNotBeforeTime = null
+        return
+      }
+
+      if (type !== 'scheduled' || !onlyWhenIdle || !notBefore || Date.now() < notBefore) {
+        this._taskPlanTriggered = false
+        this._taskPlanScheduledNotBeforeTime = null
+        this.scheduleCheckTaskPlan(0)
+        return
+      }
+
+      const active = await this.engineClient.call('tellActive')
+      const activeList = Array.isArray(active) ? active : []
+      const hasBlockingActive = activeList.some(t => {
+        const isBt = !!(t && t.bittorrent)
+        if (isBt && this.isActiveTaskDownloaded(t)) {
+          return false
+        }
+        return true
+      })
+      if (hasBlockingActive) {
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(2000)
+        return
+      }
+
+      const waiting = await this.engineClient.call('tellWaiting', 0, 1000)
+      const waitingList = Array.isArray(waiting) ? waiting : []
+      if (waitingList.length > 0) {
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(2000)
+        return
+      }
+
+      if (this._taskPlanTriggered) {
+        return
+      }
+      this._taskPlanTriggered = true
+      await this.engineClient.call('saveSession')
+      const ok = await this.executeTaskPlanAction(action)
+      if (!ok) {
+        this._taskPlanTriggered = false
+        this.scheduleCheckTaskPlan(2000)
+      }
     } catch (e) {
       this._taskPlanTriggered = false
       throw e
@@ -1425,11 +1662,56 @@ export default class Application extends EventEmitter {
     }
   }
 
-  executeTaskPlanAction (action) {
+  clearTaskPlanConfig () {
+    this._taskPlanTriggered = false
+    this._taskPlanScheduledNotBeforeTime = null
+    this.configManager.setUserConfig({
+      'task-plan-action': 'none',
+      'task-plan-type': 'complete',
+      'task-plan-time': '',
+      'task-plan-gids': [],
+      'task-plan-only-when-idle': false
+    })
+  }
+
+  async executeTaskPlanAction (action) {
+    if (action === 'pause-all') {
+      const res = await this.engineClient.call('pauseAll')
+      if (!res) {
+        await this.engineClient.call('forcePauseAll')
+      }
+      this.clearTaskPlanConfig()
+      return true
+    }
+
+    if (action === 'resume-all') {
+      await this.engineClient.call('unpauseAll')
+      this.clearTaskPlanConfig()
+      return true
+    }
+
+    if (action === 'pause-selected') {
+      const gids = this.getTaskPlanGids()
+      if (gids.length > 0) {
+        await Promise.allSettled(gids.map(gid => this.engineClient.call('pause', gid)))
+      }
+      this.clearTaskPlanConfig()
+      return true
+    }
+
+    if (action === 'resume-selected') {
+      const gids = this.getTaskPlanGids()
+      if (gids.length > 0) {
+        await Promise.allSettled(gids.map(gid => this.engineClient.call('unpause', gid)))
+      }
+      this.clearTaskPlanConfig()
+      return true
+    }
+
     if (action === 'quit') {
-      this.configManager.setUserConfig('task-plan-action', 'none')
-      this.quit()
-      return
+      this.clearTaskPlanConfig()
+      await this.quit()
+      return true
     }
 
     const platform = process.platform
@@ -1456,10 +1738,12 @@ export default class Application extends EventEmitter {
     }
 
     if (ok) {
-      this.configManager.setUserConfig('task-plan-action', 'none')
-      this.quit()
+      this.clearTaskPlanConfig()
+      await this.quit()
+      return true
     } else {
       this._taskPlanTriggered = false
+      return false
     }
   }
 

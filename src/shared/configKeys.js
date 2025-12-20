@@ -40,13 +40,19 @@ const userKeys = [
   'set-file-mtime-on-complete',
   'advanced-option-presets',
   'task-priorities',
+  'task-multi-select-modifier',
+  'task-multi-select-keystroke',
   'custom-keymap',
   'extension-intercept-all-downloads',
   'extension-silent-download',
   'extension-skip-file-extensions',
   'extension-shift-toggle-enabled',
   'subnav-mode',
-  'task-plan-action'
+  'task-plan-type',
+  'task-plan-time',
+  'task-plan-action',
+  'task-plan-gids',
+  'task-plan-only-when-idle'
 ]
 
 const systemKeys = [

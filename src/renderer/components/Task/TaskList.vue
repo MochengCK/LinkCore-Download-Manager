@@ -4,12 +4,14 @@
     v-if="displayTaskList.length > 0"
     attribute="attr"
     @change="handleDragSelectChange"
+    @click.native="handleListBlankClick"
   >
     <div
       v-for="item in displayTaskList"
       :key="item.gid"
       :attr="item.gid"
       :class="getItemClass(item)"
+      @click.stop="(e) => handleItemClick(item, e)"
     >
       <mo-task-item
         :task="item"
@@ -53,9 +55,11 @@
       }
     },
     data () {
-      const selectedList = cloneDeep(this.$store.state.task.selectedList) || []
+      const selectedList = cloneDeep(this.$store.state.task.selectedGidList) || []
       return {
-        selectedList
+        selectedList,
+        isMultiSelectModifierPressed: false,
+        isMultiSelectMode: false
       }
     },
     computed: {
@@ -73,9 +77,132 @@
         return this.taskList.filter((task) => {
           return this.taskMatchesCategory(task, this.category)
         })
+      },
+      multiSelectModifier () {
+        const v = this.preferenceConfig && this.preferenceConfig.taskMultiSelectModifier
+        return (v ? `${v}`.toLowerCase() : 'ctrl').trim()
+      },
+      multiSelectKeystroke () {
+        const raw = `${this.multiSelectModifier || ''}`.trim().toLowerCase()
+        const tokens = raw
+          .split(/[-+]/g)
+          .map(s => `${s || ''}`.trim())
+          .filter(Boolean)
+          .map(t => {
+            if (t === 'control') return 'ctrl'
+            if (t === 'command') return 'cmd'
+            if (t === 'meta') return 'cmd'
+            if (t === 'commandorcontrol' || t === 'cmdorctrl') return 'cmdctrl'
+            return t
+          })
+
+        const modifiers = []
+        let key = ''
+        tokens.forEach(t => {
+          if (t === 'cmdctrl' || t === 'ctrl' || t === 'cmd' || t === 'shift' || t === 'alt') {
+            if (!modifiers.includes(t)) modifiers.push(t)
+          } else {
+            key = t
+          }
+        })
+
+        const normalized = [...modifiers, key].filter(Boolean).join('-')
+        return normalized || 'ctrl'
+      },
+      multiSelectModifiers () {
+        const raw = `${this.multiSelectKeystroke || ''}`.trim().toLowerCase()
+        const tokens = raw
+          .split(/[-+]/g)
+          .map(s => `${s || ''}`.trim())
+          .filter(Boolean)
+          .map(t => {
+            if (t === 'control') return 'ctrl'
+            if (t === 'command') return 'cmd'
+            if (t === 'meta') return 'cmd'
+            if (t === 'commandorcontrol' || t === 'cmdorctrl') return 'cmdctrl'
+            return t
+          })
+
+        const allowed = new Set(['cmdctrl', 'ctrl', 'cmd', 'shift', 'alt'])
+        const uniq = []
+        tokens.forEach(t => {
+          if (!allowed.has(t)) return
+          if (uniq.includes(t)) return
+          uniq.push(t)
+        })
+        return uniq.length > 0 ? uniq : ['ctrl']
+      },
+      isMultiSelectToggleShortcut () {
+        const raw = `${this.multiSelectKeystroke || ''}`.trim().toLowerCase()
+        if (!raw) return false
+        const tokens = raw.split(/[-+]/g).map(s => `${s || ''}`.trim()).filter(Boolean)
+        const allowed = new Set(['cmdctrl', 'ctrl', 'cmd', 'shift', 'alt', 'meta'])
+        return tokens.some(t => !allowed.has(t))
+      }
+    },
+    mounted () {
+      this.handleKeyEvent = (e) => {
+        if (e && e.type === 'keydown' && this.isMultiSelectToggleShortcut && this.isMultiSelectToggleHit(e)) {
+          if (!e.repeat) {
+            this.isMultiSelectMode = !this.isMultiSelectMode
+          }
+          this.isMultiSelectModifierPressed = this.isMultiSelectMode
+          e.preventDefault()
+          return
+        }
+        this.isMultiSelectModifierPressed = this.isMultiSelectToggleShortcut
+          ? this.isMultiSelectMode
+          : this.getModifierPressedFromEvent(e)
+      }
+      window.addEventListener('keydown', this.handleKeyEvent)
+      window.addEventListener('keyup', this.handleKeyEvent)
+    },
+    beforeDestroy () {
+      if (this.handleKeyEvent) {
+        window.removeEventListener('keydown', this.handleKeyEvent)
+        window.removeEventListener('keyup', this.handleKeyEvent)
       }
     },
     methods: {
+      normalizeKeystroke (event) {
+        const parts = []
+        if (event.ctrlKey || event.metaKey) parts.push('cmdctrl')
+        if (event.shiftKey) parts.push('shift')
+        if (event.altKey) parts.push('alt')
+        let key = event.key || ''
+        key = key.toLowerCase()
+        if (key === 'control' || key === 'meta' || key === 'shift' || key === 'alt') {
+          return ''
+        }
+        if (key === 'arrowup') key = 'up'
+        if (key === 'arrowdown') key = 'down'
+        if (key === 'arrowleft') key = 'left'
+        if (key === 'arrowright') key = 'right'
+        if (key === 'escape') key = 'esc'
+        const result = [...parts, key].filter(Boolean).join('-')
+        return result
+      },
+      isMultiSelectToggleHit (event) {
+        const expected = `${this.multiSelectKeystroke || ''}`.trim().toLowerCase()
+        if (!expected) return false
+        const actual = this.normalizeKeystroke(event)
+        return actual && actual === expected
+      },
+      getModifierPressedFromEvent (e) {
+        const required = this.multiSelectModifiers || []
+        return required.every((key) => {
+          if (key === 'shift') return !!e.shiftKey
+          if (key === 'alt') return !!e.altKey
+          if (key === 'cmd') return !!e.metaKey
+          if (key === 'cmdctrl') return !!(e.ctrlKey || e.metaKey)
+          return !!e.ctrlKey
+        })
+      },
+      isMultiSelectEvent (e) {
+        return this.isMultiSelectToggleShortcut
+          ? this.isMultiSelectMode
+          : this.getModifierPressedFromEvent(e)
+      },
       normalizeSuffixes (suffixes = []) {
         return suffixes
           .map((s) => `${s}`.toLowerCase())
@@ -143,8 +270,47 @@
         return exts.some((ext) => suffixes.includes(ext))
       },
       handleDragSelectChange (selectedList) {
-        this.selectedList = selectedList
-        this.$store.dispatch('task/selectTasks', cloneDeep(selectedList))
+        const incoming = Array.isArray(selectedList) ? selectedList : []
+        const next = this.isMultiSelectModifierPressed
+          ? Array.from(new Set([...(this.selectedList || []), ...incoming]))
+          : incoming
+        this.selectedList = next
+        this.$store.dispatch('task/selectTasks', cloneDeep(next))
+      },
+      handleItemClick (item, e) {
+        const gid = item && item.gid
+        if (!gid) {
+          return
+        }
+
+        const current = Array.isArray(this.selectedList) ? this.selectedList : []
+        const useMulti = this.isMultiSelectEvent(e)
+        let next = []
+
+        if (useMulti) {
+          const set = new Set(current)
+          if (set.has(gid)) {
+            set.delete(gid)
+          } else {
+            set.add(gid)
+          }
+          next = Array.from(set)
+        } else {
+          next = [gid]
+        }
+
+        this.selectedList = next
+        this.$store.dispatch('task/selectTasks', cloneDeep(next))
+      },
+      handleListBlankClick (e) {
+        if (!e || e.target !== e.currentTarget) {
+          return
+        }
+        if (!this.selectedList || this.selectedList.length === 0) {
+          return
+        }
+        this.selectedList = []
+        this.$store.dispatch('task/selectTasks', [])
       },
       getItemClass (item) {
         const isSelected = this.selectedList.includes(item.gid)

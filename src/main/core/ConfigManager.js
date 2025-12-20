@@ -112,6 +112,7 @@ export default class ConfigManager {
         'set-file-mtime-on-complete': false,
         'advanced-option-presets': [],
         'task-priorities': {},
+        'task-multi-select-modifier': 'ctrl',
         'enable-upnp': true,
         'engine-binary': '',
         'engine-max-connection-per-server': getMaxConnectionPerServer(),
@@ -151,6 +152,8 @@ export default class ConfigManager {
         'extension-silent-download': false,
         'extension-skip-file-extensions': '',
         'extension-shift-toggle-enabled': false,
+        'task-plan-type': 'complete',
+        'task-plan-time': '',
         'task-plan-action': 'none'
       }
       /* eslint-enable quote-props */

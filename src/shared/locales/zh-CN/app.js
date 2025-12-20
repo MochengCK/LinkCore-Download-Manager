@@ -36,10 +36,20 @@ export default {
   'second': '秒',
   'task-plan': '任务计划',
   'task-plan-select-placeholder': '请选择计划',
+  'task-plan-action-resume-selected': '开始选中任务',
+  'task-plan-action-resume-all': '开始全部任务',
+  'task-plan-action-pause-selected': '暂停选中任务',
+  'task-plan-action-pause-all': '暂停全部任务',
   'task-plan-action-shutdown': '电脑关机',
   'task-plan-action-sleep': '电脑休眠',
   'task-plan-action-quit': '退出程序',
+  'task-plan-only-when-idle': '仅队列为空时执行',
   'task-plan-cancelled-message': '已取消任务计划',
   'task-plan-select-warning': '请选择计划',
-  'task-plan-set-message': '已设置：{{action}}'
+  'task-plan-selected-warning': '请先选中任务',
+  'task-plan-set-message': '已设置：{{action}}',
+  'task-plan-type-complete': '下载完成后',
+  'task-plan-type-scheduled': '定时任务',
+  'task-plan-time-placeholder': '选择时间',
+  'task-plan-time-warning': '请选择执行时间'
 }

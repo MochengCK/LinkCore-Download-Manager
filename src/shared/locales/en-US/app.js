@@ -36,10 +36,20 @@ export default {
   'second': 's',
   'task-plan': 'Task Plan',
   'task-plan-select-placeholder': 'Select a plan',
+  'task-plan-action-resume-selected': 'Start selected tasks',
+  'task-plan-action-resume-all': 'Start all tasks',
+  'task-plan-action-pause-selected': 'Pause selected tasks',
+  'task-plan-action-pause-all': 'Pause all tasks',
   'task-plan-action-shutdown': 'Shut down computer',
   'task-plan-action-sleep': 'Sleep',
   'task-plan-action-quit': 'Quit application',
+  'task-plan-only-when-idle': 'Only run when queue is idle',
   'task-plan-cancelled-message': 'Task plan cancelled',
   'task-plan-select-warning': 'Please select a plan',
-  'task-plan-set-message': 'Set: {{action}}'
+  'task-plan-selected-warning': 'Please select tasks first',
+  'task-plan-set-message': 'Set: {{action}}',
+  'task-plan-type-complete': 'After downloads complete',
+  'task-plan-type-scheduled': 'Scheduled',
+  'task-plan-time-placeholder': 'Select time',
+  'task-plan-time-warning': 'Please select a time'
 }

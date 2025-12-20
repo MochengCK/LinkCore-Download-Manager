@@ -123,12 +123,12 @@
               <el-col :span="12">
                 <el-input
                   :value="formatKeystrokeForDisplay(getKeystrokeByCommand(command))"
-                  @keydown.native="setCommandKeystroke(command, normalizeKeystroke($event))"
+                  @keydown.native="handleShortcutKeydown(command, $event)"
                   :placeholder="$t('preferences.shortcut-placeholder')"
                 />
               </el-col>
             </el-row>
-            <el-button type="warning" size="mini" style="width: 100%;" @click="form.customKeymap = {}; autoSaveForm()">
+            <el-button type="warning" size="mini" style="width: 100%;" @click="resetShortcuts">
               {{ $t('preferences.shortcut-reset-default') }}
             </el-button>
           </el-form-item>
@@ -545,6 +545,36 @@
   import { reduceTrackerString } from '@shared/utils/tracker'
   import keymap from '@shared/keymap'
 
+  const normalizeTaskMultiSelectModifier = (value) => {
+    const raw = `${value || ''}`.trim().toLowerCase()
+    if (!raw) return 'ctrl'
+
+    const tokens = raw
+      .split(/[-+]/g)
+      .map(s => `${s || ''}`.trim())
+      .filter(Boolean)
+      .map(t => {
+        if (t === 'control') return 'ctrl'
+        if (t === 'command') return 'cmd'
+        if (t === 'meta') return 'cmd'
+        if (t === 'commandorcontrol' || t === 'cmdorctrl') return 'cmdctrl'
+        return t
+      })
+
+    const modifiers = []
+    let key = ''
+    tokens.forEach(t => {
+      if (t === 'cmdctrl' || t === 'ctrl' || t === 'cmd' || t === 'shift' || t === 'alt') {
+        if (!modifiers.includes(t)) modifiers.push(t)
+      } else {
+        key = t
+      }
+    })
+
+    const normalized = [...modifiers, key].filter(Boolean).join('-')
+    return normalized || 'ctrl'
+  }
+
   const initForm = (config) => {
     const {
       autoHideWindow,
@@ -584,6 +614,7 @@
       fileCategories,
       setFileMtimeOnComplete,
       customKeymap,
+      taskMultiSelectModifier,
       subnavMode
     } = config
 
@@ -651,6 +682,7 @@
         others: { name: 'other-files', extensions: [] }
       },
       customKeymap: customKeymap || {},
+      taskMultiSelectModifier: normalizeTaskMultiSelectModifier(taskMultiSelectModifier),
       subnavMode: subnavMode || 'floating'
     }
     return result
@@ -856,10 +888,19 @@
       getShortcutCommands () {
         const baseCommands = Object.values(keymap)
         const customCommands = Object.values(this.form.customKeymap || {})
-        const set = new Set([...baseCommands, ...customCommands])
-        return Array.from(set)
+        const set = new Set([...baseCommands, ...customCommands, 'task:multi-select'])
+        const list = Array.from(set)
+        const idx = list.indexOf('task:multi-select')
+        if (idx !== -1) {
+          list.splice(idx, 1)
+        }
+        list.push('task:multi-select')
+        return list
       },
       getKeystrokeByCommand (command) {
+        if (command === 'task:multi-select') {
+          return this.form.taskMultiSelectModifier || ''
+        }
         const custom = this.form.customKeymap || {}
         const customEntries = Object.entries(custom)
         for (const [ks, cmd] of customEntries) {
@@ -889,6 +930,22 @@
         if (key === 'escape') key = 'esc'
         const result = [...parts, key].filter(Boolean).join('-')
         return result
+      },
+      normalizeModifierKeystroke (event) {
+        event.preventDefault()
+        const parts = []
+        if (event.ctrlKey) parts.push('ctrl')
+        if (event.metaKey) parts.push('cmd')
+        if (event.shiftKey) parts.push('shift')
+        if (event.altKey) parts.push('alt')
+        return parts.join('-')
+      },
+      normalizeTaskMultiSelectKeystroke (event) {
+        const key = `${event && event.key ? event.key : ''}`.toLowerCase()
+        if (['control', 'meta', 'shift', 'alt'].includes(key)) {
+          return this.normalizeModifierKeystroke(event)
+        }
+        return this.normalizeKeystroke(event)
       },
       formatKeystrokeForDisplay (keystroke) {
         if (!keystroke) return ''
@@ -927,6 +984,41 @@
         }
         const displayKey = specials[key] || (key.length === 1 ? key.toUpperCase() : key)
         return [...modifiers, displayKey].filter(Boolean).join(' + ')
+      },
+      setTaskMultiSelectModifier (keystroke) {
+        if (!keystroke) return
+        if (keystroke === this.form.taskMultiSelectModifier) return
+        const existingCommand = this.getCommandByKeystroke(keystroke)
+        if (existingCommand) {
+          const existingCommandLabel = this.getCommandLabel(existingCommand)
+          const keystrokeDisplay = this.formatKeystrokeForDisplay(keystroke)
+          const message = this.$t('preferences.shortcut-duplicate-message', {
+            keystroke: keystrokeDisplay,
+            command: existingCommandLabel
+          })
+          this.$message({
+            type: 'warning',
+            message: message,
+            duration: 4000,
+            dangerouslyUseHTMLString: true,
+            showClose: true
+          })
+          return
+        }
+        this.form.taskMultiSelectModifier = keystroke
+        this.autoSaveForm()
+      },
+      resetShortcuts () {
+        this.form.customKeymap = {}
+        this.form.taskMultiSelectModifier = 'ctrl'
+        this.autoSaveForm()
+      },
+      handleShortcutKeydown (command, event) {
+        if (command === 'task:multi-select') {
+          this.setTaskMultiSelectModifier(this.normalizeTaskMultiSelectKeystroke(event))
+          return
+        }
+        this.setCommandKeystroke(command, this.normalizeKeystroke(event))
       },
       setCommandKeystroke (command, keystroke) {
         if (!keystroke) {
@@ -1007,6 +1099,11 @@
           current[key] = custom[key]
         })
 
+        const multi = this.form.taskMultiSelectModifier || ''
+        if (multi) {
+          current[multi] = 'task:multi-select'
+        }
+
         return current
       },
       getCommandLabel (command) {
@@ -1019,7 +1116,11 @@
           'application:preferences': 'app.preferences',
           'application:pause-all-task': 'task.pause-all-task',
           'application:resume-all-task': 'task.resume-all-task',
-          'application:select-all-task': 'task.select-all-task'
+          'application:select-all-task': 'task.select-all-task',
+          'task:multi-select': null
+        }
+        if (command === 'task:multi-select') {
+          return '多选任务'
         }
         const key = map[command]
         return key ? this.$t(key) : command
