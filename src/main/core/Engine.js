@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process'
-import { existsSync, writeFile, unlink } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, writeFile, unlink, readFileSync, writeFileSync } from 'node:fs'
+import { resolve, isAbsolute } from 'node:path'
 import is from 'electron-is'
 
 import logger from './Logger'
@@ -17,6 +17,80 @@ import {
 } from '../utils/index'
 
 const { platform, arch } = process
+
+const sanitizeSessionFile = (sessionPath, downloadingFileSuffix) => {
+  if (!downloadingFileSuffix) {
+    return false
+  }
+  if (!existsSync(sessionPath)) {
+    return false
+  }
+
+  let content = ''
+  try {
+    content = readFileSync(sessionPath, 'utf8')
+  } catch (e) {
+    return false
+  }
+
+  const lines = `${content}`.split(/\r?\n/)
+  let changed = false
+  const kept = []
+
+  for (const line of lines) {
+    const trimmed = `${line}`.trim()
+    if (!trimmed || trimmed.startsWith('#')) {
+      kept.push(line)
+      continue
+    }
+
+    const parts = `${line}`.split('\t').filter(Boolean)
+    const options = parts.slice(1)
+    let dir = ''
+    let out = ''
+
+    for (const opt of options) {
+      const idx = opt.indexOf('=')
+      if (idx <= 0) {
+        continue
+      }
+      const key = opt.slice(0, idx).trim()
+      const value = opt.slice(idx + 1)
+      if (key === 'dir') {
+        dir = value
+      } else if (key === 'out') {
+        out = value
+      }
+    }
+
+    if (!dir || !out || !isAbsolute(dir) || !out.endsWith(downloadingFileSuffix)) {
+      kept.push(line)
+      continue
+    }
+
+    const suffixedPath = resolve(dir, out)
+    const finalOut = out.slice(0, -downloadingFileSuffix.length)
+    const finalPath = resolve(dir, finalOut)
+
+    if (existsSync(finalPath) && !existsSync(suffixedPath) && !existsSync(`${suffixedPath}.aria2`) && !existsSync(`${finalPath}.aria2`)) {
+      changed = true
+      continue
+    }
+
+    kept.push(line)
+  }
+
+  if (!changed) {
+    return false
+  }
+
+  try {
+    writeFileSync(sessionPath, kept.join('\n'), 'utf8')
+    return true
+  } catch (e) {
+    return false
+  }
+}
 
 export default class Engine {
   // ChildProcess | null
@@ -197,6 +271,15 @@ export default class Engine {
 
     let result = [`--conf-path=${confPath}`, `--save-session=${sessionPath}`]
     if (sessionIsExist) {
+      try {
+        const suffix = (this.configManager && this.configManager.getUserConfig)
+          ? (this.configManager.getUserConfig('downloading-file-suffix') || '')
+          : (this.userConfig['downloading-file-suffix'] || '')
+        const sanitized = sanitizeSessionFile(sessionPath, suffix)
+        if (sanitized) {
+          logger.info('[Motrix] Sanitized download session file')
+        }
+      } catch (e) {}
       result = [...result, `--input-file=${sessionPath}`]
     }
 

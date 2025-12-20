@@ -539,7 +539,7 @@ const actions = {
       })
   },
   saveSession () {
-    api.saveSession()
+    return api.saveSession()
   },
   purgeTaskRecord ({ dispatch }) {
     return api.purgeTaskRecord()
