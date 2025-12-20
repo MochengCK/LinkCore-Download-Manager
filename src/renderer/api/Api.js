@@ -230,8 +230,20 @@ export default class Api {
       const historyTask = historyMap.get(task.gid)
       if (historyTask) {
         const { savedAt, averageDownloadSpeed, averageSpeedSampleCount } = historyTask
+        const liveStatus = `${task.status || ''}`
+        const historyStatus = `${historyTask.status || ''}`
+        const activeStatuses = new Set([TASK_STATUS.ACTIVE, TASK_STATUS.WAITING, TASK_STATUS.PAUSED])
+        const stoppedStatuses = new Set([TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED])
+        const total = Number(task.totalLength || historyTask.totalLength || 0)
+        const completed = Number(task.completedLength || historyTask.completedLength || 0)
+        const shouldCoerceToHistoryStatus =
+          activeStatuses.has(liveStatus) &&
+          stoppedStatuses.has(historyStatus) &&
+          Number.isFinite(total) && total > 0 &&
+          Number.isFinite(completed) && completed >= total
         return {
           ...task,
+          ...(shouldCoerceToHistoryStatus ? { status: historyStatus } : {}),
           ...(savedAt ? { savedAt } : {}),
           ...(averageDownloadSpeed != null ? { averageDownloadSpeed } : {}),
           ...(averageSpeedSampleCount != null ? { averageSpeedSampleCount } : {})
@@ -253,6 +265,10 @@ export default class Api {
         console.log('[Motrix] fetch downloading task list data:', data)
         let result = mergeTaskResult(data)
         result = this._mergeHistoryToTasks(result)
+        result = result.filter(task => {
+          const status = `${task && task.status ? task.status : ''}`
+          return status === TASK_STATUS.ACTIVE || status === TASK_STATUS.WAITING
+        })
         resolve(result)
       }).catch((err) => {
         console.log('[Motrix] fetch downloading task list fail:', err)
@@ -500,6 +516,12 @@ export default class Api {
         console.log('[Motrix] removeTaskRecord from aria2 fail:', err)
         // 忽略Aria2删除失败的错误，因为任务可能已经不在Aria2中了
       })
+  }
+
+  removeDownloadResult (params = {}) {
+    const { gid } = params
+    const args = compactUndefined([gid])
+    return this.client.call('removeDownloadResult', ...args)
   }
 
   multicall (method, params = {}) {

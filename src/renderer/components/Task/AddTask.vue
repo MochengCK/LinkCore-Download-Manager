@@ -412,7 +412,7 @@
           this.form.referer = ''
           this.form.cookie = ''
           this.form.allProxy = ''
-          this.form.newTaskShowDownloading = false
+          this.form.newTaskShowDownloading = !!(this.config && this.config.newTaskShowDownloading)
           return
         }
         const preset = this.advancedPresets.find(p => p.id === id)

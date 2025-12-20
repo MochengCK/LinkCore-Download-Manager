@@ -226,6 +226,19 @@
         try {
           const gid = task && task.gid ? `${task.gid}` : ''
           if (gid) {
+            taskHistory.updateTask(gid, { ...task, status: TASK_STATUS.COMPLETE }, task)
+          }
+        } catch (_) {}
+        try {
+          const suffix = cfg.downloadingFileSuffix || ''
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (!isBT && suffix && gid) {
+            api.removeDownloadResult({ gid }).catch(() => {})
+          }
+        } catch (_) {}
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (gid) {
             let name = ''
             if (isBT) {
               name = getTaskName(task, { maxLen: -1 })
@@ -655,6 +668,7 @@
           this.sampleAverageSpeedForActiveTasks()
           this.checkMagnetAlerts()
           this.checkDataAccessStatus()
+          this.fixResumedCompletedSuffixTasks().catch(() => {})
         })
 
         if (this.taskDetailVisible && this.currentTaskGid) {
@@ -955,10 +969,118 @@
       stopPolling () {
         clearTimeout(this.timer)
         this.timer = null
+      },
+      async fixResumedCompletedSuffixTasks () {
+        const cfg = this.$store.state.preference && this.$store.state.preference.config
+          ? this.$store.state.preference.config
+          : {}
+        const suffix = cfg.downloadingFileSuffix || ''
+        if (!suffix) {
+          return
+        }
+
+        const now = Date.now()
+        if (this._resumedCompletedFixing) {
+          return
+        }
+        if (this._resumedCompletedLastRun && now - this._resumedCompletedLastRun < 5000) {
+          return
+        }
+        this._resumedCompletedLastRun = now
+
+        const list = this.$store.state.task.taskList || []
+        const activeStatuses = new Set([TASK_STATUS.ACTIVE, TASK_STATUS.WAITING, TASK_STATUS.PAUSED])
+        const history = taskHistory.getHistory()
+        if (!Array.isArray(history) || history.length === 0) {
+          return
+        }
+        const historyMap = new Map(history.map(t => [`${t.gid || ''}`, t]))
+
+        const candidates = list.filter(t => {
+          if (!t) return false
+          const gid = t.gid ? `${t.gid}` : ''
+          if (!gid) return false
+          if (!activeStatuses.has(`${t.status || ''}`)) return false
+          if (checkTaskIsBT(t)) return false
+          if (isMagnetTask(t)) return false
+          const p = getTaskFullPath(t) || ''
+          if (!p) return false
+          return p.endsWith(suffix) || existsSync(`${p}${suffix}`)
+        })
+
+        if (candidates.length === 0) {
+          return
+        }
+
+        this._resumedCompletedFixing = true
+        try {
+          let changed = false
+          for (const task of candidates) {
+            const gid = task.gid ? `${task.gid}` : ''
+            if (!gid) continue
+            if (this._resumedCompletedFixedGids && this._resumedCompletedFixedGids.has(gid)) {
+              continue
+            }
+
+            const historyTask = historyMap.get(gid)
+            if (!historyTask || `${historyTask.status || ''}` !== TASK_STATUS.COMPLETE) {
+              continue
+            }
+
+            const total = Number(task.totalLength || historyTask.totalLength || 0)
+            const completed = Number(task.completedLength || historyTask.completedLength || 0)
+            const doneByNumbers = Number.isFinite(total) && total > 0 && Number.isFinite(completed) && completed >= total
+
+            let doneByDisk = false
+            if (Number.isFinite(total) && total > 0) {
+              const actual = getTaskActualPath(task, cfg)
+              if (actual && existsSync(actual)) {
+                try {
+                  const st = statSync(actual)
+                  doneByDisk = st && typeof st.size === 'number' && st.size >= total
+                } catch (_) {}
+              }
+            }
+
+            if (!doneByNumbers && !doneByDisk) {
+              continue
+            }
+
+            if (!this._resumedCompletedFixedGids) {
+              this._resumedCompletedFixedGids = new Set()
+            }
+            this._resumedCompletedFixedGids.add(gid)
+
+            try {
+              taskHistory.updateTask(gid, { ...historyTask, status: TASK_STATUS.COMPLETE }, historyTask)
+            } catch (_) {}
+
+            try {
+              await api.forceRemoveTask({ gid })
+            } catch (_) {
+              try {
+                await api.removeTask({ gid })
+              } catch (_) {}
+            }
+            try {
+              await api.saveSession()
+            } catch (_) {}
+            changed = true
+          }
+
+          if (changed) {
+            await this.$store.dispatch('task/fetchList')
+          }
+        } finally {
+          this._resumedCompletedFixing = false
+        }
       }
     },
     created () {
       this.bindEngineEvents()
+      this._resumedCompletedFixing = false
+      this._resumedCompletedLastRun = 0
+      this._resumedCompletedFixedGids = new Set()
     },
     mounted () {
       setTimeout(() => {
