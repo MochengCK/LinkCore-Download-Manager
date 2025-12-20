@@ -98,6 +98,8 @@ export default {
   'copy-link': '拷贝链接',
   'copy-link-success': '拷贝链接成功',
   'remove-duplicate-links-message': '已移除 {{count}} 个重复链接',
+  'duplicate-history-links-message': '检测到 {{count}} 个链接已存在于历史记录中，可以通过修改任务名称来解决',
+  'double-click-to-edit': '双击编辑',
   'parsed-tasks': '已解析任务',
   'advanced-presets': '高级选项预设',
   'save-advanced-preset': '保存为预设',

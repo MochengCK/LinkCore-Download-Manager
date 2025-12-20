@@ -11,9 +11,18 @@
     @closed="handleClosed"
   >
     <el-form ref="taskForm" label-position="left" :model="form" :rules="rules">
-      <el-tabs :value="type" @tab-click="handleTabClick">
-        <el-tab-pane :label="$t('task.uri-task')" name="uri">
-          <el-form-item>
+      <template v-if="type === 'uri'">
+        <el-form-item>
+          <div class="add-task-primary-input-wrap">
+            <button type="button" class="add-task-type-floating__close" aria-label="Close" @click="handleClose">
+              <i class="el-icon-close"></i>
+            </button>
+            <div class="add-task-type-floating__bar">
+              <el-radio-group :value="type" size="mini" @input="handleTaskTypeInput">
+                <el-radio-button label="uri">{{ $t('task.uri-task') }}</el-radio-button>
+                <el-radio-button label="torrent">{{ $t('task.torrent-task') }}</el-radio-button>
+              </el-radio-group>
+            </div>
             <el-input
               ref="uri"
               type="textarea"
@@ -24,48 +33,61 @@
               v-model="form.uris"
             >
             </el-input>
-          </el-form-item>
-          <div class="parsed-preview" v-if="parsedTasks.length > 0 && type === 'uri'">
-            <div class="parsed-preview__header">{{ $t('task.parsed-tasks') }}</div>
-            <el-table :data="parsedTasks" :border="false" :stripe="true" size="mini" style="width: 100%" height="150">
-              <el-table-column :label="$t('task.task-name')" min-width="240">
-                <template slot-scope="scope">
-                  <span v-if="!scope.row.editing" @dblclick="enableNameEdit(scope.$index)">{{ scope.row.name }}</span>
-                  <el-input
-                    v-else
-                    size="mini"
-                    v-model="scope.row.name"
-                    @blur="disableNameEdit(scope.$index)"
-                    @keyup.enter.native="disableNameEdit(scope.$index)"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('task.file-size')" min-width="120">
-                <template slot-scope="scope">
-                  <span>{{ scope.row.sizeText }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('task.task-priority')" min-width="150">
-                <template slot-scope="scope">
-                  <el-input-number
-                    size="mini"
-                    v-model="scope.row.priority"
-                    :min="0"
-                    :max="999"
-                    :step="1"
-                    controls-position="right"
-                  />
-                </template>
-              </el-table-column>
-            </el-table>
           </div>
-        </el-tab-pane>
-        <el-tab-pane :label="$t('task.torrent-task')" name="torrent">
-          <el-form-item>
+        </el-form-item>
+        <div class="parsed-preview" v-if="parsedTasks.length > 0">
+          <div class="parsed-preview__header">{{ $t('task.parsed-tasks') }}</div>
+          <el-table :data="parsedTasks" :border="false" :stripe="true" size="mini" style="width: 100%" height="150">
+            <el-table-column :label="$t('task.task-name')" min-width="240">
+              <template slot-scope="scope">
+                <el-tooltip v-if="!scope.row.editing" :content="$t('task.double-click-to-edit')" placement="top" :open-delay="300">
+                  <span @dblclick="enableNameEdit(scope.$index)">{{ scope.row.name }}</span>
+                </el-tooltip>
+                <el-input
+                  v-else
+                  size="mini"
+                  v-model="scope.row.name"
+                  @blur="disableNameEdit(scope.$index)"
+                  @keyup.enter.native="disableNameEdit(scope.$index)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('task.file-size')" min-width="120">
+              <template slot-scope="scope">
+                <span>{{ scope.row.sizeText }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('task.task-priority')" min-width="150">
+              <template slot-scope="scope">
+                <el-input-number
+                  size="mini"
+                  v-model="scope.row.priority"
+                  :min="0"
+                  :max="999"
+                  :step="1"
+                  controls-position="right"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </template>
+      <template v-else-if="type === 'torrent'">
+        <el-form-item>
+          <div class="add-task-primary-input-wrap">
+            <button type="button" class="add-task-type-floating__close" aria-label="Close" @click="handleClose">
+              <i class="el-icon-close"></i>
+            </button>
+            <div class="add-task-type-floating__bar">
+              <el-radio-group :value="type" size="mini" @input="handleTaskTypeInput">
+                <el-radio-button label="uri">{{ $t('task.uri-task') }}</el-radio-button>
+                <el-radio-button label="torrent">{{ $t('task.torrent-task') }}</el-radio-button>
+              </el-radio-group>
+            </div>
             <mo-select-torrent ref="selectTorrent" v-on:change="handleTorrentChange" />
-          </el-form-item>
-        </el-tab-pane>
-      </el-tabs>
+          </div>
+        </el-form-item>
+      </template>
       <el-row :gutter="12">
 
         <el-col :span="24" :xs="24">
@@ -202,18 +224,10 @@
         </el-form-item>
       </div>
   </el-form>
-    <button
-      slot="title"
-      type="button"
-      class="el-dialog__headerbtn"
-      aria-label="Close"
-      @click="handleClose">
-      <i class="el-dialog__close el-icon el-icon-close"></i>
-    </button>
-    <div slot="footer" class="dialog-footer">
-      <el-row>
-        <el-col :span="12" :xs="12">
-          <el-checkbox class="chk" v-model="showAdvanced">
+      <div slot="footer" class="dialog-footer">
+        <el-row>
+          <el-col :span="12" :xs="12">
+            <el-checkbox class="chk" v-model="showAdvanced">
             {{$t('task.show-advanced-options')}}
           </el-checkbox>
         </el-col>
@@ -256,13 +270,14 @@
   import HistoryDirectory from '@/components/Preference/HistoryDirectory'
   import SelectDirectory from '@/components/Native/SelectDirectory'
   import SelectTorrent from '@/components/Task/SelectTorrent'
+  import taskHistory from '@/api/TaskHistory'
   import {
     initTaskForm,
     buildUriPayload,
     buildTorrentPayload
   } from '@/utils/task'
   import { ADD_TASK_TYPE } from '@shared/constants'
-  import { detectResource, splitTaskLinks } from '@shared/utils'
+  import { detectResource, getTaskUri, sanitizeLink, splitTaskLinks } from '@shared/utils'
   import '@/components/Icons/inbox'
 
   export default {
@@ -289,6 +304,7 @@
         form: {},
         rules: {},
         parsedTasks: [],
+        lastDuplicateHistoryKey: '',
         keepTrailingNewline: false,
         advancedPresets: [],
         selectedAdvancedPresetId: '',
@@ -497,6 +513,9 @@
       handleTabClick (tab) {
         this.$store.dispatch('app/changeAddTaskType', tab.name)
       },
+      handleTaskTypeInput (type) {
+        this.$store.dispatch('app/changeAddTaskType', type)
+      },
       handleUriPaste (event) {
         setImmediate(() => {
           const uris = this.$refs.uri.value
@@ -555,6 +574,8 @@
         this.showAdvanced = false
         this.form = initTaskForm(this.$store.state)
         this.parsedTasks = []
+        this.lastDuplicateHistoryKey = ''
+        this._historyUrlSet = null
         this.selectedAdvancedPresetId = ''
         this.savePresetDialogVisible = false
         this.savePresetName = ''
@@ -565,11 +586,19 @@
         }
       },
       disableNameEdit (idx) {
-        if (this.parsedTasks[idx]) {
-          this.$set(this.parsedTasks[idx], 'editing', false)
+        const task = this.parsedTasks[idx]
+        if (!task) return
+        this.$set(task, 'editing', false)
+        const originalName = task.originalName || task.name || ''
+        if (!task.originalName && originalName) {
+          this.$set(task, 'originalName', originalName)
         }
+        const currentName = task.name || ''
+        const renamed = originalName && currentName && currentName !== originalName
+        this.$set(task, 'renamed', !!renamed)
       },
       async updateUriPreview (uris = '') {
+        this._historyUrlSet = this.buildHistoryUrlSet()
         const sanitized = splitTaskLinks(uris || '')
         const seen = new Set()
         const lines = []
@@ -598,12 +627,18 @@
         }
 
         const items = lines.map((u, i) => {
+          const normalizedUrl = sanitizeLink(u)
+          const existsInHistory = this.checkUrlExistsInHistory(normalizedUrl)
           // 检查是否已存在该 URL，保留其优先值和其他属性
           const existing = existingMap.get(u)
           if (existing) {
+            const originalName = existing.originalName || existing.name || ''
             return {
               ...existing,
-              order: i
+              originalName,
+              renamed: !!existing.renamed,
+              order: i,
+              existsInHistory
             }
           }
 
@@ -619,12 +654,33 @@
                 name = name.substring(0, cutIdx)
               }
             }
-            return { name, sizeText: '-', editing: false, priority: 0, url: u, order: i }
+            return {
+              name,
+              originalName: name,
+              renamed: false,
+              sizeText: '-',
+              editing: false,
+              priority: 0,
+              url: u,
+              order: i,
+              existsInHistory
+            }
           } catch (e) {
-            return { name: u, sizeText: '-', editing: false, priority: 0, url: u, order: i }
+            return {
+              name: u,
+              originalName: u,
+              renamed: false,
+              sizeText: '-',
+              editing: false,
+              priority: 0,
+              url: u,
+              order: i,
+              existsInHistory
+            }
           }
         })
         this.parsedTasks = items
+        this.warnDuplicateHistoryOnce()
 
         // 只对新增的 URL 获取文件大小
         const newLines = lines.filter(u => !existingMap.has(u))
@@ -715,6 +771,45 @@
         while (val >= 1024 && i < units.length - 1) { val /= 1024; i++ }
         return `${val.toFixed(1)} ${units[i]}`
       },
+      buildHistoryUrlSet () {
+        try {
+          const historyTasks = taskHistory.getHistory()
+          const set = new Set()
+          if (Array.isArray(historyTasks)) {
+            historyTasks.forEach(t => {
+              const uri = getTaskUri(t) || ''
+              const normalized = sanitizeLink(uri)
+              if (normalized) {
+                set.add(normalized)
+              }
+            })
+          }
+          return set
+        } catch (_) {
+          return new Set()
+        }
+      },
+      checkUrlExistsInHistory (normalizedUrl) {
+        if (!normalizedUrl) return false
+        if (!this._historyUrlSet) {
+          this._historyUrlSet = this.buildHistoryUrlSet()
+        }
+        return this._historyUrlSet.has(normalizedUrl)
+      },
+      warnDuplicateHistoryOnce () {
+        const duplicates = (this.parsedTasks || []).filter(t => t && t.existsInHistory && !t.renamed)
+        const count = duplicates.length
+        const key = duplicates.map(t => t.url).join('\n')
+        if (!count) {
+          this.lastDuplicateHistoryKey = ''
+          return
+        }
+        if (key && key === this.lastDuplicateHistoryKey) {
+          return
+        }
+        this.lastDuplicateHistoryKey = key
+        this.$msg.warning(this.$t('task.duplicate-history-links-message', { count }))
+      },
       addTask (type, form) {
         let payload = null
         if (type === ADD_TASK_TYPE.URI) {
@@ -745,6 +840,17 @@
 
           try {
             if (this.type === 'uri' && this.parsedTasks.length > 0) {
+              this._historyUrlSet = this.buildHistoryUrlSet()
+              const duplicateCount = this.parsedTasks.filter(t => {
+                if (!t || !t.url) return false
+                if (t.renamed) return false
+                const normalized = sanitizeLink(t.url)
+                return normalized && this._historyUrlSet.has(normalized)
+              }).length
+              if (duplicateCount > 0) {
+                this.$msg.warning(this.$t('task.duplicate-history-links-message', { count: duplicateCount }))
+                return
+              }
               const buckets = {}
               const prios = []
               this.parsedTasks.forEach(item => {
@@ -797,9 +903,57 @@
 </script>
 
 <style lang="scss">
+.add-task-primary-input-wrap {
+  position: relative;
+  padding-top: 38px;
+}
+
+.add-task-type-floating__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+.add-task-type-floating__bar :deep(.el-radio-group) {
+  display: inline-flex;
+}
+
+.add-task-type-floating__close {
+  position: absolute;
+  top: 0;
+  right: -6px;
+  z-index: 1;
+  appearance: none;
+  height: 28px;
+  padding: 0 2px;
+  margin: 0;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  font-size: 16px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.add-task-type-floating__close:hover {
+  background: transparent;
+}
+
 .el-dialog.add-task-dialog {
   max-width: 632px;
   min-width: 380px;
+
+  .el-dialog__header {
+    display: none;
+  }
 
   /* 确保弹窗遮罩层有正确的背景色 */
   :deep(.el-dialog__wrapper) {
@@ -849,9 +1003,6 @@
   }
   .task-advanced-options .el-form-item:last-of-type {
     margin-bottom: 0;
-  }
-  .el-tabs__header {
-    user-select: none;
   }
   .el-input-number.el-input-number--mini {
     width: 100%;
