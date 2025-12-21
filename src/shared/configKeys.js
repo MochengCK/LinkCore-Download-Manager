@@ -28,6 +28,7 @@ const userKeys = [
   'run-mode',
   'show-progress-bar',
   'task-notification',
+  'task-complete-notify-click-action',
   'theme',
   'tracker-source',
   'tracker-source-discovered',

@@ -391,6 +391,23 @@
                 {{ $t('preferences.task-completed-notify') }}
               </el-checkbox>
             </el-col>
+            <el-col class="form-item-sub" :span="24" v-if="form.taskNotification">
+              <el-tooltip
+                effect="dark"
+                :content="$t('preferences.task-complete-notify-click-action-tips')"
+                placement="top"
+                :open-delay="400"
+              >
+                <el-radio-group v-model="form.taskCompleteNotifyClickAction" @change="autoSaveForm">
+                  <el-radio label="open-folder">
+                    {{ $t('preferences.task-complete-notify-click-action-open-folder') }}
+                  </el-radio>
+                  <el-radio label="show-app">
+                    {{ $t('preferences.task-complete-notify-click-action-show-app') }}
+                  </el-radio>
+                </el-radio-group>
+              </el-tooltip>
+            </el-col>
             <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.noConfirmBeforeDeleteTask" @change="autoSaveForm">
                 {{ $t('preferences.no-confirm-before-delete-task') }}
@@ -608,6 +625,7 @@
       seedTime,
       showProgressBar,
       taskNotification,
+      taskCompleteNotifyClickAction,
       theme,
       traySpeedometer,
       autoCategorizeFiles,
@@ -668,6 +686,7 @@
       seedTime,
       showProgressBar,
       taskNotification,
+      taskCompleteNotifyClickAction: taskCompleteNotifyClickAction || 'open-folder',
       theme,
       traySpeedometer,
       autoCategorizeFiles: autoCategorizeFiles || false,

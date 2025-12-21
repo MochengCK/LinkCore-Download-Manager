@@ -54,7 +54,8 @@
         currentTaskItem: state => state.currentTaskItem
       }),
       ...mapState('preference', {
-        taskNotification: state => state.config.taskNotification
+        taskNotification: state => state.config.taskNotification,
+        taskCompleteNotifyClickAction: state => state.config.taskCompleteNotifyClickAction || 'open-folder'
       }),
       currentTaskIsBT () {
         return checkTaskIsBT(this.currentTaskItem)
@@ -134,8 +135,10 @@
                 const message = this.$t('task.download-start-browser-message')
                 this.$msg.info(message)
                 if (is.windows()) {
-                  /* eslint-disable no-new */
-                  new Notification(message, { body: taskName })
+                  const notify = new Notification(message, { body: taskName })
+                  notify.onclick = () => {
+                    this.$electron.ipcRenderer.send('command', 'application:show', { page: 'index' })
+                  }
                 }
               } else {
                 const message = this.$t('task.download-start-message', { taskName })
@@ -612,10 +615,15 @@
         const notify = new Notification(notifyMessage, {
           body: `${taskName}${tips}`
         })
+        const clickAction = this.taskCompleteNotifyClickAction || 'open-folder'
         notify.onclick = () => {
-          showItemInFolder(path, {
-            errorMsg: this.$t('task.file-not-exist')
-          })
+          if (clickAction === 'show-app') {
+            this.$electron.ipcRenderer.send('command', 'application:show', { page: 'index' })
+          } else {
+            showItemInFolder(path, {
+              errorMsg: this.$t('task.file-not-exist')
+            })
+          }
         }
       },
       showTaskErrorNotify (task) {

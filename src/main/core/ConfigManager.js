@@ -139,6 +139,7 @@ export default class ConfigManager {
         'run-mode': APP_RUN_MODE.STANDARD,
         'show-progress-bar': true,
         'task-notification': true,
+        'task-complete-notify-click-action': 'open-folder',
         'theme': APP_THEME.AUTO,
         'tracker-source': [
           NGOSANG_TRACKERS_BEST_IP_URL_CDN,
