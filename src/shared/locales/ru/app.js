@@ -34,10 +34,20 @@ export default {
   'second': 'с',
   'task-plan': 'План задач',
   'task-plan-select-placeholder': 'Выберите план',
+  'task-plan-action-resume-selected': 'Запустить выбранные задачи',
+  'task-plan-action-resume-all': 'Запустить все задачи',
+  'task-plan-action-pause-selected': 'Приостановить выбранные задачи',
+  'task-plan-action-pause-all': 'Приостановить все задачи',
   'task-plan-action-shutdown': 'Выключить компьютер',
   'task-plan-action-sleep': 'Спящий режим',
   'task-plan-action-quit': 'Выйти из приложения',
+  'task-plan-only-when-idle': 'Выполнять только при пустой очереди',
   'task-plan-cancelled-message': 'План задач отменён',
   'task-plan-select-warning': 'Выберите план',
-  'task-plan-set-message': 'Установлено: {{action}}'
+  'task-plan-selected-warning': 'Сначала выберите задачи',
+  'task-plan-set-message': 'Установлено: {{action}}',
+  'task-plan-type-complete': 'После завершения загрузок',
+  'task-plan-type-scheduled': 'По расписанию',
+  'task-plan-time-placeholder': 'Выберите время',
+  'task-plan-time-warning': 'Выберите время выполнения'
 }

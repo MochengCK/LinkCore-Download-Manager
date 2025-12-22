@@ -34,10 +34,20 @@ export default {
   'second': '초',
   'task-plan': '작업 계획',
   'task-plan-select-placeholder': '계획을 선택하세요',
+  'task-plan-action-resume-selected': '선택한 작업 시작',
+  'task-plan-action-resume-all': '모든 작업 시작',
+  'task-plan-action-pause-selected': '선택한 작업 일시 중지',
+  'task-plan-action-pause-all': '모든 작업 일시 중지',
   'task-plan-action-shutdown': '컴퓨터 종료',
   'task-plan-action-sleep': '절전 모드',
   'task-plan-action-quit': '앱 종료',
+  'task-plan-only-when-idle': '대기열이 비었을 때만 실행',
   'task-plan-cancelled-message': '작업 계획이 취소되었습니다',
   'task-plan-select-warning': '계획을 선택하세요',
-  'task-plan-set-message': '설정됨: {{action}}'
+  'task-plan-selected-warning': '먼저 작업을 선택하세요',
+  'task-plan-set-message': '설정됨: {{action}}',
+  'task-plan-type-complete': '다운로드 완료 후',
+  'task-plan-type-scheduled': '예약 작업',
+  'task-plan-time-placeholder': '시간 선택',
+  'task-plan-time-warning': '실행 시간을 선택하세요'
 }

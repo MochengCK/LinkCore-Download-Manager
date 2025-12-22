@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Takenplan',
   'task-plan-select-placeholder': 'Kies een plan',
+  'task-plan-action-resume-selected': 'Geselecteerde taken starten',
+  'task-plan-action-resume-all': 'Alle taken starten',
+  'task-plan-action-pause-selected': 'Geselecteerde taken pauzeren',
+  'task-plan-action-pause-all': 'Alle taken pauzeren',
   'task-plan-action-shutdown': 'Computer afsluiten',
   'task-plan-action-sleep': 'Slaapstand',
   'task-plan-action-quit': 'App afsluiten',
+  'task-plan-only-when-idle': 'Alleen uitvoeren als de wachtrij leeg is',
   'task-plan-cancelled-message': 'Takenplan geannuleerd',
   'task-plan-select-warning': 'Kies een plan',
-  'task-plan-set-message': 'Ingesteld: {{action}}'
+  'task-plan-selected-warning': 'Kies eerst taken',
+  'task-plan-set-message': 'Ingesteld: {{action}}',
+  'task-plan-type-complete': 'Na het voltooien van downloads',
+  'task-plan-type-scheduled': 'Gepland',
+  'task-plan-time-placeholder': 'Kies tijd',
+  'task-plan-time-warning': 'Kies een uitvoeringstijd'
 }

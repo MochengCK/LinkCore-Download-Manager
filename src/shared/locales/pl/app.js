@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Plan zadań',
   'task-plan-select-placeholder': 'Wybierz plan',
+  'task-plan-action-resume-selected': 'Uruchom wybrane zadania',
+  'task-plan-action-resume-all': 'Uruchom wszystkie zadania',
+  'task-plan-action-pause-selected': 'Wstrzymaj wybrane zadania',
+  'task-plan-action-pause-all': 'Wstrzymaj wszystkie zadania',
   'task-plan-action-shutdown': 'Wyłącz komputer',
   'task-plan-action-sleep': 'Uśpij',
   'task-plan-action-quit': 'Zamknij aplikację',
+  'task-plan-only-when-idle': 'Wykonuj tylko, gdy kolejka jest pusta',
   'task-plan-cancelled-message': 'Plan zadań anulowany',
   'task-plan-select-warning': 'Wybierz plan',
-  'task-plan-set-message': 'Ustawiono: {{action}}'
+  'task-plan-selected-warning': 'Najpierw wybierz zadania',
+  'task-plan-set-message': 'Ustawiono: {{action}}',
+  'task-plan-type-complete': 'Po zakończeniu pobierania',
+  'task-plan-type-scheduled': 'Zaplanoowane',
+  'task-plan-time-placeholder': 'Wybierz godzinę',
+  'task-plan-time-warning': 'Wybierz czas wykonania'
 }

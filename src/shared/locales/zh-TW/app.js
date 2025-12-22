@@ -34,10 +34,20 @@ export default {
   'second': '秒',
   'task-plan': '任務計畫',
   'task-plan-select-placeholder': '請選擇計畫',
+  'task-plan-action-resume-selected': '開始選取的任務',
+  'task-plan-action-resume-all': '開始全部任務',
+  'task-plan-action-pause-selected': '暫停選取的任務',
+  'task-plan-action-pause-all': '暫停全部任務',
   'task-plan-action-shutdown': '電腦關機',
   'task-plan-action-sleep': '電腦睡眠',
   'task-plan-action-quit': '結束程式',
+  'task-plan-only-when-idle': '僅在佇列為空時執行',
   'task-plan-cancelled-message': '已取消任務計畫',
   'task-plan-select-warning': '請選擇計畫',
-  'task-plan-set-message': '已設定：{{action}}'
+  'task-plan-selected-warning': '請先選取任務',
+  'task-plan-set-message': '已設定：{{action}}',
+  'task-plan-type-complete': '下載完成後',
+  'task-plan-type-scheduled': '定時任務',
+  'task-plan-time-placeholder': '選擇時間',
+  'task-plan-time-warning': '請選擇執行時間'
 }

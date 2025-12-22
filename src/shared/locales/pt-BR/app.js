@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Plano de tarefas',
   'task-plan-select-placeholder': 'Selecione um plano',
+  'task-plan-action-resume-selected': 'Iniciar tarefas selecionadas',
+  'task-plan-action-resume-all': 'Iniciar todas as tarefas',
+  'task-plan-action-pause-selected': 'Pausar tarefas selecionadas',
+  'task-plan-action-pause-all': 'Pausar todas as tarefas',
   'task-plan-action-shutdown': 'Desligar o computador',
   'task-plan-action-sleep': 'Suspender',
   'task-plan-action-quit': 'Sair do aplicativo',
+  'task-plan-only-when-idle': 'Executar apenas quando a fila estiver vazia',
   'task-plan-cancelled-message': 'Plano de tarefas cancelado',
   'task-plan-select-warning': 'Selecione um plano',
-  'task-plan-set-message': 'Definido: {{action}}'
+  'task-plan-selected-warning': 'Selecione as tarefas primeiro',
+  'task-plan-set-message': 'Definido: {{action}}',
+  'task-plan-type-complete': 'Após a conclusão dos downloads',
+  'task-plan-type-scheduled': 'Agendado',
+  'task-plan-time-placeholder': 'Selecione o horário',
+  'task-plan-time-warning': 'Selecione o horário de execução'
 }

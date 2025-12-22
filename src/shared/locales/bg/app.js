@@ -34,10 +34,20 @@ export default {
   'second': 'с',
   'task-plan': 'План на задачите',
   'task-plan-select-placeholder': 'Изберете план',
+  'task-plan-action-resume-selected': 'Стартиране на избраните задачи',
+  'task-plan-action-resume-all': 'Стартиране на всички задачи',
+  'task-plan-action-pause-selected': 'Пауза на избраните задачи',
+  'task-plan-action-pause-all': 'Пауза на всички задачи',
   'task-plan-action-shutdown': 'Изключване на компютъра',
   'task-plan-action-sleep': 'Приспиване',
   'task-plan-action-quit': 'Изход от приложението',
+  'task-plan-only-when-idle': 'Изпълнение само при празна опашка',
   'task-plan-cancelled-message': 'Планът на задачите е отменен',
   'task-plan-select-warning': 'Изберете план',
-  'task-plan-set-message': 'Зададено: {{action}}'
+  'task-plan-selected-warning': 'Моля, първо изберете задачи',
+  'task-plan-set-message': 'Зададено: {{action}}',
+  'task-plan-type-complete': 'След като изтеглянията завършат',
+  'task-plan-type-scheduled': 'Планирано',
+  'task-plan-time-placeholder': 'Изберете време',
+  'task-plan-time-warning': 'Моля, изберете време за изпълнение'
 }

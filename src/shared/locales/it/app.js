@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Piano attività',
   'task-plan-select-placeholder': 'Seleziona un piano',
+  'task-plan-action-resume-selected': 'Avvia le attività selezionate',
+  'task-plan-action-resume-all': 'Avvia tutte le attività',
+  'task-plan-action-pause-selected': 'Metti in pausa le attività selezionate',
+  'task-plan-action-pause-all': 'Metti in pausa tutte le attività',
   'task-plan-action-shutdown': 'Spegni il computer',
   'task-plan-action-sleep': 'Sospendi',
   'task-plan-action-quit': 'Esci dall’app',
+  'task-plan-only-when-idle': 'Esegui solo quando la coda è vuota',
   'task-plan-cancelled-message': 'Piano attività annullato',
   'task-plan-select-warning': 'Seleziona un piano',
-  'task-plan-set-message': 'Impostato: {{action}}'
+  'task-plan-selected-warning': 'Seleziona prima le attività',
+  'task-plan-set-message': 'Impostato: {{action}}',
+  'task-plan-type-complete': 'Dopo il completamento dei download',
+  'task-plan-type-scheduled': 'Pianificato',
+  'task-plan-time-placeholder': 'Seleziona l’ora',
+  'task-plan-time-warning': 'Seleziona l’orario di esecuzione'
 }

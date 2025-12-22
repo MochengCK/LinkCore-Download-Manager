@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Rencana tugas',
   'task-plan-select-placeholder': 'Pilih rencana',
+  'task-plan-action-resume-selected': 'Mulai tugas yang dipilih',
+  'task-plan-action-resume-all': 'Mulai semua tugas',
+  'task-plan-action-pause-selected': 'Jeda tugas yang dipilih',
+  'task-plan-action-pause-all': 'Jeda semua tugas',
   'task-plan-action-shutdown': 'Matikan komputer',
   'task-plan-action-sleep': 'Mode tidur',
   'task-plan-action-quit': 'Keluar dari aplikasi',
+  'task-plan-only-when-idle': 'Hanya jalankan saat antrean kosong',
   'task-plan-cancelled-message': 'Rencana tugas dibatalkan',
   'task-plan-select-warning': 'Pilih rencana',
-  'task-plan-set-message': 'Diatur: {{action}}'
+  'task-plan-selected-warning': 'Pilih tugas terlebih dahulu',
+  'task-plan-set-message': 'Diatur: {{action}}',
+  'task-plan-type-complete': 'Setelah unduhan selesai',
+  'task-plan-type-scheduled': 'Terjadwal',
+  'task-plan-time-placeholder': 'Pilih waktu',
+  'task-plan-time-warning': 'Pilih waktu pelaksanaan'
 }

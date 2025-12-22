@@ -34,10 +34,20 @@ export default {
   'second': '秒',
   'task-plan': 'タスクプラン',
   'task-plan-select-placeholder': 'プランを選択',
+  'task-plan-action-resume-selected': '選択したタスクを開始',
+  'task-plan-action-resume-all': 'すべてのタスクを開始',
+  'task-plan-action-pause-selected': '選択したタスクを一時停止',
+  'task-plan-action-pause-all': 'すべてのタスクを一時停止',
   'task-plan-action-shutdown': 'PCをシャットダウン',
   'task-plan-action-sleep': 'スリープ',
   'task-plan-action-quit': 'アプリを終了',
+  'task-plan-only-when-idle': 'キューが空のときのみ実行',
   'task-plan-cancelled-message': 'タスクプランを解除しました',
   'task-plan-select-warning': 'プランを選択してください',
-  'task-plan-set-message': '設定しました：{{action}}'
+  'task-plan-selected-warning': '先にタスクを選択してください',
+  'task-plan-set-message': '設定しました：{{action}}',
+  'task-plan-type-complete': 'ダウンロード完了後',
+  'task-plan-type-scheduled': '予約タスク',
+  'task-plan-time-placeholder': '時間を選択',
+  'task-plan-time-warning': '実行時間を選択してください'
 }

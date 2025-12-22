@@ -34,10 +34,20 @@ export default {
   'second': 'ث',
   'task-plan': 'خطة المهام',
   'task-plan-select-placeholder': 'اختر خطة',
+  'task-plan-action-resume-selected': 'بدء المهام المحددة',
+  'task-plan-action-resume-all': 'بدء كل المهام',
+  'task-plan-action-pause-selected': 'إيقاف المهام المحددة مؤقتًا',
+  'task-plan-action-pause-all': 'إيقاف كل المهام مؤقتًا',
   'task-plan-action-shutdown': 'إيقاف تشغيل الكمبيوتر',
   'task-plan-action-sleep': 'وضع السكون',
   'task-plan-action-quit': 'إنهاء التطبيق',
+  'task-plan-only-when-idle': 'التنفيذ فقط عند خلو قائمة الانتظار',
   'task-plan-cancelled-message': 'تم إلغاء خطة المهام',
   'task-plan-select-warning': 'يرجى اختيار خطة',
-  'task-plan-set-message': 'تم الإعداد: {{action}}'
+  'task-plan-selected-warning': 'يرجى تحديد المهام أولاً',
+  'task-plan-set-message': 'تم الإعداد: {{action}}',
+  'task-plan-type-complete': 'بعد اكتمال التحميلات',
+  'task-plan-type-scheduled': 'مجدول',
+  'task-plan-time-placeholder': 'اختر الوقت',
+  'task-plan-time-warning': 'يرجى اختيار وقت التنفيذ'
 }

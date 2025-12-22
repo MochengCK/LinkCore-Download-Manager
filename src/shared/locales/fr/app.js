@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Planification des tâches',
   'task-plan-select-placeholder': 'Sélectionnez un plan',
+  'task-plan-action-resume-selected': 'Démarrer les tâches sélectionnées',
+  'task-plan-action-resume-all': 'Démarrer toutes les tâches',
+  'task-plan-action-pause-selected': 'Mettre en pause les tâches sélectionnées',
+  'task-plan-action-pause-all': 'Mettre en pause toutes les tâches',
   'task-plan-action-shutdown': 'Éteindre l’ordinateur',
   'task-plan-action-sleep': 'Mettre en veille',
   'task-plan-action-quit': 'Quitter l’application',
+  'task-plan-only-when-idle': 'Exécuter uniquement lorsque la file est vide',
   'task-plan-cancelled-message': 'Planification annulée',
   'task-plan-select-warning': 'Veuillez sélectionner un plan',
-  'task-plan-set-message': 'Défini : {{action}}'
+  'task-plan-selected-warning': 'Veuillez d’abord sélectionner des tâches',
+  'task-plan-set-message': 'Défini : {{action}}',
+  'task-plan-type-complete': 'Après la fin des téléchargements',
+  'task-plan-type-scheduled': 'Planifié',
+  'task-plan-time-placeholder': 'Sélectionnez l’heure',
+  'task-plan-time-warning': 'Veuillez sélectionner une heure d’exécution'
 }

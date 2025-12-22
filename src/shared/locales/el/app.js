@@ -34,10 +34,20 @@ export default {
   'second': 'δ',
   'task-plan': 'Σχέδιο εργασιών',
   'task-plan-select-placeholder': 'Επιλέξτε σχέδιο',
+  'task-plan-action-resume-selected': 'Έναρξη επιλεγμένων εργασιών',
+  'task-plan-action-resume-all': 'Έναρξη όλων των εργασιών',
+  'task-plan-action-pause-selected': 'Παύση επιλεγμένων εργασιών',
+  'task-plan-action-pause-all': 'Παύση όλων των εργασιών',
   'task-plan-action-shutdown': 'Τερματισμός υπολογιστή',
   'task-plan-action-sleep': 'Αναστολή λειτουργίας',
   'task-plan-action-quit': 'Έξοδος από την εφαρμογή',
+  'task-plan-only-when-idle': 'Εκτέλεση μόνο όταν η ουρά είναι κενή',
   'task-plan-cancelled-message': 'Το σχέδιο εργασιών ακυρώθηκε',
   'task-plan-select-warning': 'Επιλέξτε σχέδιο',
-  'task-plan-set-message': 'Ορίστηκε: {{action}}'
+  'task-plan-selected-warning': 'Επιλέξτε πρώτα εργασίες',
+  'task-plan-set-message': 'Ορίστηκε: {{action}}',
+  'task-plan-type-complete': 'Μετά την ολοκλήρωση των λήψεων',
+  'task-plan-type-scheduled': 'Προγραμματισμένο',
+  'task-plan-time-placeholder': 'Επιλέξτε ώρα',
+  'task-plan-time-warning': 'Επιλέξτε ώρα εκτέλεσης'
 }

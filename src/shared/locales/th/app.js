@@ -34,10 +34,20 @@ export default {
   'second': 'วิ',
   'task-plan': 'แผนงาน',
   'task-plan-select-placeholder': 'เลือกแผน',
+  'task-plan-action-resume-selected': 'เริ่มงานที่เลือก',
+  'task-plan-action-resume-all': 'เริ่มงานทั้งหมด',
+  'task-plan-action-pause-selected': 'หยุดชั่วคราวงานที่เลือก',
+  'task-plan-action-pause-all': 'หยุดชั่วคราวงานทั้งหมด',
   'task-plan-action-shutdown': 'ปิดเครื่องคอมพิวเตอร์',
   'task-plan-action-sleep': 'โหมดสลีป',
   'task-plan-action-quit': 'ออกจากแอป',
+  'task-plan-only-when-idle': 'ทำงานเฉพาะเมื่อคิวว่าง',
   'task-plan-cancelled-message': 'ยกเลิกแผนงานแล้ว',
   'task-plan-select-warning': 'กรุณาเลือกแผน',
-  'task-plan-set-message': 'ตั้งค่าแล้ว: {{action}}'
+  'task-plan-selected-warning': 'กรุณาเลือกงานก่อน',
+  'task-plan-set-message': 'ตั้งค่าแล้ว: {{action}}',
+  'task-plan-type-complete': 'หลังจากโหลดเสร็จสิ้น',
+  'task-plan-type-scheduled': 'ตั้งเวลาล่วงหน้า',
+  'task-plan-time-placeholder': 'เลือกเวลา',
+  'task-plan-time-warning': 'กรุณาเลือกเวลาที่จะทำงาน'
 }

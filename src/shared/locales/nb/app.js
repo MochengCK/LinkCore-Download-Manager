@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Oppgaveplan',
   'task-plan-select-placeholder': 'Velg en plan',
+  'task-plan-action-resume-selected': 'Start valgte oppgaver',
+  'task-plan-action-resume-all': 'Start alle oppgaver',
+  'task-plan-action-pause-selected': 'Sett valgte oppgaver på pause',
+  'task-plan-action-pause-all': 'Sett alle oppgaver på pause',
   'task-plan-action-shutdown': 'Slå av datamaskinen',
   'task-plan-action-sleep': 'Hvilemodus',
   'task-plan-action-quit': 'Avslutt programmet',
+  'task-plan-only-when-idle': 'Kjør bare når køen er tom',
   'task-plan-cancelled-message': 'Oppgaveplan avbrutt',
   'task-plan-select-warning': 'Velg en plan',
-  'task-plan-set-message': 'Satt: {{action}}'
+  'task-plan-selected-warning': 'Velg oppgaver først',
+  'task-plan-set-message': 'Satt: {{action}}',
+  'task-plan-type-complete': 'Etter at nedlastinger er fullført',
+  'task-plan-type-scheduled': 'Planlagt',
+  'task-plan-time-placeholder': 'Velg tid',
+  'task-plan-time-warning': 'Velg et tidspunkt for kjøring'
 }

@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Pla de tasques',
   'task-plan-select-placeholder': 'Seleccioneu un pla',
+  'task-plan-action-resume-selected': 'Inicia les tasques seleccionades',
+  'task-plan-action-resume-all': 'Inicia totes les tasques',
+  'task-plan-action-pause-selected': 'Pausa les tasques seleccionades',
+  'task-plan-action-pause-all': 'Pausa totes les tasques',
   'task-plan-action-shutdown': 'Apaga l’ordinador',
   'task-plan-action-sleep': 'Posa en repòs',
   'task-plan-action-quit': 'Surt de l’aplicació',
+  'task-plan-only-when-idle': 'Executa només quan la cua estigui buida',
   'task-plan-cancelled-message': 'S\'ha cancel·lat el pla de tasques',
   'task-plan-select-warning': 'Seleccioneu un pla',
-  'task-plan-set-message': 'S\'ha establert: {{action}}'
+  'task-plan-selected-warning': 'Seleccioneu primer les tasques',
+  'task-plan-set-message': 'S\'ha establert: {{action}}',
+  'task-plan-type-complete': 'Després d’acabar les baixades',
+  'task-plan-type-scheduled': 'Programat',
+  'task-plan-time-placeholder': 'Seleccioneu l’hora',
+  'task-plan-time-warning': 'Seleccioneu l’hora d’execució'
 }

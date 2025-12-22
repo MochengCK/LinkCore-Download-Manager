@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Görev planı',
   'task-plan-select-placeholder': 'Bir plan seçin',
+  'task-plan-action-resume-selected': 'Seçili görevleri başlat',
+  'task-plan-action-resume-all': 'Tüm görevleri başlat',
+  'task-plan-action-pause-selected': 'Seçili görevleri duraklat',
+  'task-plan-action-pause-all': 'Tüm görevleri duraklat',
   'task-plan-action-shutdown': 'Bilgisayarı kapat',
   'task-plan-action-sleep': 'Uyku moduna al',
   'task-plan-action-quit': 'Uygulamadan çık',
+  'task-plan-only-when-idle': 'Yalnızca kuyruk boşken çalıştır',
   'task-plan-cancelled-message': 'Görev planı iptal edildi',
   'task-plan-select-warning': 'Bir plan seçin',
-  'task-plan-set-message': 'Ayarlandı: {{action}}'
+  'task-plan-selected-warning': 'Önce görevleri seçin',
+  'task-plan-set-message': 'Ayarlandı: {{action}}',
+  'task-plan-type-complete': 'İndirmeler tamamlandıktan sonra',
+  'task-plan-type-scheduled': 'Zamanlanmış',
+  'task-plan-time-placeholder': 'Saat seçin',
+  'task-plan-time-warning': 'Bir çalışma zamanı seçin'
 }

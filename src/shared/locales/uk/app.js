@@ -34,10 +34,20 @@ export default {
   'second': 'с',
   'task-plan': 'План завдань',
   'task-plan-select-placeholder': 'Виберіть план',
+  'task-plan-action-resume-selected': 'Запустити вибрані завдання',
+  'task-plan-action-resume-all': 'Запустити всі завдання',
+  'task-plan-action-pause-selected': 'Призупинити вибрані завдання',
+  'task-plan-action-pause-all': 'Призупинити всі завдання',
   'task-plan-action-shutdown': 'Вимкнути комп\'ютер',
   'task-plan-action-sleep': 'Сон',
   'task-plan-action-quit': 'Вийти з програми',
+  'task-plan-only-when-idle': 'Виконувати лише коли черга порожня',
   'task-plan-cancelled-message': 'План завдань скасовано',
   'task-plan-select-warning': 'Виберіть план',
-  'task-plan-set-message': 'Встановлено: {{action}}'
+  'task-plan-selected-warning': 'Спочатку виберіть завдання',
+  'task-plan-set-message': 'Встановлено: {{action}}',
+  'task-plan-type-complete': 'Після завершення завантажень',
+  'task-plan-type-scheduled': 'Заплановано',
+  'task-plan-time-placeholder': 'Виберіть час',
+  'task-plan-time-warning': 'Виберіть час виконання'
 }

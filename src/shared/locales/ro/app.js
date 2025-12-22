@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Plan de sarcini',
   'task-plan-select-placeholder': 'Selectează un plan',
+  'task-plan-action-resume-selected': 'Pornește sarcinile selectate',
+  'task-plan-action-resume-all': 'Pornește toate sarcinile',
+  'task-plan-action-pause-selected': 'Pauzează sarcinile selectate',
+  'task-plan-action-pause-all': 'Pauzează toate sarcinile',
   'task-plan-action-shutdown': 'Oprește computerul',
   'task-plan-action-sleep': 'Repaus',
   'task-plan-action-quit': 'Ieși din aplicație',
+  'task-plan-only-when-idle': 'Rulează doar când coada este goală',
   'task-plan-cancelled-message': 'Planul de sarcini a fost anulat',
   'task-plan-select-warning': 'Selectează un plan',
-  'task-plan-set-message': 'Setat: {{action}}'
+  'task-plan-selected-warning': 'Selectează mai întâi sarcinile',
+  'task-plan-set-message': 'Setat: {{action}}',
+  'task-plan-type-complete': 'După finalizarea descărcărilor',
+  'task-plan-type-scheduled': 'Programat',
+  'task-plan-time-placeholder': 'Selectează ora',
+  'task-plan-time-warning': 'Selectează ora de execuție'
 }

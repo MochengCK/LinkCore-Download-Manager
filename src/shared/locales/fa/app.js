@@ -34,10 +34,20 @@ export default {
   'second': 'ثانیه',
   'task-plan': 'برنامهٔ وظایف',
   'task-plan-select-placeholder': 'یک برنامه را انتخاب کنید',
+  'task-plan-action-resume-selected': 'شروع وظایف انتخاب‌شده',
+  'task-plan-action-resume-all': 'شروع همهٔ وظایف',
+  'task-plan-action-pause-selected': 'توقف موقت وظایف انتخاب‌شده',
+  'task-plan-action-pause-all': 'توقف موقت همهٔ وظایف',
   'task-plan-action-shutdown': 'خاموش کردن رایانه',
   'task-plan-action-sleep': 'حالت خواب',
   'task-plan-action-quit': 'خروج از برنامه',
+  'task-plan-only-when-idle': 'فقط وقتی صف خالی است اجرا شود',
   'task-plan-cancelled-message': 'برنامهٔ وظایف لغو شد',
   'task-plan-select-warning': 'یک برنامه را انتخاب کنید',
-  'task-plan-set-message': 'تنظیم شد: {{action}}'
+  'task-plan-selected-warning': 'لطفاً ابتدا وظایف را انتخاب کنید',
+  'task-plan-set-message': 'تنظیم شد: {{action}}',
+  'task-plan-type-complete': 'پس از پایان دانلودها',
+  'task-plan-type-scheduled': 'زمان‌بندی‌شده',
+  'task-plan-time-placeholder': 'زمان را انتخاب کنید',
+  'task-plan-time-warning': 'لطفاً زمان اجرا را انتخاب کنید'
 }

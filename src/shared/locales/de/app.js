@@ -34,10 +34,20 @@ export default {
   'second': 's',
   'task-plan': 'Aufgabenplan',
   'task-plan-select-placeholder': 'Plan auswählen',
+  'task-plan-action-resume-selected': 'Ausgewählte Aufgaben starten',
+  'task-plan-action-resume-all': 'Alle Aufgaben starten',
+  'task-plan-action-pause-selected': 'Ausgewählte Aufgaben anhalten',
+  'task-plan-action-pause-all': 'Alle Aufgaben anhalten',
   'task-plan-action-shutdown': 'Computer herunterfahren',
   'task-plan-action-sleep': 'Energiesparmodus',
   'task-plan-action-quit': 'Programm beenden',
+  'task-plan-only-when-idle': 'Nur ausführen, wenn die Warteschlange leer ist',
   'task-plan-cancelled-message': 'Aufgabenplan aufgehoben',
   'task-plan-select-warning': 'Bitte einen Plan auswählen',
-  'task-plan-set-message': 'Eingestellt: {{action}}'
+  'task-plan-selected-warning': 'Bitte zuerst Aufgaben auswählen',
+  'task-plan-set-message': 'Eingestellt: {{action}}',
+  'task-plan-type-complete': 'Nach Abschluss der Downloads',
+  'task-plan-type-scheduled': 'Geplant',
+  'task-plan-time-placeholder': 'Zeit auswählen',
+  'task-plan-time-warning': 'Bitte eine Ausführungszeit auswählen'
 }

@@ -34,10 +34,20 @@ export default {
   'second': 'm',
   'task-plan': 'Feladatütemezés',
   'task-plan-select-placeholder': 'Válasszon tervet',
+  'task-plan-action-resume-selected': 'Kijelölt feladatok indítása',
+  'task-plan-action-resume-all': 'Összes feladat indítása',
+  'task-plan-action-pause-selected': 'Kijelölt feladatok szüneteltetése',
+  'task-plan-action-pause-all': 'Összes feladat szüneteltetése',
   'task-plan-action-shutdown': 'Számítógép leállítása',
   'task-plan-action-sleep': 'Alvó mód',
   'task-plan-action-quit': 'Kilépés az alkalmazásból',
+  'task-plan-only-when-idle': 'Csak üres várólista esetén futtassa',
   'task-plan-cancelled-message': 'Feladatütemezés törölve',
   'task-plan-select-warning': 'Válasszon tervet',
-  'task-plan-set-message': 'Beállítva: {{action}}'
+  'task-plan-selected-warning': 'Először válassza ki a feladatokat',
+  'task-plan-set-message': 'Beállítva: {{action}}',
+  'task-plan-type-complete': 'Letöltések befejezése után',
+  'task-plan-type-scheduled': 'Ütemezett',
+  'task-plan-time-placeholder': 'Válasszon időpontot',
+  'task-plan-time-warning': 'Válasszon végrehajtási időpontot'
 }
