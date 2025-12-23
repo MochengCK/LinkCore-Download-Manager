@@ -1,3 +1,0 @@
-25.2
-
-!B!Python install manager was successfully updated to 25.2.!W!
