@@ -31,7 +31,7 @@
 
 ## 📖 Overview
 
-LinkCore Download Manager is a simple, easy-to-use, cross-platform downloader built with modern web technologies. A clean, intuitive UI, straightforward task flow, and minimal required settings make downloads effortless; support for common protocols covers everyday scenarios.
+LinkCore Download Manager is a simple, easy-to-use, cross-platform downloader built with modern web technologies. A clean, intuitive UI, straightforward task flow, and minimal required settings make downloads effortless; it supports common protocols and online video downloads, covering everyday scenarios.
 ***
 At the same time, LinkCore offers professional-grade capabilities: BitTorrent/magnet support, UPnP/NAT-PMP port mapping, automatic tracker updates, task priority and batch management, quick engine switching, and advanced option presets — ready for power users and heavy downloading scenarios.
 

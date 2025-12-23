@@ -60,15 +60,15 @@ const addTask = (payload = {}) => {
   store.dispatch('app/showAddTaskDialog', type)
 }
 
-const addTaskSilent = (type) => {
+const addTaskSilent = async (type) => {
   try {
-    addTaskByType(type)
+    await addTaskByType(type)
   } catch (err) {
     Message.error(i18n.t(err.message))
   }
 }
 
-const addTaskByType = (type) => {
+const addTaskByType = async (type) => {
   const form = initTaskForm(store.state)
 
   let payload = null
@@ -77,7 +77,7 @@ const addTaskByType = (type) => {
     const autoCategorizeFiles = config.autoCategorizeFiles || false
     const fileCategories = config.fileCategories || null
 
-    payload = buildUriPayload(form, autoCategorizeFiles, fileCategories)
+    payload = await buildUriPayload(form, autoCategorizeFiles, fileCategories)
     store.dispatch('task/addUri', payload).catch(err => {
       Message.error(err.message)
     })

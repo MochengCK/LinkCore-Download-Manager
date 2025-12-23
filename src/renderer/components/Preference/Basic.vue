@@ -386,6 +386,23 @@
                 {{ $t('preferences.new-task-show-downloading') }}
               </el-checkbox>
             </el-col>
+            <el-col class="form-item-sub" :span="24" v-if="form.newTaskShowDownloading">
+              <el-tooltip
+                effect="dark"
+                :content="$t('preferences.new-task-jump-target')"
+                placement="top"
+                :open-delay="400"
+              >
+                <el-radio-group v-model="form.newTaskJumpTarget" @change="autoSaveForm">
+                  <el-radio label="all">
+                    {{ $t('preferences.new-task-jump-target-all') }}
+                  </el-radio>
+                  <el-radio label="downloading">
+                    {{ $t('preferences.new-task-jump-target-downloading') }}
+                  </el-radio>
+                </el-radio-group>
+              </el-tooltip>
+            </el-col>
             <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.taskNotification" @change="autoSaveForm">
                 {{ $t('preferences.task-completed-notify') }}
@@ -612,6 +629,7 @@
       maxOverallDownloadLimit,
       maxOverallUploadLimit,
       newTaskShowDownloading,
+      newTaskJumpTarget,
       noConfirmBeforeDeleteTask,
       openAtLogin,
       pauseMetadata,
@@ -673,6 +691,7 @@
       maxOverallDownloadLimit,
       maxOverallUploadLimit,
       newTaskShowDownloading,
+      newTaskJumpTarget: newTaskJumpTarget || 'downloading',
       noConfirmBeforeDeleteTask,
       openAtLogin,
       pauseMetadata,

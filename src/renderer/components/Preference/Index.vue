@@ -60,16 +60,16 @@
           </el-tooltip>
         </li>
         <li
-          @click="navPreference('lab')"
-          :class="{ active: isActive('/preference/lab') }"
+          @click="navPreference('video')"
+          :class="{ active: isActive('/preference/video') }"
         >
           <el-tooltip
             effect="dark"
-            :content="$t('preferences.lab')"
+            :content="$t('preferences.video')"
             placement="left"
             :open-delay="500"
           >
-            <mo-icon name="preference-lab" width="20" height="20" />
+            <mo-icon name="preference-video" width="20" height="20" />
           </el-tooltip>
         </li>
       </ul>
@@ -82,7 +82,7 @@
   import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import '@/components/Icons/preference-basic'
   import '@/components/Icons/preference-advanced'
-  import '@/components/Icons/preference-lab'
+  import '@/components/Icons/preference-video'
 
   export default {
     name: 'mo-content-preference',
@@ -106,15 +106,15 @@
             route: '/preference/advanced'
           },
           {
-            key: 'lab',
-            title: this.$t('preferences.lab'),
-            route: '/preference/lab'
+            key: 'video',
+            title: this.$t('preferences.video'),
+            route: '/preference/video'
           }
         ]
       },
       title () {
         const rawPath = `${this.$route.path || ''}`
-        const m = rawPath.match(/^\/preference\/(basic|advanced|lab)(?:\/|$)/)
+        const m = rawPath.match(/^\/preference\/(basic|advanced|video)(?:\/|$)/)
         const key = m && m[1] ? m[1] : 'basic'
         const subnav = this.subnavs.find((item) => item.key === key)
         return subnav ? subnav.title : this.$t('preferences.basic')

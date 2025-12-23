@@ -37,6 +37,25 @@ const { chdir } = require('node:process')
 const pkg = require('../package.json')
 const binName = `${pkg.name}`.toLowerCase()
 
+const copyDirRecursiveSync = (srcDir, destDir) => {
+  if (!fs.existsSync(srcDir)) return
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true })
+  }
+  const entries = fs.readdirSync(srcDir, { withFileTypes: true })
+  for (const e of entries) {
+    const src = join(srcDir, e.name)
+    const dest = join(destDir, e.name)
+    if (e.isDirectory()) {
+      copyDirRecursiveSync(src, dest)
+      continue
+    }
+    if (e.isFile()) {
+      fs.copyFileSync(src, dest)
+    }
+  }
+}
+
 const exec = async function exec (cmd, args = []) {
   const child = spawn(cmd, args, { shell: true })
   redirectOutputFor(child)
@@ -74,12 +93,23 @@ const linuxTargets = [
 
 module.exports = async function (context) {
   console.warn('after build; disable sandbox')
-  if (context.electronPlatformName !== 'linux') {
-    return
-  }
   const originalDir = process.cwd()
   const dirname = context.appOutDir
   chdir(dirname)
+
+  const resourcesDir = join(dirname, 'resources')
+  const srcParsersDir = join(__dirname, '..', 'static', 'parsers')
+  const destParsersDir = join(resourcesDir, 'parsers')
+  copyDirRecursiveSync(srcParsersDir, destParsersDir)
+
+  const srcPythonDir = join(__dirname, '..', 'Python')
+  const destPythonDir = join(resourcesDir, 'python')
+  copyDirRecursiveSync(srcPythonDir, destPythonDir)
+
+  if (context.electronPlatformName !== 'linux') {
+    chdir(originalDir)
+    return
+  }
 
   const wrapperPath = join(dirname, binName)
   const realBinPath = join(dirname, `${binName}.bin`)

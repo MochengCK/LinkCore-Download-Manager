@@ -2,6 +2,7 @@ import Vue from 'vue'
 import api from '@/api'
 import { EMPTY_STRING, TASK_STATUS } from '@shared/constants'
 import { checkTaskIsBT, getFileNameFromFile, intersection } from '@shared/utils'
+import taskHistory from '@/api/TaskHistory'
 
 const state = {
   currentList: 'all',
@@ -293,7 +294,7 @@ const actions = {
     commit('CLEAR_TASK_SPEED_SAMPLES', gid)
   },
   addUri ({ dispatch, commit, rootState }, data) {
-    const { uris, outs, options, dirs, priorities } = data
+    const { uris, outs, options, optionsList, dirs, priorities, bilibiliTitles, bilibiliFormats } = data
 
     // Handle downloading file suffix
     const config = rootState.preference.config || {}
@@ -343,10 +344,34 @@ const actions = {
       })
     }
 
-    return api.addUri({ uris, outs: newOuts, options: normalizedOptions, dirs })
+    return api.addUri({ uris, outs: newOuts, options: normalizedOptions, optionsList, dirs })
       .then((res) => {
         if (Array.isArray(res)) {
           const gids = res.map(r => r && r[0]).filter(Boolean)
+          if (Array.isArray(bilibiliTitles) && bilibiliTitles.length === gids.length) {
+            try {
+              for (let i = 0; i < gids.length; i++) {
+                const gid = gids[i]
+                const title = bilibiliTitles[i]
+                const normalizedTitle = title && `${title}`.trim()
+                if (gid && normalizedTitle) {
+                  taskHistory.updateTask(gid, { bilibiliTitle: normalizedTitle }, null)
+                }
+              }
+            } catch (e) {}
+          }
+          if (Array.isArray(bilibiliFormats) && bilibiliFormats.length === gids.length) {
+            try {
+              for (let i = 0; i < gids.length; i++) {
+                const gid = gids[i]
+                const fmt = bilibiliFormats[i]
+                const normalizedFmt = fmt && `${fmt}`.trim()
+                if (gid && normalizedFmt) {
+                  taskHistory.updateTask(gid, { bilibiliFormat: normalizedFmt }, null)
+                }
+              }
+            } catch (e) {}
+          }
           if (Array.isArray(priorities) && priorities.length === gids.length) {
             const mapping = {}
             for (let i = 0; i < gids.length; i++) {

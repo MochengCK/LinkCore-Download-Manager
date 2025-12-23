@@ -656,6 +656,63 @@ export const parseHeader = (header = '') => {
   return result
 }
 
+export const normalizeCookie = (raw = '') => {
+  const text = `${raw || ''}`.trim()
+  if (!text) {
+    return ''
+  }
+
+  const rows = splitTextRows(text)
+  const map = new Map()
+
+  rows.forEach((row) => {
+    let line = `${row || ''}`.trim()
+    if (!line || line.startsWith('#')) {
+      return
+    }
+
+    if (/^cookie\s*:/i.test(line)) {
+      line = line.replace(/^cookie\s*:/i, '').trim()
+    }
+
+    if (line.includes('=')) {
+      const segments = line.split(/;+/)
+      segments.forEach((seg) => {
+        const s = `${seg || ''}`.trim()
+        if (!s) return
+        const idx = s.indexOf('=')
+        if (idx <= 0) return
+        const name = s.substring(0, idx).trim()
+        const value = s.substring(idx + 1).trim()
+        if (!name) return
+        map.set(name, value)
+      })
+      return
+    }
+
+    const cols = line.split(/\s+/).filter(Boolean)
+    if (cols.length < 2) {
+      return
+    }
+    const lowerCols = cols.map(c => `${c}`.toLowerCase())
+    if (lowerCols.includes('name') && lowerCols.includes('value')) {
+      return
+    }
+    const name = cols[0].trim()
+    const value = cols[1].trim()
+    if (!name || !value) {
+      return
+    }
+    map.set(name, value)
+  })
+
+  const parts = []
+  map.forEach((v, k) => {
+    parts.push(`${k}=${v}`)
+  })
+  return parts.join('; ')
+}
+
 export const formatOptionsForEngine = (options = {}) => {
   const result = {}
 

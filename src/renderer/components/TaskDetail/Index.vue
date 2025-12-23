@@ -265,6 +265,9 @@
       },
       statusHintText () {
         const task = this.task || {}
+        if (!task || !task.gid) {
+          return ''
+        }
         if (this.isBT && this.isSeeder) {
           return this.$t('task.bt-seeding-continue')
         }

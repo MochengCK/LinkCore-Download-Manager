@@ -15,7 +15,8 @@
 
   import { checkTaskIsBT, getTaskName, isMagnetTask } from '@shared/utils'
   import { TASK_STATUS } from '@shared/constants'
-  import { existsSync, renameSync, mkdirSync, utimesSync, statSync } from 'node:fs'
+  import { spawn, spawnSync } from 'node:child_process'
+  import { existsSync, renameSync, mkdirSync, utimesSync, statSync, readdirSync, unlinkSync } from 'node:fs'
   import { dirname, basename, resolve, isAbsolute } from 'node:path'
   import {
     autoCategorizeDownloadedFile,
@@ -125,24 +126,33 @@
             const { dir } = task
             this.$store.dispatch('preference/recordHistoryDirectory', dir)
             const taskName = getTaskName(task)
+            const cfg = this.$store.state.preference.config || {}
+            let isBilibiliPart = false
+            try {
+              const p = getTaskActualPath(task, cfg)
+              const info = this.parseBilibiliDashPart(p)
+              isBilibiliPart = !!(info && info.base)
+            } catch (_) {}
             try {
               const opt = await api.getOption({ gid })
               const hs = opt && opt.header ? opt.header : []
               const headers = Array.isArray(hs) ? hs : (typeof hs === 'string' ? [hs] : [])
               const fromHeader = headers.some(h => /X-LinkCore-Source\s*:\s*BrowserExtension/i.test(`${h}`))
               const fromReferer = !!(opt && opt.referer && /^https?:/i.test(`${opt.referer}`))
-              if (fromHeader || fromReferer) {
-                const message = this.$t('task.download-start-browser-message')
-                this.$msg.info(message)
-                if (is.windows()) {
-                  const notify = new Notification(message, { body: taskName })
-                  notify.onclick = () => {
-                    this.$electron.ipcRenderer.send('command', 'application:show', { page: 'index' })
+              if (!isBilibiliPart) {
+                if (fromHeader || fromReferer) {
+                  const message = this.$t('task.download-start-browser-message')
+                  this.$msg.info(message)
+                  if (is.windows()) {
+                    const notify = new Notification(message, { body: taskName })
+                    notify.onclick = () => {
+                      this.$electron.ipcRenderer.send('command', 'application:show', { page: 'index' })
+                    }
                   }
+                } else {
+                  const message = this.$t('task.download-start-message', { taskName })
+                  this.$msg.info(message)
                 }
-              } else {
-                const message = this.$t('task.download-start-message', { taskName })
-                this.$msg.info(message)
               }
             } catch (_) {}
 
@@ -219,10 +229,42 @@
             this.handleDownloadComplete(task, true)
           })
       },
-      handleDownloadComplete (task, isBT) {
+      async handleDownloadComplete (task, isBT) {
         const cfg = this.$store.state.preference.config || {}
         const path = getTaskActualPath(task, cfg)
         const finalPath = isBT ? path : this.removeDownloadingSuffix(task, path, cfg)
+        let isBilibiliPart = false
+        if (!isBT) {
+          try {
+            const info = this.parseBilibiliDashPart(finalPath)
+            if (info && info.base) {
+              isBilibiliPart = true
+            }
+          } catch (_) {}
+          if (!isBilibiliPart) {
+            try {
+              const actual = getTaskActualPath(task, cfg)
+              const info2 = this.parseBilibiliDashPart(actual)
+              if (info2 && info2.base) {
+                isBilibiliPart = true
+              }
+            } catch (_) {}
+          }
+          if (!isBilibiliPart) {
+            try {
+              const files = Array.isArray(task && task.files) ? task.files : []
+              const first = files.length > 0 ? files[0] : null
+              const p = first && first.path ? `${first.path}` : ''
+              if (p) {
+                const base = basename(p)
+                const lower = base.toLowerCase()
+                if (lower.endsWith('_video.mp4') || lower.endsWith('_audio.m4a') || /\.m4s$/i.test(base)) {
+                  isBilibiliPart = true
+                }
+              }
+            } catch (_) {}
+          }
+        }
 
         this.$store.dispatch('task/saveSession')
         this.persistAverageSpeedToHistory(task)
@@ -259,13 +301,551 @@
             }
           }
         } catch (_) {}
-        const notifyPath = finalPath || path
-        this.showTaskCompleteNotify(task, isBT, notifyPath)
-        this.$electron.ipcRenderer.send('event', 'task-download-complete', task, notifyPath)
-
+        if (!isBilibiliPart) {
+          const notifyPath = finalPath || path
+          this.showTaskCompleteNotify(task, isBT, notifyPath)
+          this.$electron.ipcRenderer.send('event', 'task-download-complete', task, notifyPath)
+        }
         this.setFileMtimeOnComplete(task, finalPath)
 
-        this.autoCategorizeDownloadedFile(task, finalPath)
+        const mergeResult = await this.maybeMergeBilibiliDash(finalPath, task)
+        if (mergeResult && mergeResult.mergedPath) {
+          this.setFileMtimeOnComplete(task, mergeResult.mergedPath)
+          this.autoCategorizeDownloadedFile(task, mergeResult.mergedPath)
+          try {
+            const gid = task && task.gid ? `${task.gid}` : ''
+            if (gid) {
+              const base = basename(mergeResult.mergedPath || '')
+              const suffix = cfg.downloadingFileSuffix || ''
+              const name = suffix && base.endsWith(suffix) ? base.slice(0, -suffix.length) : base
+              if (name) {
+                this.$store.dispatch('task/setTaskDisplayName', { gid, name })
+              }
+            }
+          } catch (_) {}
+          let notified = false
+          if (isBilibiliPart || (mergeResult && mergeResult.isBilibiliPart)) {
+            try {
+              const key = resolve(mergeResult.mergedPath)
+              if (!this._bilibiliMergeNotified) {
+                this._bilibiliMergeNotified = new Set()
+              }
+              if (!this._bilibiliMergeNotified.has(key)) {
+                this._bilibiliMergeNotified.add(key)
+                const notifyPath = mergeResult.mergedPath
+                this.showTaskCompleteNotify(task, isBT, notifyPath)
+                this.$electron.ipcRenderer.send('event', 'task-download-complete', task, notifyPath)
+                notified = true
+              }
+            } catch (_) {}
+          }
+          if (!notified) {
+            const notifyPath = mergeResult.mergedPath
+            this.showTaskCompleteNotify(task, isBT, notifyPath)
+            this.$electron.ipcRenderer.send('event', 'task-download-complete', task, notifyPath)
+          }
+        } else if (!(mergeResult && mergeResult.isBilibiliPart)) {
+          this.autoCategorizeDownloadedFile(task, finalPath)
+        }
+      },
+      parseBilibiliDashPart (fullPath) {
+        try {
+          const p = fullPath ? `${fullPath}` : ''
+          if (!p) return null
+          const file = basename(p)
+          const m1 = file.match(/^(.*)_(video\.mp4|audio\.m4a)$/i)
+          if (m1) {
+            const base = m1[1] ? `${m1[1]}` : ''
+            if (!base) return null
+            return { dir: dirname(p), base, type: 'named' }
+          }
+          const m2 = file.match(/^(.+)-\d+\.m4s$/i)
+          if (m2) {
+            const prefix = m2[1] ? `${m2[1]}` : ''
+            if (!prefix) return null
+            return { dir: dirname(p), base: prefix, type: 'm4s' }
+          }
+          return null
+        } catch (_) {
+          return null
+        }
+      },
+      deriveBilibiliDashRootDir (partDir, cfg) {
+        try {
+          const d = partDir ? `${partDir}` : ''
+          if (!d) return ''
+          const auto = !!(cfg && cfg.autoCategorizeFiles)
+          const categories = cfg && cfg.fileCategories
+          if (!auto || !categories || Object.keys(categories).length === 0) {
+            return d
+          }
+          const folderNames = Object.keys(categories).map(key => {
+            const c = categories[key] || {}
+            return c.name || key
+          }).filter(Boolean)
+          const leaf = basename(d)
+          if (folderNames.includes(leaf)) {
+            return dirname(d)
+          }
+          return d
+        } catch (_) {
+          return partDir ? `${partDir}` : ''
+        }
+      },
+      buildBilibiliDashCandidates (rootDir, base, kind, cfg) {
+        const candidates = new Set()
+        try {
+          const rd = rootDir ? `${rootDir}` : ''
+          const b = base ? `${base}` : ''
+          const k = kind === 'video' ? 'video.mp4' : 'audio.m4a'
+          if (!rd || !b) return []
+          const file = `${b}_${k}`
+          candidates.add(resolve(rd, file))
+          const categories = cfg && cfg.fileCategories
+          const auto = !!(cfg && cfg.autoCategorizeFiles)
+          if (auto && categories && Object.keys(categories).length > 0) {
+            const categorized = buildCategorizedPath(resolve(rd, file), file, categories, rd)
+            if (categorized && categorized.categorizedPath) {
+              candidates.add(resolve(`${categorized.categorizedPath}`))
+            }
+          }
+        } catch (_) {}
+        return Array.from(candidates)
+      },
+      findFirstExistingPath (paths) {
+        try {
+          const arr = Array.isArray(paths) ? paths : []
+          for (const p of arr) {
+            if (p && existsSync(p)) return p
+          }
+        } catch (_) {}
+        return ''
+      },
+      resolveFfmpegPath () {
+        const candidates = []
+        try {
+          const root = resolve(process.cwd(), 'ffmpeg-8.0.1-essentials_build')
+          candidates.push(
+            resolve(root, 'bin', 'ffmpeg.exe'),
+            resolve(root, 'ffmpeg.exe')
+          )
+        } catch (_) {}
+        try {
+          const rp = process && process.resourcesPath ? `${process.resourcesPath}` : ''
+          if (rp) {
+            const root = resolve(rp, 'ffmpeg-8.0.1-essentials_build')
+            candidates.push(
+              resolve(root, 'bin', 'ffmpeg.exe'),
+              resolve(root, 'ffmpeg.exe')
+            )
+          }
+        } catch (_) {}
+        candidates.push('ffmpeg')
+        return candidates.find(p => (p === 'ffmpeg' ? true : existsSync(p))) || ''
+      },
+      runFfmpegMux (ffmpegPath, videoPath, audioPath, outputPath) {
+        return new Promise((resolve, reject) => {
+          const cmd = ffmpegPath || ''
+          const args = [
+            '-y',
+            '-hide_banner',
+            '-loglevel', 'error',
+            '-i', videoPath,
+            '-i', audioPath,
+            '-map', '0:v:0',
+            '-map', '1:a:0',
+            '-c', 'copy',
+            '-shortest',
+            outputPath
+          ]
+          const child = spawn(cmd, args, { windowsHide: true })
+          let stderr = ''
+          child.stderr.on('data', (d) => { stderr += d.toString('utf8') })
+          child.on('error', (err) => reject(err))
+          child.on('close', (code) => {
+            if (code === 0) {
+              resolve(true)
+              return
+            }
+            const msg = (stderr || '').trim() || `ffmpeg exit ${code}`
+            reject(new Error(msg))
+          })
+        })
+      },
+      async maybeMergeBilibiliDash (finalPath, task = null) {
+        const info = this.parseBilibiliDashPart(finalPath)
+        if (!info) {
+          return { isBilibiliPart: false, mergedPath: '' }
+        }
+        const cfg = this.$store.state.preference.config || {}
+        const { dir, base, type } = info
+
+        if (type === 'm4s') {
+          let entries = []
+          try {
+            entries = readdirSync(dir) || []
+          } catch (_) {
+            entries = []
+          }
+          const group = entries
+            .filter(name => {
+              const s = `${name || ''}`
+              if (!s.toLowerCase().endsWith('.m4s')) return false
+              return s.startsWith(`${base}-`)
+            })
+            .sort()
+          if (group.length < 2) {
+            return { isBilibiliPart: true, mergedPath: '' }
+          }
+          const parts = group.map(name => {
+            const full = resolve(dir, name)
+            let ready = false
+            try {
+              const exists = existsSync(full)
+              let ariaExists = false
+              try {
+                ariaExists = existsSync(`${full}.aria2`)
+              } catch (_) {}
+              ready = exists && !ariaExists
+            } catch (_) {}
+            return { name, path: full, ready }
+          })
+          const readyParts = parts.filter(p => p && p.ready)
+          if (readyParts.length < 2) {
+            return { isBilibiliPart: true, mergedPath: '' }
+          }
+          const videoPath = readyParts[0].path
+          const audioPath = readyParts[1].path
+          const ffmpegPath = this.resolveFfmpegPath()
+          if (!ffmpegPath) {
+            return { isBilibiliPart: true, mergedPath: '' }
+          }
+          const outputPath = resolve(dir, `${base}.mp4`)
+          try {
+            if (existsSync(outputPath)) {
+              return { isBilibiliPart: true, mergedPath: outputPath }
+            }
+          } catch (_) {}
+          try {
+            await this.runFfmpegMux(ffmpegPath, videoPath, audioPath, outputPath)
+            const finalOutputPath = this.afterBilibiliMerge(task, info, videoPath, audioPath, outputPath)
+            return { isBilibiliPart: true, mergedPath: finalOutputPath || outputPath }
+          } catch (e) {
+            console.warn(`[Motrix] FFmpeg merge failed: ${e && e.message ? e.message : e}`)
+            return { isBilibiliPart: true, mergedPath: '' }
+          }
+        }
+
+        const rootDir = this.deriveBilibiliDashRootDir(dir, cfg)
+        const videoCand = [
+          ...this.buildBilibiliDashCandidates(rootDir, base, 'video', cfg),
+          ...this.buildBilibiliDashCandidates(dir, base, 'video', cfg)
+        ]
+        const audioCand = [
+          ...this.buildBilibiliDashCandidates(rootDir, base, 'audio', cfg),
+          ...this.buildBilibiliDashCandidates(dir, base, 'audio', cfg)
+        ]
+
+        const videoPath = this.findFirstExistingPath(videoCand)
+        const audioPath = this.findFirstExistingPath(audioCand)
+
+        if (!videoPath || !audioPath) {
+          return { isBilibiliPart: true, mergedPath: '' }
+        }
+
+        const outputDir = dirname(videoPath || finalPath || rootDir || dir)
+        const outputPath = resolve(outputDir, `${base}.mp4`)
+        try {
+          if (existsSync(outputPath)) {
+            return { isBilibiliPart: true, mergedPath: outputPath }
+          }
+        } catch (_) {}
+
+        const ffmpegPath = this.resolveFfmpegPath()
+        if (!ffmpegPath) {
+          return { isBilibiliPart: true, mergedPath: '' }
+        }
+
+        try {
+          await this.runFfmpegMux(ffmpegPath, videoPath, audioPath, outputPath)
+          const finalOutputPath = this.afterBilibiliMerge(task, info, videoPath, audioPath, outputPath)
+          return { isBilibiliPart: true, mergedPath: finalOutputPath || outputPath }
+        } catch (e) {
+          console.warn(`[Motrix] FFmpeg merge failed: ${e && e.message ? e.message : e}`)
+          return { isBilibiliPart: true, mergedPath: '' }
+        }
+      },
+      afterBilibiliMerge (task, info, videoPath, audioPath, outputPath) {
+        let finalOutputPath = outputPath
+        try {
+          const toDelete = new Set()
+          const outAbs = outputPath ? resolve(outputPath) : ''
+          const addCandidate = (p) => {
+            if (!p) return
+            const full = resolve(p)
+            if (outAbs && resolve(full) === outAbs) return
+            toDelete.add(full)
+            toDelete.add(`${full}.aria2`)
+          }
+
+          addCandidate(videoPath)
+          if (audioPath && audioPath !== videoPath) {
+            addCandidate(audioPath)
+          }
+
+          try {
+            const dir = info && info.dir ? `${info.dir}` : ''
+            const base = info && info.base ? `${info.base}` : ''
+            const type = info && info.type ? `${info.type}` : ''
+            if (dir && base) {
+              let entries = []
+              try {
+                entries = readdirSync(dir) || []
+              } catch (_) {
+                entries = []
+              }
+              entries.forEach(name => {
+                const s = `${name || ''}`
+                const full = resolve(dir, s)
+                if (outAbs && resolve(full) === outAbs) {
+                  return
+                }
+                const lower = s.toLowerCase()
+                if (type === 'm4s') {
+                  if (lower.endsWith('.m4s') && s.startsWith(`${base}-`)) {
+                    toDelete.add(full)
+                    toDelete.add(`${full}.aria2`)
+                  }
+                } else if (type === 'named') {
+                  if (s === `${base}_video.mp4` || s === `${base}_audio.m4a`) {
+                    toDelete.add(full)
+                    toDelete.add(`${full}.aria2`)
+                  }
+                }
+              })
+            }
+          } catch (_) {}
+
+          toDelete.forEach(p => {
+            try {
+              if (p && existsSync(p)) {
+                unlinkSync(p)
+              }
+            } catch (_) {}
+          })
+        } catch (_) {}
+
+        try {
+          const outAbs = finalOutputPath ? resolve(finalOutputPath) : ''
+          const dirFromTask = task && task.dir ? `${task.dir}` : ''
+          const baseDir = dirFromTask || (finalOutputPath ? dirname(finalOutputPath) : '')
+          if (task && Array.isArray(task.files)) {
+            task.files.forEach(file => {
+              try {
+                const raw = file && file.path ? `${file.path}` : ''
+                if (!raw) {
+                  return
+                }
+                const full = isAbsolute(raw) ? resolve(raw) : resolve(baseDir, raw)
+                if (outAbs && resolve(full) === outAbs) {
+                  return
+                }
+                if (existsSync(full)) {
+                  unlinkSync(full)
+                }
+                const aria2Path = `${full}.aria2`
+                try {
+                  if (existsSync(aria2Path)) {
+                    unlinkSync(aria2Path)
+                  }
+                } catch (_) {}
+              } catch (_) {}
+            })
+          }
+        } catch (_) {}
+
+        try {
+          const dirOut = outputPath ? dirname(outputPath) : ''
+          let titleBase = ''
+          let targetExt = '.mp4'
+          try {
+            const gid = task && task.gid ? `${task.gid}` : ''
+            if (gid) {
+              const history = taskHistory.getHistory() || []
+              const matched = history.find(t => t && t.gid === gid)
+              const title = matched && matched.bilibiliTitle ? `${matched.bilibiliTitle}`.trim() : ''
+              if (title) {
+                titleBase = title
+              }
+              const fmt = matched && matched.bilibiliFormat ? `${matched.bilibiliFormat}`.trim().toLowerCase() : ''
+              const allowed = ['mp4', 'mkv', 'mov', 'm4v', 'flv', 'ts']
+              if (fmt && allowed.includes(fmt)) {
+                targetExt = `.${fmt}`
+              }
+            }
+          } catch (_) {}
+          if (task && task.name) {
+            let n = basename(`${task.name}`)
+            n = n.replace(/\.[^.]+$/i, '')
+            n = n.replace(/_video$/i, '')
+            if (n) {
+              titleBase = n
+            }
+          }
+          if (dirOut && titleBase) {
+            const candidate = resolve(dirOut, `${titleBase}${targetExt}`)
+            if (targetExt === '.mp4') {
+              if (resolve(candidate) !== resolve(outputPath)) {
+                let renamed = false
+                if (existsSync(candidate)) {
+                  finalOutputPath = candidate
+                  renamed = true
+                } else {
+                  const ok = this.renamePreserveTimes(outputPath, candidate)
+                  if (ok) {
+                    finalOutputPath = candidate
+                    renamed = true
+                  }
+                }
+                if (!renamed) {
+                  finalOutputPath = outputPath
+                }
+              } else {
+                finalOutputPath = candidate
+              }
+            } else {
+              if (existsSync(candidate)) {
+                finalOutputPath = candidate
+              } else {
+                try {
+                  const ffmpegPath = this.resolveFfmpegPath()
+                  if (ffmpegPath) {
+                    const cmd = ffmpegPath || ''
+                    const args = [
+                      '-y',
+                      '-hide_banner',
+                      '-loglevel', 'error',
+                      '-i', outputPath,
+                      '-c', 'copy',
+                      candidate
+                    ]
+                    const result = spawnSync(cmd, args, { windowsHide: true })
+                    if (result && result.status === 0 && existsSync(candidate)) {
+                      finalOutputPath = candidate
+                    }
+                  }
+                } catch (_) {}
+              }
+            }
+          }
+          try {
+            if (outputPath && finalOutputPath && resolve(outputPath) !== resolve(finalOutputPath)) {
+              const orig = resolve(outputPath)
+              try {
+                if (existsSync(orig)) {
+                  unlinkSync(orig)
+                }
+              } catch (_) {}
+              const origAria2 = `${orig}.aria2`
+              try {
+                if (existsSync(origAria2)) {
+                  unlinkSync(origAria2)
+                }
+              } catch (_) {}
+            }
+          } catch (_) {}
+        } catch (_) {}
+
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (gid) {
+            api.removeDownloadResult({ gid }).catch(() => {})
+          }
+        } catch (_) {}
+
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (!gid) {
+            return finalOutputPath
+          }
+          let length = 0
+          try {
+            const st = statSync(finalOutputPath)
+            length = Number(st.size || 0)
+          } catch (_) {}
+          const baseFile = Array.isArray(task.files) && task.files.length > 0 ? task.files[0] : null
+          const files = [{
+            ...(baseFile || {}),
+            path: finalOutputPath,
+            length: `${length}`,
+            completedLength: `${length}`
+          }]
+          const patch = {
+            ...task,
+            status: TASK_STATUS.COMPLETE,
+            dir: dirname(finalOutputPath),
+            files,
+            totalLength: `${length}`,
+            completedLength: `${length}`
+          }
+          taskHistory.updateTask(gid, patch, task)
+        } catch (_) {}
+
+        try {
+          const gid = task && task.gid ? `${task.gid}` : ''
+          if (gid && finalOutputPath) {
+            const history = taskHistory.getHistory() || []
+            let currentTitle = ''
+            try {
+              const self = history.find(t => t && t.gid === gid)
+              if (self && self.bilibiliTitle) {
+                currentTitle = `${self.bilibiliTitle}`.trim()
+              }
+            } catch (_) {}
+            history.forEach(item => {
+              try {
+                if (!item || !item.gid) {
+                  return
+                }
+                if (item.gid === gid) {
+                  return
+                }
+                const t = item.bilibiliTitle ? `${item.bilibiliTitle}`.trim() : ''
+                if (currentTitle && t && t !== currentTitle) {
+                  return
+                }
+                const files = Array.isArray(item.files) ? item.files : []
+                if (!files.length) {
+                  return
+                }
+                const first = files[0] || {}
+                const p = first && first.path ? `${first.path}` : ''
+                if (!p) {
+                  return
+                }
+                const base = basename(p)
+                const looksLikePart = base.toLowerCase().endsWith('_video.mp4') ||
+                  base.toLowerCase().endsWith('_audio.m4a') ||
+                  /\.m4s$/i.test(base)
+                let missing = false
+                try {
+                  missing = !existsSync(p)
+                } catch (_) {}
+                if (!looksLikePart && !missing) {
+                  return
+                }
+                try {
+                  api.removeDownloadResult({ gid: item.gid }).catch(() => {})
+                } catch (_) {}
+                try {
+                  taskHistory.removeTask(item.gid)
+                } catch (_) {}
+              } catch (_) {}
+            })
+          }
+        } catch (_) {}
+
+        return finalOutputPath
       },
       persistAverageSpeedToHistory (task) {
         try {
@@ -593,7 +1173,16 @@
         }
       },
       showTaskCompleteNotify (task, isBT, path) {
-        const taskName = getTaskName(task)
+        let taskName = ''
+        try {
+          const base = path ? basename(path) : ''
+          if (base) {
+            taskName = base
+          }
+        } catch (_) {}
+        if (!taskName) {
+          taskName = getTaskName(task)
+        }
         const message = isBT
           ? this.$t('task.bt-download-complete-message', { taskName })
           : this.$t('task.download-complete-message', { taskName })
@@ -1089,6 +1678,7 @@
       this._resumedCompletedFixing = false
       this._resumedCompletedLastRun = 0
       this._resumedCompletedFixedGids = new Set()
+      this._bilibiliMergeNotified = new Set()
     },
     mounted () {
       setTimeout(() => {

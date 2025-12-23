@@ -25,7 +25,7 @@
   import { getLocaleManager } from '@/components/Locale'
 
   export default {
-    name: 'LinkCore Download Manager-app',
+    name: 'LinkCoreDownloadManagerApp',
     components: {
       [DynamicTray.name]: DynamicTray,
       [EngineClient.name]: EngineClient,

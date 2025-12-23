@@ -1,6 +1,8 @@
 import { ipcRenderer } from 'electron'
 import is from 'electron-is'
 import { isEmpty, clone } from 'lodash'
+import { existsSync } from 'fs'
+import { basename } from 'path'
 import { Aria2 } from '@shared/aria2'
 import {
   separateConfig,
@@ -12,6 +14,43 @@ import {
 } from '@shared/utils'
 import { ENGINE_RPC_HOST, TASK_STATUS } from '@shared/constants'
 import taskHistory from './TaskHistory'
+
+const looksLikeBilibiliDashPart = (task) => {
+  try {
+    if (!task || typeof task !== 'object') {
+      return false
+    }
+    const status = `${task.status || ''}`
+    const { COMPLETE, ERROR, REMOVED } = TASK_STATUS
+    if (![COMPLETE, ERROR, REMOVED].includes(status)) {
+      return false
+    }
+    const files = Array.isArray(task.files) ? task.files : []
+    if (!files.length) {
+      return false
+    }
+    const first = files[0] || {}
+    const p = first && first.path ? `${first.path}` : ''
+    if (!p) {
+      return false
+    }
+    const base = basename(p)
+    const lower = base.toLowerCase()
+    const looksLikePart = lower.endsWith('_video.mp4') ||
+      lower.endsWith('_audio.m4a') ||
+      /\.m4s$/i.test(base)
+    if (!looksLikePart) {
+      return false
+    }
+    let missing = false
+    try {
+      missing = !existsSync(p)
+    } catch (_) {}
+    return missing
+  } catch (_) {
+    return false
+  }
+}
 
 export default class Api {
   constructor (options = {}) {
@@ -182,10 +221,14 @@ export default class Api {
       uris,
       outs,
       options,
+      optionsList,
       dirs
     } = params
     const tasks = uris.map((uri, index) => {
-      const perOptions = { ...options }
+      const perOptions = {
+        ...options,
+        ...(Array.isArray(optionsList) && optionsList[index] ? optionsList[index] : {})
+      }
       if (Array.isArray(dirs) && dirs[index]) {
         perOptions.dir = dirs[index]
       }
@@ -312,10 +355,8 @@ export default class Api {
         ]).then((data) => {
           let result = mergeTaskResult(data)
 
-          // 保存已停止的任务到历史记录
           const stoppedTasks = result.filter(task => {
             const { status } = task
-            // 检查是否为种子解析任务（名称以[METADATA]开头）
             const isMetadataTask = task.name && task.name.startsWith('[METADATA]')
             return isMetadataTask || [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED].includes(status)
           })
@@ -348,6 +389,8 @@ export default class Api {
 
             result = [...result, ...newHistoryTasks]
           }
+
+          result = result.filter(task => !looksLikeBilibiliDashPart(task))
 
           resolve(result)
         }).catch((err) => {
@@ -395,13 +438,13 @@ export default class Api {
             return task
           })
 
-          // 返回合并后的任务列表
-          return [...stoppedTasks, ...newHistoryTasks]
+          const merged = [...stoppedTasks, ...newHistoryTasks]
+          return merged.filter(task => !looksLikeBilibiliDashPart(task))
         })
         .catch(err => {
           console.log('[Motrix] fetch stopped task list fail, fallback to history:', err)
-          // 如果获取已停止任务失败，从历史记录中恢复
-          return taskHistory.getHistory()
+          const history = taskHistory.getHistory()
+          return history.filter(task => !looksLikeBilibiliDashPart(task))
         })
     default:
       return this.fetchDownloadingTaskList(params)

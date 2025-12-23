@@ -11,7 +11,7 @@
     @closed="handleClosed"
   >
     <el-form ref="taskForm" label-position="left" :model="form" :rules="rules">
-      <template v-if="type === 'uri'">
+      <template v-if="type === 'uri' || type === 'video'">
         <el-form-item>
           <div class="add-task-primary-input-wrap">
             <button type="button" class="add-task-type-floating__close" aria-label="Close" @click="handleClose">
@@ -20,6 +20,7 @@
             <div class="add-task-type-floating__bar">
               <el-radio-group :value="type" size="mini" @input="handleTaskTypeInput">
                 <el-radio-button label="uri">{{ $t('task.uri-task') }}</el-radio-button>
+                <el-radio-button label="video">{{ $t('task.video-task') }}</el-radio-button>
                 <el-radio-button label="torrent">{{ $t('task.torrent-task') }}</el-radio-button>
               </el-radio-group>
             </div>
@@ -28,14 +29,77 @@
               type="textarea"
               auto-complete="off"
               :autosize="{ minRows: 3, maxRows: 5 }"
-              :placeholder="$t('task.uri-task-tips')"
+              :placeholder="type === 'video' ? $t('task.video-task-tips') : $t('task.uri-task-tips')"
               @paste.native="handleUriPaste"
               v-model="form.uris"
             >
             </el-input>
           </div>
         </el-form-item>
-        <div class="parsed-preview" v-if="parsedTasks.length > 0">
+        <div
+          class="video-preview"
+          v-if="type === 'video' && (videoPreviewLoading || videoPreviewError || videoMeta || (videoQualities && videoQualities.length > 0))"
+        >
+          <div class="video-preview__status" v-if="videoPreviewLoading">{{ $t('task.video-parsing') }}</div>
+          <div class="video-preview__error" v-else-if="videoPreviewError">{{ $t('task.video-parse-failed') }}：{{ videoPreviewError }}</div>
+          <div class="video-preview__meta" v-else-if="videoMeta">
+            <div class="video-preview__meta-item video-preview__quality-item" v-if="videoQualities.length > 0">
+              <el-select
+                ref="videoQualitySelect"
+                class="video-quality-select video-quality-select--text"
+                v-model="form.videoQn"
+                :placeholder="$t('task.video-quality-placeholder')"
+                :disabled="videoPreviewLoading || videoQualities.length === 0"
+                @change="handleVideoQnChange"
+              >
+                <el-option
+                  v-for="q in videoQualities"
+                  :key="q.value"
+                  :label="q.label"
+                  :value="q.value"
+                />
+              </el-select>
+              <el-select
+                class="video-format-select"
+                v-model="form.videoFormat"
+                :placeholder="$t('task.video-format-placeholder')"
+                :disabled="videoPreviewLoading"
+              >
+                <el-option
+                  v-for="f in videoFormats"
+                  :key="f.value"
+                  :label="f.label"
+                  :value="f.value"
+                />
+              </el-select>
+            </div>
+            <div class="video-preview__meta-item">
+              <span class="video-preview__meta-label">{{ $t('task.video-info-title') }}：</span>
+              <el-tooltip :content="videoMeta.title" placement="top" :open-delay="300" :disabled="!videoTitleOverflow">
+                <span ref="videoMetaTitle" class="video-preview__meta-value video-preview__meta-value--fade">{{ videoMeta.title }}</span>
+              </el-tooltip>
+            </div>
+            <div class="video-preview__meta-item" v-if="videoMeta.owner">
+              <span class="video-preview__meta-label">{{ $t('task.video-info-owner') }}：</span>
+              <el-tooltip :content="videoMeta.owner" placement="top" :open-delay="300" :disabled="!videoOwnerOverflow">
+                <span ref="videoMetaOwner" class="video-preview__meta-value video-preview__meta-value--fade">{{ videoMeta.owner }}</span>
+              </el-tooltip>
+            </div>
+            <div class="video-preview__meta-item" v-if="videoMeta.durationText">
+              <span class="video-preview__meta-label">{{ $t('task.video-info-duration') }}：</span>
+              <el-tooltip :content="videoMeta.durationText" placement="top" :open-delay="300" :disabled="!videoDurationOverflow">
+                <span ref="videoMetaDuration" class="video-preview__meta-value video-preview__meta-value--fade">{{ videoMeta.durationText }}</span>
+              </el-tooltip>
+            </div>
+            <div class="video-preview__meta-item" v-if="videoMeta.sizeText">
+              <span class="video-preview__meta-label">{{ $t('task.video-info-size') }}：</span>
+              <el-tooltip :content="videoMeta.sizeText" placement="top" :open-delay="300" :disabled="!videoSizeOverflow">
+                <span ref="videoMetaSize" class="video-preview__meta-value video-preview__meta-value--fade">{{ videoMeta.sizeText }}</span>
+              </el-tooltip>
+            </div>
+          </div>
+        </div>
+        <div class="parsed-preview" v-if="taskType !== 'video' && parsedTasks.length > 0">
           <div class="parsed-preview__header">{{ $t('task.parsed-tasks') }}</div>
           <el-table :data="parsedTasks" :border="false" :stripe="true" size="mini" style="width: 100%" height="150">
             <el-table-column :label="$t('task.task-name')" min-width="240">
@@ -81,6 +145,7 @@
             <div class="add-task-type-floating__bar">
               <el-radio-group :value="type" size="mini" @input="handleTaskTypeInput">
                 <el-radio-button label="uri">{{ $t('task.uri-task') }}</el-radio-button>
+                <el-radio-button label="video">{{ $t('task.video-task') }}</el-radio-button>
                 <el-radio-button label="torrent">{{ $t('task.torrent-task') }}</el-radio-button>
               </el-radio-group>
             </div>
@@ -127,7 +192,7 @@
           />
         </el-input>
       </el-form-item>
-      <div class="task-advanced-options" v-if="showAdvanced">
+      <div class="task-advanced-options" v-if="showAdvanced && taskType !== 'video'">
         <el-row :gutter="8" style="margin-bottom: 8px; align-items:center;">
           <el-col :span="16" :xs="14">
             <el-form-item :label="`${$t('task.advanced-presets')}: `" :label-width="formLabelWidth">
@@ -227,7 +292,7 @@
       <div slot="footer" class="dialog-footer">
         <el-row>
           <el-col :span="12" :xs="12">
-            <el-checkbox class="chk" v-model="showAdvanced">
+            <el-checkbox class="chk" v-model="showAdvanced" :disabled="taskType === 'video'">
             {{$t('task.show-advanced-options')}}
           </el-checkbox>
         </el-col>
@@ -274,10 +339,12 @@
   import {
     initTaskForm,
     buildUriPayload,
-    buildTorrentPayload
+    buildTorrentPayload,
+    resolveBilibiliResources,
+    isBilibiliUrl
   } from '@/utils/task'
   import { ADD_TASK_TYPE } from '@shared/constants'
-  import { detectResource, getTaskUri, sanitizeLink, splitTaskLinks } from '@shared/utils'
+  import { detectResource, getTaskUri, sanitizeLink, splitTaskLinks, normalizeCookie } from '@shared/utils'
   import '@/components/Icons/inbox'
 
   export default {
@@ -306,10 +373,27 @@
         parsedTasks: [],
         lastDuplicateHistoryKey: '',
         keepTrailingNewline: false,
+        videoPreviewLoading: false,
+        videoPreviewError: '',
+        videoMeta: null,
+        videoQualities: [],
+        videoPreviewTimer: null,
+        videoTitleOverflow: false,
+        videoOwnerOverflow: false,
+        videoDurationOverflow: false,
+        videoSizeOverflow: false,
         advancedPresets: [],
         selectedAdvancedPresetId: '',
         savePresetDialogVisible: false,
-        savePresetName: ''
+        savePresetName: '',
+        videoFormats: [
+          { value: 'mp4', label: 'MP4' },
+          { value: 'mkv', label: 'MKV' },
+          { value: 'mov', label: 'MOV' },
+          { value: 'm4v', label: 'M4V' },
+          { value: 'flv', label: 'FLV' },
+          { value: 'ts', label: 'TS' }
+        ]
       }
     },
     computed: {
@@ -326,16 +410,17 @@
         return this.type
       },
       dialogTop () {
-        return this.showAdvanced ? '8vh' : '15vh'
+        const advancedVisible = this.showAdvanced && this.taskType !== 'video'
+        return advancedVisible ? '8vh' : '15vh'
       }
     },
     watch: {
       taskType (current, previous) {
-        if (this.visible && previous === ADD_TASK_TYPE.URI) {
+        if (this.visible && this.isUriLikeType(previous)) {
           return
         }
 
-        if (current === ADD_TASK_TYPE.URI) {
+        if (this.isUriLikeType(current)) {
           setTimeout(() => {
             this.$refs.uri && this.$refs.uri.focus()
           }, 50)
@@ -352,7 +437,7 @@
         if (!this.visible) {
           return
         }
-        if (this.taskType !== ADD_TASK_TYPE.URI) {
+        if (!this.isUriLikeType(this.taskType)) {
           return
         }
         const cur = (current || '').trim()
@@ -370,12 +455,18 @@
         this.form.uris = next
       },
       'form.uris' (val) {
-        if (this.taskType === ADD_TASK_TYPE.URI) {
+        if (this.isUriLikeType(this.taskType)) {
           this.updateUriPreview(val)
+        }
+        if (this.taskType === 'video') {
+          this.scheduleVideoPreview(val)
         }
       }
     },
     methods: {
+      isUriLikeType (type) {
+        return type === ADD_TASK_TYPE.URI || type === 'video'
+      },
       loadAdvancedPresets () {
         const { advancedOptionPresets = [] } = this.config || {}
         this.advancedPresets = Array.isArray(advancedOptionPresets) ? advancedOptionPresets : []
@@ -481,7 +572,17 @@
         this.selectedAdvancedPresetId = ''
         this.onAdvancedPresetChange('')
         this.loadAdvancedPresets()
-        if (this.taskType === ADD_TASK_TYPE.URI) {
+        if (this.isUriLikeType(this.taskType)) {
+          if (this.taskType === 'video') {
+            const cfg = this.config || {}
+            if (!this.form.cookie && cfg.videoCookie) {
+              this.form.cookie = `${cfg.videoCookie}`
+            }
+            if (this.form.videoQn === undefined) {
+              this.$set(this.form, 'videoQn', cfg.videoPreferredQn !== undefined ? cfg.videoPreferredQn : '')
+            }
+            this.scheduleVideoPreview(this.form.uris || '')
+          }
           if (!isEmpty(this.form.uris)) {
             this.updateUriPreview(this.form.uris)
             this.keepTrailingNewline = true
@@ -576,6 +677,14 @@
         this.parsedTasks = []
         this.lastDuplicateHistoryKey = ''
         this._historyUrlSet = null
+        this.videoPreviewLoading = false
+        this.videoPreviewError = ''
+        this.videoMeta = null
+        this.videoQualities = []
+        if (this.videoPreviewTimer) {
+          clearTimeout(this.videoPreviewTimer)
+        }
+        this.videoPreviewTimer = null
         this.selectedAdvancedPresetId = ''
         this.savePresetDialogVisible = false
         this.savePresetName = ''
@@ -692,12 +801,132 @@
           this.ensureTrailingNewlineAndCaret()
         }
       },
+      openVideoPreference () {
+        this.$router.push({ path: '/preference/video' }).catch(() => {})
+      },
+      handleVideoQnChange () {
+        this.scheduleVideoPreview(this.form.uris || '')
+      },
+      ensureVideoFormatDefault () {
+        const current = this.form && this.form.videoFormat
+        if (current === undefined || current === null || `${current}`.trim() === '') {
+          const cfg = this.config || {}
+          const pref = cfg.videoPreferredFormat
+          const allowed = ['mp4', 'mkv', 'mov', 'm4v', 'flv', 'ts']
+          let next = 'mp4'
+          if (pref && `${pref}`.trim()) {
+            const lower = `${pref}`.trim().toLowerCase()
+            if (allowed.includes(lower)) {
+              next = lower
+            }
+          }
+          this.$set(this.form, 'videoFormat', next)
+        }
+      },
+      scheduleVideoPreview (uris = '') {
+        if (this.taskType !== 'video') {
+          return
+        }
+        if (this.videoPreviewTimer) {
+          clearTimeout(this.videoPreviewTimer)
+        }
+        this.videoPreviewTimer = setTimeout(() => {
+          this.updateVideoPreview(uris)
+        }, 400)
+      },
+      async updateVideoPreview (uris = '') {
+        if (this.taskType !== 'video') {
+          return
+        }
+        const raw = `${uris || ''}`.trim()
+        const first = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean)[0] || ''
+        if (!first || !isBilibiliUrl(first)) {
+          this.videoPreviewLoading = false
+          this.videoPreviewError = ''
+          this.videoMeta = null
+          this.videoQualities = []
+          return
+        }
+        this.videoPreviewLoading = true
+        this.videoPreviewError = ''
+        try {
+          const cookie = normalizeCookie(this.form.cookie || '')
+          const parsed = await resolveBilibiliResources(first, {
+            qn: this.form.videoQn !== undefined ? this.form.videoQn : '',
+            cookie
+          })
+          this.ensureVideoFormatDefault()
+          const qualities = Array.isArray(parsed.qualities) ? parsed.qualities : []
+          const nextQualities = qualities
+            .map(q => {
+              const qn = q && q.qn !== undefined ? Number(q.qn) : NaN
+              if (!Number.isFinite(qn)) return null
+              const desc = q && q.desc ? `${q.desc}` : ''
+              const base = desc ? `${desc} (${qn})` : `${qn}`
+              const prefix = this.$t('task.video-quality')
+              return { value: qn, label: `${prefix}: ${base}` }
+            })
+            .filter(Boolean)
+          this.videoQualities = nextQualities
+          const currentQn = this.form.videoQn !== undefined && this.form.videoQn !== null && `${this.form.videoQn}`.trim()
+            ? Number(this.form.videoQn)
+            : null
+          if (nextQualities.length > 0 && (!currentQn || !nextQualities.some(q => q.value === currentQn))) {
+            const cfg = this.config || {}
+            const preferred = cfg.videoPreferredQn !== undefined && cfg.videoPreferredQn !== null
+              ? Number(cfg.videoPreferredQn)
+              : null
+            const fallback = preferred && nextQualities.some(q => q.value === preferred) ? preferred : nextQualities[0].value
+            this.$set(this.form, 'videoQn', fallback)
+          }
+          const totalSize = parsed.total_size
+          const sizeText = totalSize && Number(totalSize) > 0 ? this.bytesToSize(Number(totalSize)) : ''
+          this.videoMeta = {
+            title: parsed.title || '',
+            owner: parsed.owner || '',
+            durationText: parsed.duration_text || '',
+            sizeText
+          }
+          this.updateVideoMetaOverflow()
+        } catch (e) {
+          this.videoPreviewError = e && e.message ? e.message : `${e}`
+          this.videoMeta = null
+          this.videoQualities = []
+          this.videoTitleOverflow = false
+          this.videoOwnerOverflow = false
+          this.videoDurationOverflow = false
+          this.videoSizeOverflow = false
+          this.videoSizeOverflow = false
+        } finally {
+          this.videoPreviewLoading = false
+        }
+      },
+      updateVideoMetaOverflow () {
+        this.$nextTick(() => {
+          const checkOverflow = (refName) => {
+            const el = this.$refs[refName]
+            if (!el || !el.scrollWidth || !el.clientWidth) {
+              return false
+            }
+            return el.scrollWidth > el.clientWidth + 1
+          }
+          this.videoTitleOverflow = checkOverflow('videoMetaTitle')
+          this.videoOwnerOverflow = checkOverflow('videoMetaOwner')
+          this.videoDurationOverflow = checkOverflow('videoMetaDuration')
+          this.videoSizeOverflow = checkOverflow('videoMetaSize')
+        })
+      },
       async fetchUriSizes (lines = []) {
         const buildHeaders = () => {
           const h = {}
           if (this.form.userAgent) h['User-Agent'] = this.form.userAgent
           if (this.form.referer) h.Referer = this.form.referer
-          if (this.form.cookie) h.Cookie = this.form.cookie
+          if (this.form.cookie) {
+            const cookie = normalizeCookie(this.form.cookie)
+            if (cookie) {
+              h.Cookie = cookie
+            }
+          }
           if (this.form.authorization) h.Authorization = this.form.authorization
           h.Accept = '*/*'
           return h
@@ -810,14 +1039,14 @@
         this.lastDuplicateHistoryKey = key
         this.$msg.warning(this.$t('task.duplicate-history-links-message', { count }))
       },
-      addTask (type, form) {
+      async addTask (type, form) {
         let payload = null
-        if (type === ADD_TASK_TYPE.URI) {
+        if (this.isUriLikeType(type)) {
           // 获取自动分类配置
           const autoCategorizeFiles = this.config.autoCategorizeFiles || false
           const fileCategories = this.config.fileCategories || null
 
-          payload = buildUriPayload(form, autoCategorizeFiles, fileCategories)
+          payload = await buildUriPayload(form, autoCategorizeFiles, fileCategories)
           this.$store.dispatch('task/addUri', payload).catch(err => {
             this.$msg.error(err.message)
           })
@@ -832,71 +1061,75 @@
           console.error('[Motrix] Add task fail', form)
         }
       },
-      submitForm (formName) {
-        this.$refs[formName].validate(valid => {
-          if (!valid) {
-            return false
-          }
-
-          try {
-            if (this.type === 'uri' && this.parsedTasks.length > 0) {
-              this._historyUrlSet = this.buildHistoryUrlSet()
-              const duplicateCount = this.parsedTasks.filter(t => {
-                if (!t || !t.url) return false
-                if (t.renamed) return false
-                const normalized = sanitizeLink(t.url)
-                return normalized && this._historyUrlSet.has(normalized)
-              }).length
-              if (duplicateCount > 0) {
-                this.$msg.warning(this.$t('task.duplicate-history-links-message', { count: duplicateCount }))
-                return
-              }
-              const buckets = {}
-              const prios = []
-              this.parsedTasks.forEach(item => {
-                const p = Number(item.priority) || 0
-                if (!buckets[p]) {
-                  buckets[p] = []
-                  prios.push(p)
-                }
-                buckets[p].push(item)
-              })
-              prios.sort((a, b) => b - a)
-              const ordered = []
-              let remaining = this.parsedTasks.length
-              const indices = prios.map(() => 0)
-              while (remaining > 0) {
-                for (let i = 0; i < prios.length; i++) {
-                  const p = prios[i]
-                  const arr = buckets[p]
-                  const idx = indices[i]
-                  if (idx < arr.length) {
-                    ordered.push(arr[idx])
-                    indices[i] = idx + 1
-                    remaining--
-                    if (remaining <= 0) break
-                  }
-                }
-              }
-              this.form.customOuts = ordered.map(i => i.name)
-              const urisOrdered = ordered.map(i => i.url)
-              this.form.uris = urisOrdered.join('\n')
-              this.form.priorities = ordered.map(i => Number(i.priority) || 0)
-            }
-            this.addTask(this.type, this.form)
-
-            this.$store.dispatch('app/hideAddTaskDialog')
-            if (this.form.newTaskShowDownloading) {
-              this.$router.push({
-                path: '/task/active'
-              }).catch(err => {
-                console.log(err)
-              })
-            }
-          } catch (err) {
-            this.$msg.error(this.$t(err.message))
-          }
+      async submitForm (formName) {
+        const valid = await new Promise(resolve => {
+          this.$refs[formName].validate(v => resolve(v))
         })
+        if (!valid) {
+          return
+        }
+
+        try {
+          if (this.isUriLikeType(this.type) && this.parsedTasks.length > 0) {
+            this._historyUrlSet = this.buildHistoryUrlSet()
+            const duplicateCount = this.parsedTasks.filter(t => {
+              if (!t || !t.url) return false
+              if (t.renamed) return false
+              const normalized = sanitizeLink(t.url)
+              return normalized && this._historyUrlSet.has(normalized)
+            }).length
+            if (duplicateCount > 0) {
+              this.$msg.warning(this.$t('task.duplicate-history-links-message', { count: duplicateCount }))
+              return
+            }
+            const buckets = {}
+            const prios = []
+            this.parsedTasks.forEach(item => {
+              const p = Number(item.priority) || 0
+              if (!buckets[p]) {
+                buckets[p] = []
+                prios.push(p)
+              }
+              buckets[p].push(item)
+            })
+            prios.sort((a, b) => b - a)
+            const ordered = []
+            let remaining = this.parsedTasks.length
+            const indices = prios.map(() => 0)
+            while (remaining > 0) {
+              for (let i = 0; i < prios.length; i++) {
+                const p = prios[i]
+                const arr = buckets[p]
+                const idx = indices[i]
+                if (idx < arr.length) {
+                  ordered.push(arr[idx])
+                  indices[i] = idx + 1
+                  remaining--
+                  if (remaining <= 0) break
+                }
+              }
+            }
+            this.form.customOuts = ordered.map(i => i.name)
+            const urisOrdered = ordered.map(i => i.url)
+            this.form.uris = urisOrdered.join('\n')
+            this.form.priorities = ordered.map(i => Number(i.priority) || 0)
+          }
+          await this.addTask(this.type, this.form)
+
+          this.$store.dispatch('app/hideAddTaskDialog')
+          if (this.form.newTaskShowDownloading) {
+            const config = this.config || {}
+            const jumpTarget = this.form.newTaskJumpTarget || config.newTaskJumpTarget || 'downloading'
+            const status = jumpTarget === 'all' ? 'all' : 'active'
+            this.$router.push({
+              path: `/task/${status}`
+            }).catch(err => {
+              console.log(err)
+            })
+          }
+        } catch (err) {
+          this.$msg.error(this.$t(err.message))
+        }
       }
     }
   }
@@ -1010,6 +1243,43 @@
   .task-split-input.el-input-number {
     width: 100%;
   }
+  .video-quality-select {
+    width: 100%;
+    max-width: 100%;
+  }
+  .video-quality-select--text {
+    display: inline-block;
+    vertical-align: baseline;
+    margin: 0;
+    :deep(.el-input) {
+      width: 100%;
+    }
+    :deep(.el-input__inner) {
+      border: none;
+      padding: 0 14px 0 0;
+      height: auto;
+      line-height: 1.4;
+      background: transparent;
+      box-shadow: none;
+      color: transparent;
+      font-size: 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+      mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+    }
+    :deep(.el-input__suffix) {
+      right: 0;
+    }
+    :deep(.el-select__caret) {
+      font-size: 12px;
+      color: $--color-text-regular;
+    }
+  }
+  .video-preview__quality-item:hover .video-quality-select--text :deep(.el-input__inner) {
+    color: $--color-text-regular;
+  }
   .help-link {
     font-size: 12px;
     line-height: 14px;
@@ -1042,6 +1312,64 @@
         }
       }
     }
+  }
+
+  .video-preview {
+    margin-top: 8px;
+    padding: 10px 0;
+    border-radius: 6px;
+    background: transparent;
+  }
+
+  .video-preview__status {
+    font-size: 12px;
+    color: $--color-text-secondary;
+    margin-top: 6px;
+  }
+
+  .video-preview__error {
+    font-size: 12px;
+    color: $--color-danger;
+    margin-top: 6px;
+    word-break: break-all;
+  }
+
+  .video-preview__meta {
+    margin-top: 2px;
+    color: $--color-text-regular;
+  }
+
+  .video-preview__meta-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .video-preview__quality-item {
+    margin-bottom: 3px;
+    .video-format-select {
+      min-width: 96px;
+    }
+  }
+
+  .video-preview__meta-label {
+    color: $--color-text-secondary;
+    flex: 0 0 auto;
+  }
+
+  .video-preview__meta-value {
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    color: $--color-text-regular;
+    font-size: 12px;
+  }
+
+  .video-preview__meta-value--fade {
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
   }
 }
 

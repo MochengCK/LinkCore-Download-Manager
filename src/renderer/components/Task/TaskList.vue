@@ -306,7 +306,7 @@
         if (!e || e.target !== e.currentTarget) {
           return
         }
-        if (typeof e.button === 'number' && e.button === 0) {
+        if (typeof e.button === 'number' && e.button !== 0) {
           return
         }
         if (!this.selectedList || this.selectedList.length === 0) {
