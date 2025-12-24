@@ -81,7 +81,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
-          python -m PyInstaller Python/parsers/bilibili_parser.py --onefile --name bilibili_parser
+          python -m PyInstaller static/parsers/bilibili_parser.py --onefile --name bilibili_parser
           if (-not (Test-Path 'static\parsers')) {
             New-Item -ItemType Directory -Path 'static\parsers' -Force | Out-Null
           }
@@ -98,7 +98,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
-          python -m PyInstaller Python/parsers/bilibili_parser.py --onefile --name bilibili_parser
+          python -m PyInstaller static/parsers/bilibili_parser.py --onefile --name bilibili_parser
           mkdir -p static/parsers
           cp dist/bilibili_parser static/parsers/bilibili_parser
 
