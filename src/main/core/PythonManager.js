@@ -13,13 +13,13 @@ export default class PythonManager {
   getPythonPath () {
     let basePath
     if (is.dev()) {
-      basePath = resolve(process.cwd(), 'Python')
+      basePath = resolve(process.cwd(), 'MediaParser')
     } else {
-      basePath = resolve(process.resourcesPath, 'Python')
+      basePath = resolve(process.resourcesPath, 'MediaParser')
     }
 
     if (!existsSync(basePath)) {
-      basePath = resolve(app.getAppPath(), '..', 'Python')
+      basePath = resolve(app.getAppPath(), '..', 'MediaParser')
     }
 
     const candidates = []
@@ -43,12 +43,12 @@ export default class PythonManager {
   getScriptPath () {
     let basePath
     if (is.dev()) {
-      basePath = resolve(process.cwd(), 'Python')
+      basePath = resolve(process.cwd(), 'MediaParser')
     } else {
-      basePath = resolve(process.resourcesPath, 'Python')
+      basePath = resolve(process.resourcesPath, 'MediaParser')
     }
     if (!existsSync(basePath)) {
-      basePath = resolve(app.getAppPath(), '..', 'Python')
+      basePath = resolve(app.getAppPath(), '..', 'MediaParser')
     }
     return join(basePath, 'main.py')
   }

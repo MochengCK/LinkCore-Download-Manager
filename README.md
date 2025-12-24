@@ -49,6 +49,13 @@ At the same time, LinkCore offers professional-grade capabilities: BitTorrent/ma
 - **BitTorrent**: Full torrent file support with selective downloading
 - **Magnet Links**: Instant torrent downloads without .torrent files
 
+### 🎬 Video Downloads
+
+- **Online Video Parsing**: Turn supported web video pages into downloadable tasks with one click
+- **Default Quality & Format**: Configure preferred resolution and container in “Preferences → Video Settings” and apply them automatically when creating tasks
+- **Automatic Muxing/Conversion**: Automatically merge audio and video after download and output in the selected container (MP4/MKV/MOV, etc.)
+- **Batch Video Management**: Manage multiple video downloads alongside other tasks with a unified list for viewing, pausing/resuming, and deleting
+
 ### 🎨 User Experience
 - **Clean Interface**: Modern, intuitive design with dark mode support
 - **System Tray Integration**: Quick access and status monitoring

@@ -50,7 +50,7 @@ const getBilibiliParserPath = () => {
   const packedCandidate2 = resourcesPath ? join(resourcesPath, 'parsers', 'bilibili_parser.py') : ''
   if (packedCandidate2 && existsSync(packedCandidate2)) return packedCandidate2
 
-  const devCandidate0 = base ? join(base, '..', '..', '..', 'Python', 'parsers', 'bilibili_parser.py') : ''
+  const devCandidate0 = base ? join(base, '..', '..', '..', 'MediaParser', 'parsers', 'bilibili_parser.py') : ''
   if (devCandidate0 && existsSync(devCandidate0)) return devCandidate0
 
   const devCandidate0b = base ? join(base, '..', '..', '..', 'static', 'parsers', 'bilibili_parser.exe') : ''
@@ -59,7 +59,7 @@ const getBilibiliParserPath = () => {
   const devCandidate0c = base ? join(base, '..', '..', '..', 'static', 'parsers', 'bilibili_parser') : ''
   if (devCandidate0c && existsSync(devCandidate0c)) return devCandidate0c
 
-  const devCandidate1 = base ? join(base, '..', 'Python', 'parsers', 'bilibili_parser.py') : ''
+  const devCandidate1 = base ? join(base, '..', 'MediaParser', 'parsers', 'bilibili_parser.py') : ''
   if (devCandidate1 && existsSync(devCandidate1)) return devCandidate1
 
   const devCandidate2 = base ? join(base, 'parsers', 'bilibili_parser.exe') : ''
@@ -101,10 +101,10 @@ const getEmbeddedPythonCandidates = () => {
     }
     if (devRoot) {
       candidates.push(
-        join(devRoot, 'Python', 'python.exe'),
-        join(devRoot, 'Python', 'python3.exe'),
-        join(devRoot, 'Python', 'bin', 'python.exe'),
-        join(devRoot, 'Python', 'bin', 'python3.exe')
+        join(devRoot, 'MediaParser', 'python.exe'),
+        join(devRoot, 'MediaParser', 'python3.exe'),
+        join(devRoot, 'MediaParser', 'bin', 'python.exe'),
+        join(devRoot, 'MediaParser', 'bin', 'python3.exe')
       )
     }
   } else {
@@ -116,8 +116,8 @@ const getEmbeddedPythonCandidates = () => {
     }
     if (devRoot) {
       candidates.push(
-        join(devRoot, 'Python', 'bin', 'python3'),
-        join(devRoot, 'Python', 'bin', 'python')
+        join(devRoot, 'MediaParser', 'bin', 'python3'),
+        join(devRoot, 'MediaParser', 'bin', 'python')
       )
     }
   }
