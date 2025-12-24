@@ -58,7 +58,8 @@ const userKeys = [
   'task-plan-time',
   'task-plan-action',
   'task-plan-gids',
-  'task-plan-only-when-idle'
+  'task-plan-only-when-idle',
+  'clipboard-auto-paste'
 ]
 
 const systemKeys = [

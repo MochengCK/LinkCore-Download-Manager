@@ -104,6 +104,7 @@
   import { dialog } from '@electron/remote'
   import { commands } from '@/components/CommandManager/instance'
   import { TASK_STATUS, APP_THEME } from '@shared/constants'
+  import api from '@/api'
   import {
     bytesToSize,
     timeRemaining,
@@ -415,7 +416,7 @@
           this.updateProgressWindow(task)
         } catch (e) {}
       },
-      handleTaskProgressControl (payload) {
+      async handleTaskProgressControl (payload) {
         const data = payload || {}
         const gid = data && data.gid ? `${data.gid}` : ''
         const action = data && data.action ? `${data.action}` : ''
@@ -423,7 +424,14 @@
           return
         }
         const list = this.taskList || []
-        const task = list.find(item => item && `${item.gid}` === gid)
+        let task = list.find(item => item && `${item.gid}` === gid)
+        if (!task) {
+          try {
+            task = await api.fetchTaskItem({ gid })
+          } catch (e) {
+            task = null
+          }
+        }
         if (!task) {
           return
         }
@@ -766,6 +774,30 @@
         ].join('')
         return html
       },
+      async refreshProgressTaskDirectly () {
+        if (!this.progressWindow || (this.progressWindow.isDestroyed && this.progressWindow.isDestroyed())) {
+          return
+        }
+        const gid = this.progressTaskGid
+        if (!gid) {
+          return
+        }
+        const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
+        try {
+          const task = await api.fetchTaskItem({ gid })
+          if (!task || !task.gid) {
+            this.closeProgressWindow()
+            return
+          }
+          if (doneStatuses.includes(task.status)) {
+            this.closeProgressWindow()
+            return
+          }
+          this.updateProgressWindow(task)
+        } catch (e) {
+          this.closeProgressWindow()
+        }
+      },
       buildProgressPayload (task) {
         const t = task || {}
         const completed = Number(t.completedLength || 0)
@@ -974,7 +1006,18 @@
           const gid = this.progressTaskGid
           const current = list.find(item => item && `${item.gid}` === gid)
           const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
-          if (!current || doneStatuses.includes(current.status)) {
+          const taskState = this.$store && this.$store.state && this.$store.state.task
+          const currentListType = taskState && taskState.currentList ? taskState.currentList : 'all'
+          const closeWhenMissingLists = ['all']
+          if (!current) {
+            if (closeWhenMissingLists.includes(currentListType)) {
+              this.closeProgressWindow()
+            } else {
+              this.refreshProgressTaskDirectly()
+            }
+            return
+          }
+          if (doneStatuses.includes(current.status)) {
             this.closeProgressWindow()
           } else {
             this.updateProgressWindow(current)

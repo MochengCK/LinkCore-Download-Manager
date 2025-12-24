@@ -386,6 +386,8 @@
         selectedAdvancedPresetId: '',
         savePresetDialogVisible: false,
         savePresetName: '',
+        clipboardTimer: null,
+        lastClipboardText: '',
         videoFormats: [
           { value: 'mp4', label: 'MP4' },
           { value: 'mkv', label: 'MKV' },
@@ -427,10 +429,16 @@
         }
       },
       visible (current) {
+        const cfg = this.config || {}
+        const clipboardAutoPasteEnabled = cfg.clipboardAutoPaste === undefined ? true : !!cfg.clipboardAutoPaste
         if (current === true) {
           document.addEventListener('keydown', this.handleHotkey)
+          if (clipboardAutoPasteEnabled) {
+            this.startClipboardWatch()
+          }
         } else {
           document.removeEventListener('keydown', this.handleHotkey)
+          this.stopClipboardWatch()
         }
       },
       addTaskUrlFromStore (current, previous) {
@@ -547,19 +555,82 @@
         try {
           const { clipboard } = require('electron')
           const content = clipboard.readText()
-          const hasResource = detectResource(content)
-          if (!hasResource) {
+          const text = (content || '').trim()
+          if (!text) {
             return
           }
+          this.lastClipboardText = text
 
           if (isEmpty(this.form.uris)) {
-            this.form.uris = content
+            const hasResource = detectResource(text)
+            if (!hasResource) {
+              return
+            }
+            this.form.uris = text
             this.updateUriPreview(this.form.uris)
             this.keepTrailingNewline = true
             this.ensureTrailingNewlineAndCaret()
           }
+
+          if (isBilibiliUrl(text) && this.taskType !== 'video') {
+            this.$store.dispatch('app/changeAddTaskType', 'video')
+            this.scheduleVideoPreview(this.form.uris || text)
+          }
         } catch (e) {
-          // ignore clipboard errors
+        }
+      },
+      startClipboardWatch () {
+        if (this.clipboardTimer) {
+          return
+        }
+        try {
+          const { clipboard } = require('electron')
+          const checkClipboard = () => {
+            if (!this.visible) {
+              return
+            }
+            if (!this.isUriLikeType(this.taskType)) {
+              return
+            }
+            const content = clipboard.readText()
+            const text = (content || '').trim()
+            if (!text) {
+              return
+            }
+            if (text === this.lastClipboardText) {
+              return
+            }
+            this.lastClipboardText = text
+            const hasResource = detectResource(text)
+            if (!hasResource) {
+              return
+            }
+            const existing = (this.form.uris || '').trim()
+            if (!existing) {
+              this.form.uris = text
+            } else {
+              const lines = existing.split(/\r?\n/).filter(Boolean)
+              if (lines.includes(text)) {
+                return
+              }
+              this.form.uris = `${existing}\n${text}`
+            }
+            this.updateUriPreview(this.form.uris)
+            this.keepTrailingNewline = true
+            this.ensureTrailingNewlineAndCaret()
+            if (isBilibiliUrl(text) && this.taskType !== 'video') {
+              this.$store.dispatch('app/changeAddTaskType', 'video')
+              this.scheduleVideoPreview(this.form.uris || text)
+            }
+          }
+          this.clipboardTimer = setInterval(checkClipboard, 1000)
+        } catch (e) {
+        }
+      },
+      stopClipboardWatch () {
+        if (this.clipboardTimer) {
+          clearInterval(this.clipboardTimer)
+          this.clipboardTimer = null
         }
       },
       beforeClose () {
@@ -588,7 +659,11 @@
             this.keepTrailingNewline = true
             this.ensureTrailingNewlineAndCaret()
           }
-          this.autofillResourceLink()
+          const cfg = this.config || {}
+          const clipboardAutoPasteEnabled = cfg.clipboardAutoPaste === undefined ? true : !!cfg.clipboardAutoPaste
+          if (clipboardAutoPasteEnabled) {
+            this.autofillResourceLink()
+          }
           setTimeout(() => {
             this.$refs.uri && this.$refs.uri.focus()
           }, 50)

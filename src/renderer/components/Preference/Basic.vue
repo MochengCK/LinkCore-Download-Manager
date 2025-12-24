@@ -482,6 +482,21 @@
             </el-col>
           </el-form-item>
         </div>
+
+        <!-- 剪贴板卡片 -->
+        <div class="preference-card">
+          <h3 class="card-title">{{ $t('preferences.clipboard-settings') }}</h3>
+          <el-form-item size="mini">
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.clipboardAutoPaste" @change="autoSaveForm">
+                {{ $t('preferences.clipboard-auto-paste') }}
+              </el-checkbox>
+              <div class="el-form-item__info" style="margin-top: 8px;">
+                {{ $t('preferences.clipboard-auto-paste-tips') }}
+              </div>
+            </el-col>
+          </el-form-item>
+        </div>
       </el-form>
 
       <!-- 文件分类规则编辑弹窗 -->
@@ -657,7 +672,8 @@
       customKeymap,
       taskMultiSelectModifier,
       subnavMode,
-      autoOpenTaskProgressWindow
+      autoOpenTaskProgressWindow,
+      clipboardAutoPaste
     } = config
 
     let normalizedEngineMax = engineMaxConnectionPerServer
@@ -728,7 +744,8 @@
       customKeymap: customKeymap || {},
       taskMultiSelectModifier: normalizeTaskMultiSelectModifier(taskMultiSelectModifier),
       subnavMode: subnavMode || 'floating',
-      autoOpenTaskProgressWindow: autoOpenTaskProgressWindow === undefined ? true : !!autoOpenTaskProgressWindow
+      autoOpenTaskProgressWindow: autoOpenTaskProgressWindow === undefined ? true : !!autoOpenTaskProgressWindow,
+      clipboardAutoPaste: clipboardAutoPaste === undefined ? true : !!clipboardAutoPaste
     }
     return result
   }
