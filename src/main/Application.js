@@ -1869,6 +1869,14 @@ export default class Application extends EventEmitter {
       this.openExternal(url)
     })
 
+    this.on('task-progress:control', (payload = {}) => {
+      const window = this.windowManager.getWindow('index')
+      if (!window) {
+        return
+      }
+      this.windowManager.sendCommandTo(window, 'task-progress:control', payload)
+    })
+
     this.on('engine:get-version-info', async () => {
       try {
         const versionInfo = await this.getEngineVersionInfo()

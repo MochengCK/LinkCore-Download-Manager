@@ -53,6 +53,7 @@ export default {
   'max-concurrent-downloads': 'Maximum active tasks',
   'max-connection-per-server': 'Maximum connections per server',
   'new-task-show-downloading': 'Automatically navigate after adding task',
+  'auto-open-task-progress-window': 'Auto open task progress window',
   'new-task-jump-target': 'Navigate to',
   'new-task-jump-target-all': 'All tasks',
   'new-task-jump-target-downloading': 'Downloading',

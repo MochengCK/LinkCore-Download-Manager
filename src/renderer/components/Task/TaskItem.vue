@@ -22,6 +22,7 @@
   import { checkTaskIsSeeder, getTaskName, ellipsis } from '@shared/utils'
   import { TASK_STATUS } from '@shared/constants'
   import { openItem, getTaskActualPath } from '@/utils/native'
+  import { commands } from '@/components/CommandManager/instance'
   import TaskItemActions from './TaskItemActions'
   import TaskProgress from './TaskProgress'
   import TaskProgressInfo from './TaskProgressInfo'
@@ -127,12 +128,16 @@
       },
       onDbClick () {
         const { status } = this.task
-        const { COMPLETE, WAITING, PAUSED } = TASK_STATUS
+        const { COMPLETE, WAITING, PAUSED, ACTIVE } = TASK_STATUS
         if (status === COMPLETE) {
           this.openTask()
-        } else if ([WAITING, PAUSED].includes(status) !== -1) {
-          this.toggleTask()
+          return
         }
+        if ([WAITING, PAUSED, ACTIVE].includes(status)) {
+          commands.emit('show-task-progress', { task: this.task })
+          return
+        }
+        this.toggleTask()
       },
       async openTask () {
         const { taskName } = this

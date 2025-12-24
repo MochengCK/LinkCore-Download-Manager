@@ -23,6 +23,7 @@ const userKeys = [
   'locale',
   'log-level',
   'new-task-show-downloading',
+  'auto-open-task-progress-window',
   'new-task-jump-target',
   'no-confirm-before-delete-task',
   'open-at-login',

@@ -393,6 +393,15 @@ const actions = {
               dispatch('preference/save', { taskPriorities: persist }, { root: true })
             } catch (e) {}
           }
+          const preferenceConfig = (rootState.preference && rootState.preference.config) || {}
+          const autoOpenTaskProgressWindow = preferenceConfig.autoOpenTaskProgressWindow !== false
+          if (autoOpenTaskProgressWindow && gids.length > 0) {
+            try {
+              const commandsInstance = require('@/components/CommandManager/instance').commands
+              const gid = `${gids[0]}`
+              commandsInstance.emit('task-progress:auto-open', { gid })
+            } catch (e) {}
+          }
         }
         dispatch('fetchList')
         dispatch('app/updateAddTaskOptions', {}, { root: true })

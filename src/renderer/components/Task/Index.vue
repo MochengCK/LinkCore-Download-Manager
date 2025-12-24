@@ -172,9 +172,13 @@
         selectedGidList: state => state.selectedGidList,
         selectedGidListCount: state => state.selectedGidList.length
       }),
+      ...mapState('app', {
+        systemTheme: state => state.systemTheme
+      }),
       ...mapState('preference', {
         noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask,
-        subnavMode: state => state.config.subnavMode || 'floating'
+        subnavMode: state => state.config.subnavMode || 'floating',
+        prefTheme: state => state.config.theme
       }),
       subnavs () {
         return [

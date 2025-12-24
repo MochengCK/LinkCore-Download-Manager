@@ -65,6 +65,7 @@ export default {
   'max-concurrent-downloads': '同时下载的最大任务数',
   'max-connection-per-server': '每个服务器最大连接数',
   'new-task-show-downloading': '新建任务后自动跳转到下载页面',
+  'auto-open-task-progress-window': '自启动任务窗口',
   'new-task-jump-target': '自动跳转到',
   'new-task-jump-target-all': '所有任务',
   'new-task-jump-target-downloading': '下载中',

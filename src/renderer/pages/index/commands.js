@@ -177,6 +177,10 @@ const fetchPreference = () => {
   store.dispatch('preference/fetchPreference')
 }
 
+const handleTaskProgressControl = (payload = {}) => {
+  commands.emit('task-progress:control', payload)
+}
+
 commands.register('application:task-list', navigateTaskList)
 commands.register('application:preferences', navigatePreferences)
 
@@ -198,3 +202,4 @@ commands.register('application:update-system-theme', updateSystemTheme)
 commands.register('application:update-theme', updateTheme)
 commands.register('application:update-locale', updateLocale)
 commands.register('application:update-tray-focused', updateTrayFocused)
+commands.register('task-progress:control', handleTaskProgressControl)

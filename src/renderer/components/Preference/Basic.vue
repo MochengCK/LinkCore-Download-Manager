@@ -382,6 +382,21 @@
               </el-checkbox>
             </el-col>
             <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.autoOpenTaskProgressWindow" @change="autoSaveForm">
+                {{ $t('preferences.auto-open-task-progress-window') }}
+              </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.noConfirmBeforeDeleteTask" @change="autoSaveForm">
+                {{ $t('preferences.no-confirm-before-delete-task') }}
+              </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.autoPurgeRecord" @change="autoSaveForm">
+                {{ $t('preferences.auto-purge-record') }}
+              </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.newTaskShowDownloading" @change="autoSaveForm">
                 {{ $t('preferences.new-task-show-downloading') }}
               </el-checkbox>
@@ -424,16 +439,6 @@
                   </el-radio>
                 </el-radio-group>
               </el-tooltip>
-            </el-col>
-            <el-col class="form-item-sub" :span="24">
-              <el-checkbox v-model="form.noConfirmBeforeDeleteTask" @change="autoSaveForm">
-                {{ $t('preferences.no-confirm-before-delete-task') }}
-              </el-checkbox>
-            </el-col>
-            <el-col class="form-item-sub" :span="24">
-              <el-checkbox v-model="form.autoPurgeRecord" @change="autoSaveForm">
-                {{ $t('preferences.auto-purge-record') }}
-              </el-checkbox>
             </el-col>
           </el-form-item>
         </div>
@@ -651,7 +656,8 @@
       setFileMtimeOnComplete,
       customKeymap,
       taskMultiSelectModifier,
-      subnavMode
+      subnavMode,
+      autoOpenTaskProgressWindow
     } = config
 
     let normalizedEngineMax = engineMaxConnectionPerServer
@@ -721,7 +727,8 @@
       },
       customKeymap: customKeymap || {},
       taskMultiSelectModifier: normalizeTaskMultiSelectModifier(taskMultiSelectModifier),
-      subnavMode: subnavMode || 'floating'
+      subnavMode: subnavMode || 'floating',
+      autoOpenTaskProgressWindow: autoOpenTaskProgressWindow === undefined ? true : !!autoOpenTaskProgressWindow
     }
     return result
   }
