@@ -24,6 +24,7 @@ const userKeys = [
   'log-level',
   'new-task-show-downloading',
   'auto-open-task-progress-window',
+  'task-progress-window-mode',
   'new-task-jump-target',
   'no-confirm-before-delete-task',
   'open-at-login',
@@ -59,7 +60,8 @@ const userKeys = [
   'task-plan-action',
   'task-plan-gids',
   'task-plan-only-when-idle',
-  'clipboard-auto-paste'
+  'clipboard-auto-paste',
+  'floating-bar-display-mode'
 ]
 
 const systemKeys = [

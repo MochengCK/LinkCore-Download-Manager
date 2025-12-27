@@ -70,44 +70,67 @@
   margin: 0;
   font-size: 0;
   line-height: 0;
+  display: flex;
+  gap: 16px;
+
   .theme-item {
     text-align: center;
-    display: inline-block;
-    margin: 0 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     cursor: pointer;
-    span {
-      font-size: 13px;
-      line-height: 20px;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+
+      .theme-thumb {
+        border-color: #888;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
     }
+
+    span {
+      font-size: 12px;
+      line-height: 18px;
+      color: #666;
+      transition: color 0.15s ease;
+    }
+
     &.active {
       .theme-thumb {
         border-color: $--color-primary;
-        box-shadow: 0 0 1px $--color-primary;
+        box-shadow: 0 0 0 2px rgba($--color-primary, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
       }
       span {
         color: $--color-primary;
+        font-weight: 500;
       }
     }
+
     &.theme-item-auto .theme-thumb {
       background: url('~@/assets/theme-auto@2x.png') center center no-repeat;
-      background-size: 68px 44px;
+      background-size: cover;
     }
     &.theme-item-light .theme-thumb {
       background: url('~@/assets/theme-light@2x.png') center center no-repeat;
-      background-size: 68px 44px;
+      background-size: cover;
     }
     &.theme-item-dark .theme-thumb {
       background: url('~@/assets/theme-dark@2x.png') center center no-repeat;
-      background-size: 68px 44px;
+      background-size: cover;
     }
   }
+
   .theme-thumb {
     box-sizing: border-box;
-    border: 1px solid #aaa;
-    border-radius: 5px;
-    width: 68px;
-    height: 44px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    width: 72px;
+    height: 48px;
     margin-bottom: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    overflow: hidden;
   }
 }
 </style>

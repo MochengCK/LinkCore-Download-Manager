@@ -4,6 +4,96 @@ import { EMPTY_STRING, TASK_STATUS } from '@shared/constants'
 import { checkTaskIsBT, getFileNameFromFile, intersection } from '@shared/utils'
 import taskHistory from '@/api/TaskHistory'
 
+// 排序辅助函数
+function sortTaskList (taskList, field, order) {
+  return [...taskList].sort((a, b) => {
+    let valueA, valueB
+
+    switch (field) {
+    case 'completedTime': {
+      // 完成时间排序 - 使用savedAt字段作为完成时间
+      valueA = parseInt(a.savedAt) || 0
+      valueB = parseInt(b.savedAt) || 0
+      // 如果都没有savedAt，按gid排序（作为创建顺序的近似）
+      if (valueA === 0 && valueB === 0) {
+        valueA = a.gid || ''
+        valueB = b.gid || ''
+      }
+      break
+    }
+    case 'remainingTime': {
+      // 剩余时间排序 - 计算剩余下载时间
+      const getRemainingTime = (task) => {
+        const totalLength = parseInt(task.totalLength) || 0
+        const completedLength = parseInt(task.completedLength) || 0
+        const downloadSpeed = parseInt(task.downloadSpeed) || 0
+
+        if (totalLength <= 0 || completedLength >= totalLength) {
+          return 0 // 已完成的任务
+        }
+
+        if (downloadSpeed <= 0) {
+          return Infinity // 无法计算剩余时间的任务排在最后
+        }
+
+        const remaining = totalLength - completedLength
+        return remaining / downloadSpeed // 剩余时间（秒）
+      }
+      valueA = getRemainingTime(a)
+      valueB = getRemainingTime(b)
+      break
+    }
+    case 'speed': {
+      // 下载速度排序
+      valueA = (parseInt(a.downloadSpeed) || 0) + (parseInt(a.uploadSpeed) || 0)
+      valueB = (parseInt(b.downloadSpeed) || 0) + (parseInt(b.uploadSpeed) || 0)
+      break
+    }
+    case 'size': {
+      // 文件大小排序
+      valueA = parseInt(a.totalLength) || 0
+      valueB = parseInt(b.totalLength) || 0
+      break
+    }
+    case 'name': {
+      // 文件名排序 - 从files数组中获取文件名，或使用dir作为备选
+      const getTaskName = (task) => {
+        // 尝试从files数组获取第一个文件的路径
+        if (task.files && task.files.length > 0 && task.files[0].path) {
+          const filePath = task.files[0].path
+          // 提取文件名（去掉路径）
+          return filePath.split(/[\\/]/).pop().toLowerCase()
+        }
+        // 备选：使用目录名
+        if (task.dir) {
+          return task.dir.split(/[\\/]/).pop().toLowerCase()
+        }
+        // 最后备选：使用gid
+        return task.gid || ''
+      }
+      valueA = getTaskName(a)
+      valueB = getTaskName(b)
+      break
+    }
+    default:
+      return 0
+    }
+
+    // 处理字符串比较
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA)
+    }
+
+    // 处理数值比较
+    if (valueA < valueB) {
+      return order === 'asc' ? -1 : 1
+    } else if (valueA > valueB) {
+      return order === 'asc' ? 1 : -1
+    }
+    return 0
+  })
+}
+
 const state = {
   currentList: 'all',
   taskDetailVisible: false,
@@ -20,7 +110,9 @@ const state = {
   taskPriorities: {},
   taskSpeedSamples: {},
   taskDisplayNames: {},
-  searchKeyword: ''
+  searchKeyword: '',
+  sortField: 'name',
+  sortOrder: 'asc'
 }
 
 const getters = {
@@ -50,7 +142,19 @@ const mutations = {
       }
     })
 
+    // 先设置未排序的列表
     state.taskList = newList
+
+    // 重新应用当前的排序（如果有的话）
+    if (state.sortField && state.sortOrder && state.sortField !== 'name') {
+      // 只有在非默认排序时才重新排序，避免不必要的排序操作
+      const sortedList = sortTaskList(state.taskList, state.sortField, state.sortOrder)
+      state.taskList = sortedList
+    } else if (state.sortField === 'name' && state.sortOrder !== 'asc') {
+      // 名称排序但非升序时也需要重新排序
+      const sortedList = sortTaskList(state.taskList, state.sortField, state.sortOrder)
+      state.taskList = sortedList
+    }
   },
   UPDATE_SELECTED_GID_LIST (state, gidList) {
     state.selectedGidList = gidList
@@ -150,6 +254,19 @@ const mutations = {
   },
   UPDATE_TASK_SEARCH_KEYWORD (state, keyword) {
     state.searchKeyword = `${keyword || ''}`
+  },
+  SORT_TASK_LIST (state, payload) {
+    const { field, order } = payload || {}
+    if (!field || !order) {
+      return
+    }
+
+    // 更新排序状态
+    state.sortField = field
+    state.sortOrder = order
+
+    const sortedList = sortTaskList(state.taskList, field, order)
+    state.taskList = sortedList
   }
 }
 
@@ -162,6 +279,9 @@ const actions = {
   },
   updateTaskSearchKeyword ({ commit }, keyword) {
     commit('UPDATE_TASK_SEARCH_KEYWORD', keyword)
+  },
+  sortTasks ({ commit }, payload) {
+    commit('SORT_TASK_LIST', payload)
   },
   changeCurrentList ({ commit, dispatch }, currentList) {
     commit('CHANGE_CURRENT_LIST', currentList)
@@ -398,6 +518,12 @@ const actions = {
                 }
               }
               dispatch('preference/save', { taskPriorities: persist }, { root: true })
+              // 延迟通知优先级管理器重新平衡资源，确保配置已保存
+              setTimeout(() => {
+                try {
+                  api.rebalancePriority()
+                } catch (e) {}
+              }, 500)
             } catch (e) {}
           }
           const preferenceConfig = (rootState.preference && rootState.preference.config) || {}

@@ -166,8 +166,9 @@ export class JSONRPCClient extends EventEmitter {
     socket.onopen = (...args) => {
       this.emit('open', ...args)
     }
-    socket.onerror = (...args) => {
-      this.emit('error', ...args)
+    socket.onerror = (event) => {
+      const error = new Error(`WebSocket error: ${event.type}`)
+      this.emit('error', error)
     }
 
     return promiseEvent(this, 'open')

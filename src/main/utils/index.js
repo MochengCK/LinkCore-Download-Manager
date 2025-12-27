@@ -275,22 +275,17 @@ export const getEngineList = (platform, arch) => {
 
         // 过滤条件：
         // 1. 必须是文件
-        // 2. 包含aria2c
+        // 2. 包含aria2c 或者是 LinkCore
         // 3. 不是备份文件（不以.backup结尾）
         // 4. 不是临时文件（不以.tmp结尾）
+        const lowerFile = file.toLowerCase()
         if (stats.isFile() &&
-            file.includes('aria2c') &&
+            (file.includes('aria2c') || lowerFile === 'linkcore.exe' || lowerFile === 'linkcore') &&
             !file.endsWith('.backup') &&
             !file.endsWith('.tmp')) {
           engines.push(file)
         }
       })
-
-      const linkCoreRelative = 'src/LinkCore.exe'
-      const linkCoreFullPath = resolve(enginePath, linkCoreRelative)
-      if (existsSync(linkCoreFullPath) && !engines.includes(linkCoreRelative)) {
-        engines.push(linkCoreRelative)
-      }
 
       // 仅当默认引擎实际存在于引擎目录时，确保它位于列表首位
       const defaultBinPath = resolve(enginePath, binName)

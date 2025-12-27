@@ -43,6 +43,7 @@ import TrayManager from './ui/TrayManager'
 import DockManager from './ui/DockManager'
 import ThemeManager from './ui/ThemeManager'
 import PythonManager from './core/PythonManager'
+import PriorityManager from './core/PriorityManager'
 
 export default class Application extends EventEmitter {
   constructor () {
@@ -93,6 +94,8 @@ export default class Application extends EventEmitter {
     this.initProtocolManager()
 
     this.initUpdaterManager()
+
+    this.initPriorityManager()
 
     this.handleCommands()
 
@@ -1244,6 +1247,20 @@ export default class Application extends EventEmitter {
     this.handleUpdaterEvents()
   }
 
+  initPriorityManager () {
+    this.priorityManager = new PriorityManager({
+      configManager: this.configManager
+    })
+  }
+
+  startPriorityManager () {
+    if (!this.priorityManager) return
+
+    this.priorityManager.init({
+      engine: this.engineClient
+    })
+  }
+
   handleUpdaterEvents () {
     this.updateManager.on('checking', (event) => {
       this.menuManager.updateMenuItemEnabledState('app.check-for-updates', false)
@@ -2040,6 +2057,9 @@ export default class Application extends EventEmitter {
       this.adjustMenu()
       this.scheduleCheckTaskPlan(2000)
 
+      // 启动优先级管理器
+      this.startPriorityManager()
+
       // 监听主窗口加载完成事件，确保前端组件已挂载后再发送更新状态
       const mainWindow = this.windowManager.getWindow('index')
       if (mainWindow) {
@@ -2082,6 +2102,11 @@ export default class Application extends EventEmitter {
 
     this.on('task-download-complete', (task, path) => {
       this.dockManager.openDock(path)
+
+      // 通知优先级管理器任务完成
+      if (this.priorityManager) {
+        this.priorityManager.onTaskComplete(task.gid)
+      }
 
       if (is.linux()) {
         return
@@ -2191,6 +2216,23 @@ export default class Application extends EventEmitter {
         logger.error('[Motrix] write aria2.conf failed:', e.message)
         return { success: false, error: e.message, path: confPath }
       }
+    })
+
+    // 优先级管理相关
+    ipcMain.handle('priority:status', async () => {
+      if (this.priorityManager) {
+        const status = this.priorityManager.getStatus()
+        return { success: true, ...status }
+      }
+      return { success: false, error: 'PriorityManager not initialized' }
+    })
+
+    ipcMain.handle('priority:rebalance', async () => {
+      if (this.priorityManager) {
+        await this.priorityManager.rebalanceResources()
+        return { success: true }
+      }
+      return { success: false, error: 'PriorityManager not initialized' }
     })
   }
 

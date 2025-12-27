@@ -361,12 +361,13 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: #555;
+  color: #666;
   user-select: none;
 }
 .no-task-inner {
   width: 100%;
-  padding-top: 360px;
+  padding-top: 280px;
   background: transparent url('~@/assets/no-task.svg') top center no-repeat;
+  background-size: 400px auto;
 }
 </style>

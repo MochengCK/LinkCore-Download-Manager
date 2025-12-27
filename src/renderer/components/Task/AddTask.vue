@@ -38,12 +38,12 @@
         </el-form-item>
         <div
           class="video-preview"
-          v-if="type === 'video' && (videoPreviewLoading || videoPreviewError || videoMeta || (videoQualities && videoQualities.length > 0))"
+          v-if="type === 'video' && (videoPreviewLoading || videoPreviewError || videoMeta || (videoQualities && videoQualities.length > 0) || videoCollection)"
         >
           <div class="video-preview__status" v-if="videoPreviewLoading">{{ $t('task.video-parsing') }}</div>
           <div class="video-preview__error" v-else-if="videoPreviewError">{{ $t('task.video-parse-failed') }}：{{ videoPreviewError }}</div>
           <div class="video-preview__meta" v-else-if="videoMeta">
-            <div class="video-preview__meta-item video-preview__quality-item" v-if="videoQualities.length > 0">
+            <div class="video-preview__meta-item video-preview__quality-item" v-if="videoQualities.length > 0 || videoCollection">
               <el-select
                 ref="videoQualitySelect"
                 class="video-quality-select video-quality-select--text"
@@ -64,6 +64,7 @@
                 v-model="form.videoFormat"
                 :placeholder="$t('task.video-format-placeholder')"
                 :disabled="videoPreviewLoading"
+                v-if="videoQualities.length > 0 || videoCollection"
               >
                 <el-option
                   v-for="f in videoFormats"
@@ -96,6 +97,31 @@
               <el-tooltip :content="videoMeta.sizeText" placement="top" :open-delay="300" :disabled="!videoSizeOverflow">
                 <span ref="videoMetaSize" class="video-preview__meta-value video-preview__meta-value--fade">{{ videoMeta.sizeText }}</span>
               </el-tooltip>
+            </div>
+          </div>
+          <div class="video-collection-selector" v-if="videoCollection">
+            <div class="video-collection-selector__header">
+              <span class="video-collection-selector__header-title">{{ $t('task.collection-videos') }} ({{ videoCollection.total_videos }})</span>
+              <el-button size="mini" style="margin-left: 16px;" @click="toggleSelectAll">
+                {{ isAllSelected ? $t('task.deselect-all') : $t('task.select-all') }}
+              </el-button>
+            </div>
+            <div class="video-collection-selector__list">
+              <div
+                v-for="video in videoCollection.videos"
+                :key="video.index"
+                class="video-collection-selector__item"
+                :class="{ 'is-selected': isVideoSelected(video) }"
+                @click="toggleVideoSelection(video)"
+              >
+                <el-checkbox
+                  :value="isVideoSelected(video)"
+                  @click.native.prevent
+                ></el-checkbox>
+                <span class="video-collection-selector__item-index">{{ video.index }}.</span>
+                <span class="video-collection-selector__item-title">{{ video.title }}</span>
+                <span class="video-collection-selector__item-duration">{{ video.duration_text }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -377,6 +403,8 @@
         videoPreviewError: '',
         videoMeta: null,
         videoQualities: [],
+        videoCollection: null,
+        selectedVideos: [],
         videoPreviewTimer: null,
         videoTitleOverflow: false,
         videoOwnerOverflow: false,
@@ -414,6 +442,13 @@
       dialogTop () {
         const advancedVisible = this.showAdvanced && this.taskType !== 'video'
         return advancedVisible ? '8vh' : '15vh'
+      },
+      isAllSelected () {
+        if (!this.videoCollection || !Array.isArray(this.videoCollection.videos)) {
+          return false
+        }
+        return this.videoCollection.videos.length > 0 &&
+          this.videoCollection.videos.every(video => this.selectedVideos.includes(video.index))
       }
     },
     watch: {
@@ -914,6 +949,32 @@
       handleVideoQnChange () {
         this.scheduleVideoPreview(this.form.uris || '')
       },
+      selectAllVideos () {
+        if (!this.videoCollection || !Array.isArray(this.videoCollection.videos)) {
+          return
+        }
+        this.selectedVideos = this.videoCollection.videos.map(video => video.index)
+      },
+      deselectAllVideos () {
+        this.selectedVideos = []
+      },
+      toggleSelectAll () {
+        if (this.isAllSelected) {
+          this.deselectAllVideos()
+        } else {
+          this.selectAllVideos()
+        }
+      },
+      isVideoSelected (video) {
+        return this.selectedVideos.includes(video.index)
+      },
+      toggleVideoSelection (video) {
+        if (this.isVideoSelected(video)) {
+          this.selectedVideos = this.selectedVideos.filter(index => index !== video.index)
+        } else {
+          this.selectedVideos = [...this.selectedVideos, video.index]
+        }
+      },
       ensureVideoFormatDefault () {
         const current = this.form && this.form.videoFormat
         if (current === undefined || current === null || `${current}`.trim() === '') {
@@ -952,6 +1013,7 @@
           this.videoPreviewError = ''
           this.videoMeta = null
           this.videoQualities = []
+          this.videoCollection = null
           return
         }
         this.videoPreviewLoading = true
@@ -962,6 +1024,45 @@
             qn: this.form.videoQn !== undefined ? this.form.videoQn : '',
             cookie
           })
+
+          if (parsed.type === 'collection') {
+            this.videoCollection = parsed
+            this.videoMeta = {
+              title: parsed.title || '',
+              owner: parsed.owner || '',
+              durationText: `${parsed.total_videos} ${this.$t('task.videos')}`,
+              sizeText: ''
+            }
+            this.selectedVideos = parsed.original_video_index ? [parsed.original_video_index] : []
+            this.ensureVideoFormatDefault()
+            const qualities = Array.isArray(parsed.qualities) ? parsed.qualities : []
+            const nextQualities = qualities
+              .map(q => {
+                const qn = q && q.qn !== undefined ? Number(q.qn) : NaN
+                if (!Number.isFinite(qn)) return null
+                const desc = q && q.desc ? `${q.desc}` : ''
+                const base = desc ? `${desc} (${qn})` : `${qn}`
+                const prefix = this.$t('task.video-quality')
+                return { value: qn, label: `${prefix}: ${base}` }
+              })
+              .filter(Boolean)
+            this.videoQualities = nextQualities
+            const currentQn = this.form.videoQn !== undefined && this.form.videoQn !== null && `${this.form.videoQn}`.trim()
+              ? Number(this.form.videoQn)
+              : null
+            if (nextQualities.length > 0 && (!currentQn || !nextQualities.some(q => q.value === currentQn))) {
+              const cfg = this.config || {}
+              const preferred = cfg.videoPreferredQn !== undefined && cfg.videoPreferredQn !== null
+                ? Number(cfg.videoPreferredQn)
+                : null
+              const fallback = preferred && nextQualities.some(q => q.value === preferred) ? preferred : nextQualities[0].value
+              this.$set(this.form, 'videoQn', fallback)
+            }
+            this.updateVideoMetaOverflow()
+            return
+          }
+
+          this.videoCollection = null
           this.ensureVideoFormatDefault()
           const qualities = Array.isArray(parsed.qualities) ? parsed.qualities : []
           const nextQualities = qualities
@@ -1235,7 +1336,104 @@
             })
           }
         } catch (err) {
-          this.$msg.error(this.$t(err.message))
+          if (err.message === 'BILIBILI_COLLECTION') {
+            if (this.videoCollection && Array.isArray(this.videoCollection.videos)) {
+              if (this.selectedVideos.length === 0) {
+                this.$msg.warning(this.$t('task.please-select-videos'))
+                return
+              }
+              const selectedVideoData = this.videoCollection.videos.filter(v => this.selectedVideos.includes(v.index))
+              if (selectedVideoData.length === 0) {
+                this.$msg.warning(this.$t('task.please-select-videos'))
+                return
+              }
+
+              const allVideoUrls = []
+              const allVideoReferers = []
+              const allVideoUserAgents = []
+              const allVideoNames = []
+              const qn = this.form.videoQn || null
+              const cookie = this.form.cookie || null
+
+              const parsePromises = selectedVideoData.map(async (video) => {
+                let videoUrl = null
+                if (video.bvid) {
+                  videoUrl = `https://www.bilibili.com/video/${video.bvid}`
+                } else if (video.aid) {
+                  videoUrl = `https://www.bilibili.com/video/av${video.aid}`
+                }
+
+                if (!videoUrl) {
+                  return null
+                }
+
+                try {
+                  const parsed = await resolveBilibiliResources(videoUrl, { qn, cookie, forceSingle: true })
+                  if (parsed && Array.isArray(parsed.resources)) {
+                    const results = []
+                    for (const r of parsed.resources) {
+                      if (r && r.url) {
+                        results.push({
+                          url: r.url,
+                          referer: r.referer || `https://www.bilibili.com/video/${video.bvid || video.aid}`,
+                          userAgent: r.user_agent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                          name: r.name || video.title || `video_${video.bvid || video.aid}`
+                        })
+                      }
+                    }
+                    return results
+                  }
+                } catch (parseErr) {
+                  console.error(`Failed to resolve video ${video.title}:`, parseErr)
+                  throw new Error(`${this.$t('task.video-parse-failed')}: ${video.title}`)
+                }
+                return null
+              })
+
+              const parseResults = await Promise.all(parsePromises)
+
+              for (const result of parseResults) {
+                if (!result) continue
+                for (const item of result) {
+                  allVideoUrls.push(item.url)
+                  allVideoReferers.push(item.referer)
+                  allVideoUserAgents.push(item.userAgent)
+                  allVideoNames.push(item.name)
+                }
+              }
+
+              if (allVideoUrls.length === 0) {
+                this.$msg.warning(this.$t('task.no-video-urls'))
+                return
+              }
+
+              this.form.uris = allVideoUrls.join('\n')
+              this.form.customReferers = allVideoReferers
+              this.form.customUserAgents = allVideoUserAgents
+              this.form.customOuts = allVideoNames
+              const autoCategorizeFiles = this.config.autoCategorizeFiles || false
+              const fileCategories = this.config.fileCategories || null
+              const payload = await buildUriPayload(this.form, autoCategorizeFiles, fileCategories)
+              this.$store.dispatch('task/addUri', payload).catch(err => {
+                this.$msg.error(err.message)
+              })
+              this.$store.dispatch('app/hideAddTaskDialog')
+              if (this.form.newTaskShowDownloading) {
+                const config = this.config || {}
+                const jumpTarget = this.form.newTaskJumpTarget || config.newTaskJumpTarget || 'downloading'
+                const status = jumpTarget === 'all' ? 'all' : 'active'
+                this.$router.push({
+                  path: `/task/${status}`
+                }).catch(err => {
+                  console.log(err)
+                })
+              }
+            } else {
+              this.$msg.error(err.message)
+            }
+          } else {
+            this.$msg.error(this.$t(err.message))
+          }
         }
       }
     }
@@ -1477,6 +1675,86 @@
   .video-preview__meta-value--fade {
     -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
     mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+  }
+
+  .video-collection-selector {
+    margin-top: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px 0;
+    max-height: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .video-collection-selector__header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 6px 8px 6px 2px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 8px;
+  }
+
+  .video-collection-selector__header-title {
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    color: var(--text-color-secondary);
+    font-size: 13px;
+    line-height: 1;
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0));
+  }
+
+  .video-collection-selector__list {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    max-height: 150px;
+  }
+
+  .video-collection-selector__item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    gap: 8px;
+  }
+
+  .video-collection-selector__item:hover {
+    background-color: var(--border-color);
+  }
+
+  .video-collection-selector__item.is-selected {
+    background-color: rgba(64, 158, 255, 0.1);
+  }
+
+  .video-collection-selector__item-index {
+    flex: 0 0 auto;
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+
+  .video-collection-selector__item-title {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-color-primary);
+    font-size: 12px;
+  }
+
+  .video-collection-selector__item-duration {
+    flex: 0 0 auto;
+    color: var(--text-color-secondary);
+    font-size: 11px;
   }
 }
 

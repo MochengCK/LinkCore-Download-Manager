@@ -492,6 +492,17 @@ export default class Api {
     return this.client.call('getPeers', ...args)
   }
 
+  // 获取任务的服务器/连接详细信息
+  fetchTaskServers (params = {}) {
+    const { gid } = params
+    const args = compactUndefined([gid])
+    return this.client.call('getServers', ...args)
+      .catch((error) => {
+        console.log('[Motrix] fetchTaskServers fail:', error.message)
+        return []
+      })
+  }
+
   pauseTask (params = {}) {
     const { gid } = params
     const args = compactUndefined([gid])
@@ -525,13 +536,37 @@ export default class Api {
   removeTask (params = {}) {
     const { gid } = params
     const args = compactUndefined([gid])
+
+    // 先从历史记录中移除任务，确保任务卡片会消失
+    taskHistory.removeTask(gid)
+
     return this.client.call('remove', ...args)
+      .then((result) => {
+        // 删除成功后，也尝试清理aria2的下载结果记录
+        return this.client.call('removeDownloadResult', ...args)
+          .catch(() => {
+            // 忽略清理失败的错误
+          })
+          .then(() => result)
+      })
   }
 
   forceRemoveTask (params = {}) {
     const { gid } = params
     const args = compactUndefined([gid])
+
+    // 先从历史记录中移除任务，确保任务卡片会消失
+    taskHistory.removeTask(gid)
+
     return this.client.call('forceRemove', ...args)
+      .then((result) => {
+        // 删除成功后，也尝试清理aria2的下载结果记录
+        return this.client.call('removeDownloadResult', ...args)
+          .catch(() => {
+            // 忽略清理失败的错误
+          })
+          .then(() => result)
+      })
   }
 
   saveSession (params = {}) {
@@ -626,5 +661,21 @@ export default class Api {
 
   batchForcePauseTask (params = {}) {
     return this.multicall('aria2.forcePause', params)
+  }
+
+  // 优先级管理相关方法
+  getPriorityStatus () {
+    return ipcRenderer.invoke('priority:status').catch(err => {
+      console.warn('[Motrix] getPriorityStatus failed:', err.message)
+      return { success: false, error: err.message }
+    })
+  }
+
+  // 触发优先级重新平衡（当用户修改任务优先级后调用）
+  rebalancePriority () {
+    return ipcRenderer.invoke('priority:rebalance').catch(err => {
+      console.warn('[Motrix] rebalancePriority failed:', err.message)
+      return { success: false, error: err.message }
+    })
   }
 }

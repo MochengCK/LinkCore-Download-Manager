@@ -57,6 +57,24 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col class="form-item-sub" :span="24">
+              <el-form-item :label="$t('preferences.floating-bar-display-mode')">
+                <el-select
+                  v-model="form.floatingBarDisplayMode"
+                  size="mini"
+                  @change="autoSaveForm"
+                >
+                  <el-option
+                    :label="$t('preferences.floating-bar-display-mode-hover')"
+                    value="hover"
+                  />
+                  <el-option
+                    :label="$t('preferences.floating-bar-display-mode-always')"
+                    value="always"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
           </el-form-item>
         </div>
 
@@ -382,11 +400,6 @@
               </el-checkbox>
             </el-col>
             <el-col class="form-item-sub" :span="24">
-              <el-checkbox v-model="form.autoOpenTaskProgressWindow" @change="autoSaveForm">
-                {{ $t('preferences.auto-open-task-progress-window') }}
-              </el-checkbox>
-            </el-col>
-            <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.noConfirmBeforeDeleteTask" @change="autoSaveForm">
                 {{ $t('preferences.no-confirm-before-delete-task') }}
               </el-checkbox>
@@ -395,6 +408,17 @@
               <el-checkbox v-model="form.autoPurgeRecord" @change="autoSaveForm">
                 {{ $t('preferences.auto-purge-record') }}
               </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.autoOpenTaskProgressWindow" @change="autoSaveForm">
+                {{ $t('preferences.auto-open-task-progress-window') }}
+              </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24" v-if="form.autoOpenTaskProgressWindow">
+              <el-radio-group v-model="form.taskProgressWindowMode" @change="autoSaveForm">
+                <el-radio label="first">{{ $t('preferences.task-progress-window-first-only') }}</el-radio>
+                <el-radio label="all">{{ $t('preferences.task-progress-window-all') }}</el-radio>
+              </el-radio-group>
             </el-col>
             <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.newTaskShowDownloading" @change="autoSaveForm">
@@ -500,8 +524,9 @@
       </el-form>
 
       <div v-if="hasNoResults" class="no-results">
-        <i class="el-icon-warning-outline"></i>
-        <p>{{ $t('preferences.no-settings-found') }}</p>
+        <div class="no-results-inner">
+          {{ $t('preferences.no-settings-found') }}
+        </div>
       </div>
 
       <!-- 文件分类规则编辑弹窗 -->
@@ -581,7 +606,7 @@
 <script>
   import is from 'electron-is'
   import { mapState } from 'vuex'
-  import { cloneDeep, extend, isEmpty } from 'lodash'
+  import { cloneDeep, isEmpty } from 'lodash'
   import HistoryDirectory from '@/components/Preference/HistoryDirectory'
   import SelectDirectory from '@/components/Native/SelectDirectory'
   import ThemeSwitcher from '@/components/Preference/ThemeSwitcher'
@@ -678,7 +703,9 @@
       taskMultiSelectModifier,
       subnavMode,
       autoOpenTaskProgressWindow,
-      clipboardAutoPaste
+      taskProgressWindowMode,
+      clipboardAutoPaste,
+      floatingBarDisplayMode
     } = config
 
     let normalizedEngineMax = engineMaxConnectionPerServer
@@ -750,7 +777,9 @@
       taskMultiSelectModifier: normalizeTaskMultiSelectModifier(taskMultiSelectModifier),
       subnavMode: subnavMode || 'floating',
       autoOpenTaskProgressWindow: autoOpenTaskProgressWindow === undefined ? true : !!autoOpenTaskProgressWindow,
-      clipboardAutoPaste: clipboardAutoPaste === undefined ? true : !!clipboardAutoPaste
+      taskProgressWindowMode: taskProgressWindowMode || 'first',
+      clipboardAutoPaste: clipboardAutoPaste === undefined ? true : !!clipboardAutoPaste,
+      floatingBarDisplayMode: floatingBarDisplayMode || 'hover'
     }
     return result
   }
@@ -766,7 +795,16 @@
       const { locale } = this.$store.state.preference.config
       const formOriginal = initForm(this.$store.state.preference.config)
       let form = {}
-      form = initForm(extend(form, formOriginal, changedConfig.basic))
+      // 直接从store中获取配置，不依赖changedConfig
+      form = initForm(this.$store.state.preference.config)
+
+      // 确保新字段存在并且是响应式的
+      if (!('taskProgressWindowMode' in form)) {
+        this.$set(form, 'taskProgressWindowMode', 'first')
+      }
+      if (!('taskProgressWindowMode' in formOriginal)) {
+        this.$set(formOriginal, 'taskProgressWindowMode', 'first')
+      }
 
       return {
         form,
@@ -1639,22 +1677,20 @@
   right: 0;
   bottom: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary);
   z-index: 10;
+  user-select: none;
+}
 
-  i {
-    font-size: 48px;
-    margin-bottom: 16px;
-    color: var(--color-text-placeholder);
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+.no-results-inner {
+  width: 100%;
+  padding-top: 280px;
+  background: transparent url('~@/assets/no-settings.svg') top center no-repeat;
+  background-size: 400px auto;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
 }
 
  /* 文件分类样式 */

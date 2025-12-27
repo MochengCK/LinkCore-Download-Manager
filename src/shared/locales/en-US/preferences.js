@@ -59,6 +59,8 @@ export default {
   'max-connection-per-server': 'Maximum connections per server',
   'new-task-show-downloading': 'Automatically navigate after adding task',
   'auto-open-task-progress-window': 'Auto open task progress window',
+  'task-progress-window-first-only': 'First task only',
+  'task-progress-window-all': 'All tasks',
   'new-task-jump-target': 'Navigate to',
   'new-task-jump-target-all': 'All tasks',
   'new-task-jump-target-downloading': 'Downloading',
@@ -88,6 +90,9 @@ export default {
   'subnav-mode': 'Sub-sidebar mode',
   'subnav-mode-floating': 'Use floating sub-sidebar',
   'subnav-mode-title': 'Use title switching',
+  'floating-bar-display-mode': 'Bottom Bar Display Mode',
+  'floating-bar-display-mode-hover': 'Show on hover',
+  'floating-bar-display-mode-always': 'Always show',
   'language': 'Language',
   'change-language': 'Change language',
   'hide-app-menu': 'Hide App Menu (Windows & Linux Only)',
@@ -245,5 +250,11 @@ export default {
   'user-agent-aria2': 'Aria2',
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
-  'user-agent-du': 'du'
+  'user-agent-du': 'du',
+  'priority-engine': 'Priority Engine',
+  'priority-engine-tips': 'Automatically allocate download resources based on task priority set when creating tasks. High priority tasks get more connections and bandwidth.',
+  'priority-how-it-works': 'How it works:',
+  'priority-rule-1': 'High priority tasks (priority > 0) get more connections and bandwidth',
+  'priority-rule-3': 'Normal tasks (priority = 0) share remaining resources equally, ensuring they can still download',
+  'priority-rule-auto-min': 'Minimum connections per task is auto-calculated based on "Max connections per server" (1/4 of max, range 1-4)'
 }

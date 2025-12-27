@@ -1,6 +1,7 @@
 <template>
   <div
     class="floating-bar"
+    :class="{ 'is-always-show': isAlwaysShow }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
@@ -28,6 +29,31 @@
         <i class="el-icon-search"></i>
       </button>
     </el-tooltip>
+    <button
+      class="floating-bar-sort-button"
+      :class="{ 'is-active': isSortMenuVisible, 'is-search-expanded': isSearchExpanded }"
+      @mouseenter="handleSortButtonMouseEnter"
+      @mouseleave="handleSortButtonMouseLeave"
+    >
+      <mo-icon name="sort" width="18" height="18" />
+      <div
+        class="floating-bar-sort-menu"
+        :class="{ 'is-visible': isSortMenuVisible }"
+        @click.stop
+        @mouseenter="handleSortMenuMouseEnter"
+        @mouseleave="handleSortMenuMouseLeave"
+      >
+        <div
+          v-for="option in sortOptions"
+          :key="option.value"
+          :class="['sort-menu-item', { 'is-selected': currentSortField === option.value }]"
+          @click="handleSortOptionClick(option.value)"
+        >
+          <span class="sort-menu-item-text">{{ option.label }}</span>
+          <span v-if="currentSortField === option.value" :class="['sort-arrow', sortOrder === 'asc' ? 'sort-arrow-up' : 'sort-arrow-down']"></span>
+        </div>
+      </div>
+    </button>
     <div class="floating-bar-inner" :class="{ 'is-active': !!bottomSearchValue || shouldKeepActive || isSearchExpanded }" @mouseenter="handleInnerMouseEnter">
       <button
         class="floating-bar-item"
@@ -66,6 +92,7 @@
   import '@/components/Icons/menu-add'
   import '@/components/Icons/task-pause-line'
   import '@/components/Icons/task-start-line'
+  import '@/components/Icons/sort'
 
   export default {
     name: 'mo-floating-bar',
@@ -75,11 +102,23 @@
         isInputFocused: false,
         isHovering: false,
         shouldKeepActive: false,
-        previousRoutePath: ''
+        previousRoutePath: '',
+        isSortMenuVisible: false,
+        sortButtonHover: false,
+        sortMenuHover: false,
+        sortMenuHideTimer: null,
+        currentSortField: 'name',
+        sortOrder: 'asc'
       }
     },
     mounted () {
       document.addEventListener('click', this.handleGlobalClick)
+      this.loadSortState()
+      this.$nextTick(() => {
+        try {
+          commands.emit('floating-bar:search-open', this.isAlwaysShow)
+        } catch (e) {}
+      })
     },
     beforeDestroy () {
       document.removeEventListener('click', this.handleGlobalClick)
@@ -93,7 +132,8 @@
         taskSearchKeyword: state => state.searchKeyword
       }),
       ...mapState('preference', {
-        preferenceSearchKeyword: state => state.searchKeyword
+        preferenceSearchKeyword: state => state.searchKeyword,
+        config: state => state.config
       }),
       isPreferencePage () {
         return this.$route.path.startsWith('/preference')
@@ -137,6 +177,21 @@
             this.shouldKeepActive = true
           }
         }
+      },
+      sortOptions () {
+        return [
+          { label: '完成时间', value: 'completedTime' },
+          { label: '剩余时间', value: 'remainingTime' },
+          { label: '速度', value: 'speed' },
+          { label: '大小', value: 'size' },
+          { label: '名称', value: 'name' }
+        ]
+      },
+      floatingBarDisplayMode () {
+        return this.config.floatingBarDisplayMode || 'hover'
+      },
+      isAlwaysShow () {
+        return this.floatingBarDisplayMode === 'always'
       }
     },
     watch: {
@@ -157,6 +212,11 @@
         if (!val && !this.isHovering && !this.isInputFocused && !this.shouldKeepActive) {
           this.collapseSearch()
         }
+      },
+      isAlwaysShow (val) {
+        try {
+          commands.emit('floating-bar:search-open', !!val)
+        } catch (e) {}
       }
     },
     methods: {
@@ -239,23 +299,124 @@
       handleGlobalClick (event) {
         const floatingBar = this.$el
         if (!floatingBar.contains(event.target)) {
-          if (this.isSearchExpanded && !this.bottomSearchValue && !this.isInputFocused) {
+          if (this.isSearchExpanded && !this.bottomSearchValue) {
             this.shouldKeepActive = false
-            this.collapseSearch()
+            this.collapseSearch(true) // 传递参数表示是通过点击背景关闭的
           }
         }
       },
-      collapseSearch () {
-        const shouldEmitClose = !this.isHovering && !this.bottomSearchValue
-        if (shouldEmitClose) {
-          try {
-            commands.emit('floating-bar:search-open', false)
-          } catch (e) {}
+      handleSortButtonMouseEnter () {
+        this.sortButtonHover = true
+        this.clearSortMenuHideTimer()
+        this.isSortMenuVisible = true
+      },
+      handleSortButtonMouseLeave () {
+        this.sortButtonHover = false
+        this.startSortMenuHideTimer()
+      },
+      handleSortMenuMouseEnter () {
+        this.sortMenuHover = true
+        this.clearSortMenuHideTimer()
+      },
+      handleSortMenuMouseLeave () {
+        this.sortMenuHover = false
+        this.startSortMenuHideTimer()
+      },
+      startSortMenuHideTimer () {
+        this.clearSortMenuHideTimer()
+        this.sortMenuHideTimer = setTimeout(() => {
+          if (!this.sortButtonHover && !this.sortMenuHover) {
+            this.isSortMenuVisible = false
+          }
+        }, 50)
+      },
+      clearSortMenuHideTimer () {
+        if (this.sortMenuHideTimer) {
+          clearTimeout(this.sortMenuHideTimer)
+          this.sortMenuHideTimer = null
         }
-        this.isSearchExpanded = false
+      },
+      handleSortOptionClick (sortField) {
+        if (this.currentSortField === sortField) {
+          this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+        } else {
+          this.currentSortField = sortField
+          this.sortOrder = 'asc'
+        }
+        this.$store.dispatch('task/sortTasks', {
+          field: this.currentSortField,
+          order: this.sortOrder
+        })
+        this.saveSortState()
+      },
+      collapseSearch (isBackgroundClick = false) {
+        const shouldEmitClose = !this.isHovering && !this.bottomSearchValue && !this.isAlwaysShow
+
+        // 对于背景点击关闭，需要同步搜索框和任务计划按钮的时序
+        if (isBackgroundClick) {
+          // 立即设置搜索框状态，搜索框会因为CSS的transition-delay: 0.1s而延迟开始动画
+          this.isSearchExpanded = false
+
+          // 延迟发送事件，让任务计划按钮与搜索框的CSS延迟同步
+          // 搜索框移除is-expanded后有0.1s的transition-delay，所以任务计划按钮也需要延迟0.1s
+          setTimeout(() => {
+            try {
+              commands.emit('floating-bar:search-expanded', false)
+            } catch (e) {}
+
+            if (shouldEmitClose) {
+              try {
+                commands.emit('floating-bar:search-open', false)
+              } catch (e) {}
+            }
+          }, 100)
+        } else {
+          // 其他方式关闭时的原有逻辑
+          this.isSearchExpanded = false
+
+          try {
+            commands.emit('floating-bar:search-expanded', false)
+          } catch (e) {}
+
+          if (shouldEmitClose) {
+            try {
+              commands.emit('floating-bar:search-open', false)
+            } catch (e) {}
+          }
+        }
+      },
+      saveSortState () {
         try {
-          commands.emit('floating-bar:search-expanded', false)
-        } catch (e) {}
+          const sortState = {
+            field: this.currentSortField,
+            order: this.sortOrder
+          }
+          window.localStorage.setItem('taskSortState', JSON.stringify(sortState))
+        } catch (e) {
+          console.error('Failed to save sort state:', e)
+        }
+      },
+      loadSortState () {
+        try {
+          const savedState = window.localStorage.getItem('taskSortState')
+          if (savedState) {
+            const sortState = JSON.parse(savedState)
+            if (sortState.field && sortState.order) {
+              this.currentSortField = sortState.field
+              this.sortOrder = sortState.order
+              this.$store.dispatch('task/sortTasks', {
+                field: this.currentSortField,
+                order: this.sortOrder
+              })
+            }
+          } else {
+            // 如果没有保存的状态，使用store中的默认状态
+            this.currentSortField = this.$store.state.task.sortField
+            this.sortOrder = this.$store.state.task.sortOrder
+          }
+        } catch (e) {
+          console.error('Failed to load sort state:', e)
+        }
       }
     }
   }
@@ -270,12 +431,30 @@
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 15;
+    z-index: 16;
     pointer-events: none;
+
+    &.is-always-show {
+      .floating-bar-inner {
+        opacity: 1;
+      }
+
+      .floating-bar-search {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(-50%) translateX(35px);
+      }
+
+      .floating-bar-sort-button {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(-50%) translateX(-35px);
+      }
+    }
 
     .floating-bar-inner {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -351,25 +530,13 @@
       padding: 0;
       pointer-events: none;
       cursor: pointer;
-      z-index: 1;
+      z-index: 2;
       opacity: 0;
       transition: width 0.15s ease-out, transform 0.15s ease-out, opacity 0.15s ease-out, background-color 0.15s;
-      transition-delay: 0s;
+      transition-delay: 0.1s;
       overflow: hidden;
       color: $--task-item-action-color;
       box-sizing: border-box;
-
-      &::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 60px;
-        background: linear-gradient(to right, transparent, $--task-item-action-verify-background);
-        z-index: 5;
-        pointer-events: none;
-      }
 
       i {
         position: absolute;
@@ -408,18 +575,195 @@
         pointer-events: auto;
         transform: translateY(-50%) translateX(35px);
       }
+
+      &:hover {
+        border-color: $--speedometer-hover-border-color;
+        background-color: $--floating-bar-item-hover-background;
+      }
     }
 
     &:hover .floating-bar-search {
       opacity: 1;
       pointer-events: auto;
       transform: translateY(-50%) translateX(35px);
+      transition-delay: 0s;
+    }
+
+    .floating-bar-sort-button {
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 74px);
+      transform: translateY(-50%);
+      width: 64px;
+      height: 40px;
+      border-radius: 24px 0 0 24px;
+      border: 1px solid $--speedometer-border-color;
+      background-color: $--task-item-action-verify-background;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s ease-out, opacity 0.15s ease-out, background-color 0.15s;
       transition-delay: 0.1s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      color: $--task-item-action-color;
+      box-sizing: border-box;
+
+      .mo-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $--floating-bar-item-color;
+        z-index: 10;
+      }
+
+      &:hover {
+        border-color: $--speedometer-hover-border-color;
+        background-color: $--floating-bar-item-hover-background;
+      }
+
+      &.is-active {
+        pointer-events: auto;
+      }
+
+      .floating-bar-sort-menu {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 35%;
+        transform: translateX(-50%);
+        z-index: 10;
+        min-width: 90px;
+        max-width: 110px;
+        padding: 4px 0;
+        border-radius: 4px;
+        background-color: #fff;
+        border: 1px solid $--border-color-light;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transition: opacity 0.12s ease-out;
+        pointer-events: none;
+
+        &.is-visible {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 6px 6px 0 6px;
+          border-color: #fff transparent transparent transparent;
+          bottom: -6px;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100px;
+          height: 8px;
+          bottom: -8px;
+          background: transparent;
+        }
+
+        .sort-menu-item {
+          padding: 4px 8px 4px 8px;
+          font-size: 12px;
+          color: $--color-text-regular;
+          white-space: nowrap;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          box-sizing: border-box;
+
+          &:hover {
+            background-color: $--color-primary;
+            color: #fff;
+          }
+
+          &.is-selected {
+            color: $--color-primary;
+          }
+
+          &:hover.is-selected {
+            color: #fff;
+          }
+
+          .sort-menu-item-text {
+            font-size: 12px;
+            flex-shrink: 0;
+          }
+
+          .sort-arrow {
+            margin-left: auto;
+            flex-shrink: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+          }
+
+          .sort-arrow-up {
+            border-width: 0 4px 5px 4px;
+            border-color: transparent transparent currentColor transparent;
+          }
+
+          .sort-arrow-down {
+            border-width: 5px 4px 0 4px;
+            border-color: currentColor transparent transparent transparent;
+          }
+        }
+      }
+    }
+
+    &:hover .floating-bar-sort-button {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) translateX(-35px);
+      transition-delay: 0s;
     }
 
     &:hover .floating-bar-inner {
       opacity: 1;
       border-color: $--speedometer-hover-border-color;
+    }
+  }
+
+  .theme-dark {
+    .floating-bar-sort-button {
+      .floating-bar-sort-menu {
+        background-color: $--dk-popover-background;
+        border-color: $--dk-popover-border-color;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+
+        &::before {
+          border-color: $--dk-popover-background transparent transparent transparent;
+        }
+
+        .sort-menu-item {
+          color: $--dk-dialog-text-color;
+
+          &:hover {
+            background-color: $--color-primary;
+            color: #fff;
+          }
+
+          &.is-selected {
+            color: $--color-primary;
+          }
+
+          &:hover.is-selected {
+            color: #fff;
+          }
+        }
+      }
     }
   }
 

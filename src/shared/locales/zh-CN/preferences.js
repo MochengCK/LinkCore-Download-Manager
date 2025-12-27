@@ -71,6 +71,8 @@ export default {
   'max-connection-per-server': '每个服务器最大连接数',
   'new-task-show-downloading': '新建任务后自动跳转到下载页面',
   'auto-open-task-progress-window': '自启动任务窗口',
+  'task-progress-window-first-only': '仅首个任务',
+  'task-progress-window-all': '所有任务',
   'new-task-jump-target': '自动跳转到',
   'new-task-jump-target-all': '所有任务',
   'new-task-jump-target-downloading': '下载中',
@@ -100,6 +102,9 @@ export default {
   'subnav-mode': '子侧边栏模式',
   'subnav-mode-floating': '使用悬浮子侧边栏',
   'subnav-mode-title': '使用标题切换',
+  'floating-bar-display-mode': '底部按钮显示方式',
+  'floating-bar-display-mode-hover': '悬停时显示',
+  'floating-bar-display-mode-always': '一直显示',
   'language': '语言',
   'change-language': '切换语言',
   'hide-app-menu': '隐藏菜单栏（仅支持 Windows 和 Linux）',
@@ -248,5 +253,11 @@ export default {
   'user-agent-aria2': 'Aria2',
   'user-agent-transmission': 'Transmission',
   'user-agent-chrome': 'Chrome',
-  'user-agent-du': 'du'
+  'user-agent-du': 'du',
+  'priority-engine': '优先级引擎',
+  'priority-engine-tips': '根据新建任务时设置的优先级自动分配下载资源，高优先级任务将获得更多连接数和带宽',
+  'priority-how-it-works': '工作原理：',
+  'priority-rule-1': '高优先级任务（优先级 > 0）将获得更多连接数和带宽',
+  'priority-rule-3': '普通任务（优先级 = 0）平分剩余资源，保证不会完全无法下载',
+  'priority-rule-auto-min': '每个任务的最小连接数会根据"每个服务器最大连接数"自动调整（取其 1/4，范围 1-4）'
 }

@@ -472,6 +472,28 @@
           </el-form-item>
         </div>
 
+        <!-- 优先级引擎设置卡片 -->
+        <div class="preference-card">
+          <h3 class="card-title">{{ $t('preferences.priority-engine') }}</h3>
+          <el-form-item size="mini">
+            <el-col class="form-item-sub" :span="24">
+              <div class="el-form-item__info" style="margin-bottom: 12px;">
+                {{ $t('preferences.priority-engine-tips') }}
+              </div>
+            </el-col>
+            <el-col class="form-item-sub" :span="24" style="margin-top: 12px;">
+              <div class="el-form-item__info">
+                <strong>{{ $t('preferences.priority-how-it-works') }}</strong>
+                <ul style="margin: 8px 0 0 16px; padding: 0; list-style: disc;">
+                  <li>{{ $t('preferences.priority-rule-1') }}</li>
+                  <li>{{ $t('preferences.priority-rule-3') }}</li>
+                  <li>{{ $t('preferences.priority-rule-auto-min') }}</li>
+                </ul>
+              </div>
+            </el-col>
+          </el-form-item>
+        </div>
+
         <!-- 用户代理设置卡片 -->
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.user-agent') }}</h3>
@@ -557,8 +579,9 @@
       </el-form>
 
       <div v-if="hasNoResults" class="no-results">
-        <i class="el-icon-warning-outline"></i>
-        <p>{{ $t('preferences.no-settings-found') }}</p>
+        <div class="no-results-inner">
+          {{ $t('preferences.no-settings-found') }}
+        </div>
       </div>
 
     <el-dialog
@@ -2339,22 +2362,20 @@
   right: 0;
   bottom: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary);
   z-index: 10;
+  user-select: none;
+}
 
-  i {
-    font-size: 48px;
-    margin-bottom: 16px;
-    color: var(--color-text-placeholder);
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+.no-results-inner {
+  width: 100%;
+  padding-top: 280px;
+  background: transparent url('~@/assets/no-settings.svg') top center no-repeat;
+  background-size: 400px auto;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
 }
 
 .action-link {

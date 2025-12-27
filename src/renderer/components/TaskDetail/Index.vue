@@ -116,6 +116,19 @@
           @selection-change="handleSelectionChange"
         />
       </el-tab-pane>
+      <el-tab-pane name="connections" lazy>
+        <span class="task-detail-tab-label" slot="label">
+          <el-tooltip
+            effect="dark"
+            :content="$t('task.task-detail-connections')"
+            placement="bottom"
+            :open-delay="500"
+          >
+            <i class="el-icon-connection"></i>
+          </el-tooltip>
+        </span>
+        <mo-task-connections :task="task" />
+      </el-tab-pane>
     </el-tabs>
     <div class="task-detail-actions">
       <div class="action-wrapper action-wrapper-left" v-if="optionsChanged">
@@ -158,6 +171,7 @@
   import TaskTrackers from './TaskTrackers'
   import TaskPeers from './TaskPeers'
   import TaskFiles from './TaskFiles'
+  import TaskConnections from './TaskConnections'
   import { mapState } from 'vuex'
 
   const cached = {
@@ -172,7 +186,8 @@
       [TaskActivity.name]: TaskActivity,
       [TaskTrackers.name]: TaskTrackers,
       [TaskPeers.name]: TaskPeers,
-      [TaskFiles.name]: TaskFiles
+      [TaskFiles.name]: TaskFiles,
+      [TaskConnections.name]: TaskConnections
     },
     props: {
       gid: {

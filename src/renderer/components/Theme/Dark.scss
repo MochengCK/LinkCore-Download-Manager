@@ -577,6 +577,18 @@
         background-color: $--dk-task-item-action-verify-hover-background;
       }
     }
+
+    .floating-bar-sort-button {
+      background-color: $--dk-task-item-action-verify-background;
+      border-color: $--dk-task-item-action-border-color;
+      color: $--dk-task-item-action-color;
+      .mo-icon {
+        color: $--dk-task-item-action-color;
+      }
+      &:hover {
+        background-color: $--dk-task-item-action-verify-hover-background;
+      }
+    }
   }
 
   .mo-task-plan {

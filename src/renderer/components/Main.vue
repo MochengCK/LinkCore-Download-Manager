@@ -145,8 +145,8 @@
         taskPlanOnlyWhenIdle: false,
         hasModalMaskVisible: false,
         lastTaskStatuses: {},
-        progressWindow: null,
-        progressTaskGid: '',
+        progressWindows: new Map(), // gid -> window
+        progressTaskGids: new Set(),
         isFloatingBarSearchOpen: false,
         isFloatingBarSearchExpanded: false
       }
@@ -373,60 +373,66 @@
         this.openProgressWindowForTask(task)
       },
       handleThemeChangeForProgressWindow () {
-        if (!this.progressWindow || (this.progressWindow.isDestroyed && this.progressWindow.isDestroyed())) {
-          return
-        }
-        if (!this.progressTaskGid) {
-          return
-        }
-        const list = this.taskList || []
-        const task = list.find(item => item && `${item.gid}` === this.progressTaskGid)
-        if (!task) {
-          return
-        }
-        try {
-          const prefState = this.$store && this.$store.state && this.$store.state.preference
-          const prefConfig = prefState && prefState.config ? prefState.config : {}
-          const themeConfig = prefConfig.theme || APP_THEME.LIGHT
-          const appState = this.$store && this.$store.state && this.$store.state.app
-          const systemTheme = appState && appState.systemTheme ? appState.systemTheme : APP_THEME.LIGHT
-          const finalTheme = themeConfig === APP_THEME.AUTO ? systemTheme : themeConfig
-          const isDark = finalTheme === APP_THEME.DARK
-          const bodyBg = isDark ? '#1f1f1f' : '#ffffff'
-          const textColor = isDark ? '#e5e5e5' : '#303133'
-          const statusColor = isDark ? '#c0c4cc' : '#606266'
-          const metaColor = isDark ? '#b0b0b0' : '#909399'
-          const barBg = isDark ? '#3a3a3a' : '#ebeef5'
-          const barInner = '#409EFF'
-          const controlsBg = isDark ? '#252525' : '#ffffff'
-          const controlsBorder = isDark ? '#4a4a4a' : '#dcdfe6'
-          const controlsDivider = isDark ? '#555555' : '#e4e7ed'
-          const controlsItemColor = isDark ? '#e5e5e5' : '#606266'
-          const controlsItemHoverBg = isDark ? '#333333' : '#f2f6fc'
-          const win = this.progressWindow
+        // Update all progress windows
+        this.progressWindows.forEach((win, gid) => {
           if (!win || (win.isDestroyed && win.isDestroyed())) {
+            this.progressWindows.delete(gid)
             return
           }
-          if (typeof win.setBackgroundColor === 'function') {
-            win.setBackgroundColor(bodyBg)
+
+          const list = this.taskList || []
+          const task = list.find(item => item && `${item.gid}` === gid)
+          if (!task) {
+            return
           }
+
           try {
-            win.webContents.send('task-progress-theme-update', {
-              bodyBg,
-              textColor,
-              statusColor,
-              metaColor,
-              barBg,
-              barInner,
-              controlsBg,
-              controlsBorder,
-              controlsDivider,
-              controlsItemColor,
-              controlsItemHoverBg
-            })
+            const prefState = this.$store && this.$store.state && this.$store.state.preference
+            const prefConfig = prefState && prefState.config ? prefState.config : {}
+            const themeConfig = prefConfig.theme || APP_THEME.LIGHT
+            const appState = this.$store && this.$store.state && this.$store.state.app
+            const systemTheme = appState && appState.systemTheme ? appState.systemTheme : APP_THEME.LIGHT
+            const finalTheme = themeConfig === APP_THEME.AUTO ? systemTheme : themeConfig
+            const isDark = finalTheme === APP_THEME.DARK
+            const bodyBg = isDark ? '#1f1f1f' : '#ffffff'
+            const textColor = isDark ? '#e5e5e5' : '#303133'
+            const statusColor = isDark ? '#c0c4cc' : '#606266'
+            const metaColor = isDark ? '#b0b0b0' : '#909399'
+            const barBg = isDark ? '#3a3a3a' : '#ebeef5'
+            const barInner = '#409EFF'
+            const controlsBg = isDark ? '#252525' : '#ffffff'
+            const controlsBorder = isDark ? '#4a4a4a' : '#dcdfe6'
+            const controlsDivider = isDark ? '#555555' : '#e4e7ed'
+            const controlsItemColor = isDark ? '#e5e5e5' : '#606266'
+            const controlsItemHoverBg = isDark ? '#333333' : '#f2f6fc'
+            const titleBtnHoverBg = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+
+            if (typeof win.setBackgroundColor === 'function') {
+              win.setBackgroundColor(bodyBg)
+            }
+            try {
+              win.webContents.send('task-progress-theme-update', {
+                bodyBg,
+                textColor,
+                statusColor,
+                metaColor,
+                barBg,
+                barInner,
+                controlsBg,
+                controlsBorder,
+                controlsDivider,
+                controlsItemColor,
+                controlsItemHoverBg,
+                titleBtnHoverBg,
+                tabBg: isDark ? '#2a2a2a' : '#f5f7fa',
+                tabColor: isDark ? '#b0b0b0' : '#606266',
+                tabBorder: isDark ? '#4a4a4a' : '#dcdfe6',
+                piecePending: isDark ? '#4a4a4a' : '#dcdfe6'
+              })
+            } catch (e) {}
+            this.updateProgressWindow(task)
           } catch (e) {}
-          this.updateProgressWindow(task)
-        } catch (e) {}
+        })
       },
       async handleTaskProgressControl (payload) {
         const data = payload || {}
@@ -561,12 +567,13 @@
         const controlsDivider = isDark ? '#555555' : '#e4e7ed'
         const controlsItemColor = isDark ? '#e5e5e5' : '#606266'
         const controlsItemHoverBg = isDark ? '#333333' : '#f2f6fc'
+        const titleBtnHoverBg = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
         const titleBarStyle = useCustomFrame
           ? '.title-bar{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;-webkit-app-region:drag;background-color:VAR_BODY_BG;}'
           : '.title-bar{display:none;}'
         const contentStyle = useCustomFrame
-          ? '.content{box-sizing:border-box;padding:0 12px 12px 12px;height:calc(100vh - 26px);overflow-y:auto;}'
-          : '.content{box-sizing:border-box;padding:0 12px 12px 12px;height:100vh;overflow-y:auto;}'
+          ? '.content{box-sizing:border-box;padding:0 12px 50px 12px;height:calc(100vh - 26px);overflow-y:auto;}'
+          : '.content{box-sizing:border-box;padding:0 12px 50px 12px;height:100vh;overflow-y:auto;}'
         const styles = [
           'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:12px;color:VAR_TEXT_COLOR;background-color:VAR_BODY_BG;overflow:hidden;}',
           titleBarStyle,
@@ -574,13 +581,41 @@
           '.title-text{font-size:12px;opacity:0.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px;}',
           '.title-actions{display:flex;gap:4px;-webkit-app-region:no-drag;}',
           '.title-btn{width:18px;height:18px;border-radius:3px;border:none;background:transparent;color:VAR_TEXT_COLOR;cursor:pointer;padding:0;font-size:14px;line-height:18px;}',
-          '.title-btn:hover{background-color:rgba(255,255,255,0.12);}',
-          '.status{margin:6px 0 6px 0;color:VAR_STATUS_COLOR;font-size:12px;}',
+          '.title-btn:hover{background-color:VAR_TITLE_BTN_HOVER_BG;}',
+          '.tab-nav{display:flex;gap:0;margin-bottom:10px;border-radius:4px;overflow:hidden;border:1px solid VAR_TAB_BORDER;-webkit-app-region:no-drag;}',
+          '.tab-btn{flex:1;padding:6px 12px;border:none;background:VAR_TAB_BG;color:VAR_TAB_COLOR;cursor:pointer;font-size:12px;transition:all .15s ease;}',
+          '.tab-btn:not(:last-child){border-right:1px solid VAR_TAB_BORDER;}',
+          '.tab-btn:hover{background:VAR_TAB_HOVER_BG;}',
+          '.tab-btn.active{background:VAR_TAB_ACTIVE_BG;color:VAR_TAB_ACTIVE_COLOR;}',
+          '.tab-content{display:none;}',
+          '.tab-content.active{display:block;}',
           '.bar{height:6px;background:VAR_BAR_BG;border-radius:3px;overflow:hidden;margin-bottom:8px;}',
           '.bar-inner{height:100%;background:VAR_BAR_INNER;width:0;transition:width .2s ease;}',
           '.meta{color:VAR_META_COLOR;font-size:12px;margin-bottom:8px;}',
           '.meta-line{margin-bottom:2px;}',
-          '.controls{margin-top:10px;display:flex;justify-content:center;pointer-events:none;}',
+          '.pieces-info{color:VAR_META_COLOR;font-size:12px;margin-bottom:8px;}',
+          '.pieces-bar{display:flex;flex-wrap:wrap;gap:1px;margin-bottom:8px;}',
+          '.piece{width:6px;height:6px;border-radius:1px;background:VAR_PIECE_PENDING;}',
+          '.piece.completed{background:VAR_PIECE_COMPLETED;}',
+          '.piece.partial{background:VAR_PIECE_PARTIAL;}',
+          '.pieces-legend{display:flex;gap:12px;font-size:11px;color:VAR_META_COLOR;}',
+          '.legend-item{display:flex;align-items:center;gap:4px;}',
+          '.legend-color{width:10px;height:10px;border-radius:2px;}',
+          '.legend-completed{background:VAR_PIECE_COMPLETED;}',
+          '.legend-partial{background:VAR_PIECE_PARTIAL;}',
+          '.legend-pending{background:VAR_PIECE_PENDING;}',
+          '.conn-summary{display:flex;gap:16px;margin-bottom:10px;padding:8px;background:VAR_BAR_BG;border-radius:4px;}',
+          '.conn-summary-item{text-align:center;flex:1;}',
+          '.conn-summary-label{font-size:11px;color:VAR_META_COLOR;margin-bottom:2px;}',
+          '.conn-summary-value{font-size:14px;font-weight:600;}',
+          '.conn-table-wrap{-webkit-app-region:no-drag;max-height:calc(100vh - 180px);overflow-y:auto;}',
+          '.conn-table{width:100%;border-collapse:collapse;font-size:11px;}',
+          '.conn-table th,.conn-table td{padding:4px 6px;text-align:left;border-bottom:1px solid VAR_TAB_BORDER;}',
+          '.conn-table th{background:VAR_TAB_BG;font-weight:500;position:sticky;top:0;}',
+          '.conn-table td{color:VAR_META_COLOR;}',
+          '.conn-table .speed-active{color:#67c23a;font-weight:500;}',
+          '.conn-empty{text-align:center;padding:20px;color:VAR_META_COLOR;}',
+          '.controls{position:fixed;bottom:10px;left:0;right:0;display:flex;justify-content:center;pointer-events:none;}',
           '.controls-inner{display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 10px;background-color:VAR_CONTROLS_BG;border:1px solid VAR_CONTROLS_BORDER;border-radius:100px;pointer-events:auto;box-shadow:0 6px 16px rgba(0,0,0,0.12);}',
           '.controls-divider{width:1px;height:20px;background-color:VAR_CONTROLS_DIVIDER;margin:0 3px;}',
           '.controls-btn{width:26px;height:26px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:VAR_CONTROLS_ITEM_COLOR;transition:background-color .2s ease,opacity .2s ease;}',
@@ -605,6 +640,16 @@
           .replace(/VAR_CONTROLS_DIVIDER/g, controlsDivider)
           .replace(/VAR_CONTROLS_ITEM_COLOR/g, controlsItemColor)
           .replace(/VAR_CONTROLS_ITEM_HOVER_BG/g, controlsItemHoverBg)
+          .replace(/VAR_TITLE_BTN_HOVER_BG/g, titleBtnHoverBg)
+          .replace(/VAR_PIECE_COMPLETED/g, '#67c23a')
+          .replace(/VAR_PIECE_PARTIAL/g, '#e6a23c')
+          .replace(/VAR_PIECE_PENDING/g, isDark ? '#4a4a4a' : '#dcdfe6')
+          .replace(/VAR_TAB_BORDER/g, isDark ? '#4a4a4a' : '#dcdfe6')
+          .replace(/VAR_TAB_BG/g, isDark ? '#2a2a2a' : '#f5f7fa')
+          .replace(/VAR_TAB_COLOR/g, isDark ? '#b0b0b0' : '#606266')
+          .replace(/VAR_TAB_HOVER_BG/g, isDark ? '#333333' : '#e4e7ed')
+          .replace(/VAR_TAB_ACTIVE_BG/g, '#409EFF')
+          .replace(/VAR_TAB_ACTIVE_COLOR/g, '#ffffff')
         const html = [
           '<!DOCTYPE html>',
           '<html>',
@@ -612,6 +657,7 @@
           '<meta charset="utf-8" />',
           '<title>Task Progress</title>',
           `<style>${styles}</style>`,
+          '<style id="dynamic-theme-style"></style>',
           '</head>',
           '<body>',
           '<div class="title-bar">',
@@ -619,13 +665,43 @@
           '<div class="title-actions"><button class="title-btn" id="min-btn">–</button><button class="title-btn" id="close-btn">×</button></div>',
           '</div>',
           '<div class="content">',
-          '<div class="status" id="status"></div>',
+          '<div class="tab-nav" id="tabNav">',
+          '<button class="tab-btn active" data-tab="info" id="tabInfo"></button>',
+          '<button class="tab-btn" data-tab="connections" id="tabConnections"></button>',
+          '<button class="tab-btn" data-tab="pieces" id="tabPieces" style="display:none;"></button>',
+          '</div>',
+          '<div class="tab-content active" id="contentInfo">',
           '<div class="bar"><div class="bar-inner" id="bar"></div></div>',
           '<div class="meta">',
           '<div class="meta-line" id="size"></div>',
-          '<div class="meta-line" id="downloaded"></div>',
           '<div class="meta-line" id="speed"></div>',
+          '<div class="meta-line" id="avgSpeed"></div>',
+          '<div class="meta-line" id="connections"></div>',
           '<div class="meta-line" id="remaining"></div>',
+          '</div>',
+          '</div>',
+          '<div class="tab-content" id="contentConnections">',
+          '<div class="conn-summary" id="connSummary">',
+          '<div class="conn-summary-item"><div class="conn-summary-label" id="connTotalLabel"></div><div class="conn-summary-value" id="connTotalValue">0</div></div>',
+          '<div class="conn-summary-item"><div class="conn-summary-label" id="connActiveLabel"></div><div class="conn-summary-value" id="connActiveValue">0</div></div>',
+          '<div class="conn-summary-item"><div class="conn-summary-label" id="connSpeedLabel"></div><div class="conn-summary-value" id="connSpeedValue">0 B/s</div></div>',
+          '</div>',
+          '<div class="conn-table-wrap" id="connTableWrap">',
+          '<table class="conn-table" id="connTable">',
+          '<thead><tr><th id="connThHost"></th><th id="connThSpeed"></th><th id="connThStatus"></th></tr></thead>',
+          '<tbody id="connTableBody"></tbody>',
+          '</table>',
+          '</div>',
+          '<div class="conn-empty" id="connEmpty" style="display:none;"></div>',
+          '</div>',
+          '<div class="tab-content" id="contentPieces">',
+          '<div class="pieces-info" id="piecesInfo"></div>',
+          '<div class="pieces-bar" id="piecesBar"></div>',
+          '<div class="pieces-legend">',
+          '<span class="legend-item"><span class="legend-color legend-completed"></span><span id="legendCompleted"></span></span>',
+          '<span class="legend-item"><span class="legend-color legend-partial"></span><span id="legendPartial"></span></span>',
+          '<span class="legend-item"><span class="legend-color legend-pending"></span><span id="legendPending"></span></span>',
+          '</div>',
           '</div>',
           '<div class="controls">',
           '<div class="controls-inner">',
@@ -639,18 +715,54 @@
           '<script>',
           'const { ipcRenderer } = require("electron");',
           'let currentGid = "";',
+          'let currentTab = "info";',
           'const windowTitleEl = document.getElementById("window-title");',
           'const closeBtn = document.getElementById("close-btn");',
           'const minBtn = document.getElementById("min-btn");',
-          'const statusEl = document.getElementById("status");',
+          'const tabInfoBtn = document.getElementById("tabInfo");',
+          'const tabConnectionsBtn = document.getElementById("tabConnections");',
+          'const tabPiecesBtn = document.getElementById("tabPieces");',
+          'const contentInfoEl = document.getElementById("contentInfo");',
+          'const contentConnectionsEl = document.getElementById("contentConnections");',
+          'const contentPiecesEl = document.getElementById("contentPieces");',
+          'const connTotalLabelEl = document.getElementById("connTotalLabel");',
+          'const connTotalValueEl = document.getElementById("connTotalValue");',
+          'const connActiveLabelEl = document.getElementById("connActiveLabel");',
+          'const connActiveValueEl = document.getElementById("connActiveValue");',
+          'const connSpeedLabelEl = document.getElementById("connSpeedLabel");',
+          'const connSpeedValueEl = document.getElementById("connSpeedValue");',
+          'const connThHostEl = document.getElementById("connThHost");',
+          'const connThSpeedEl = document.getElementById("connThSpeed");',
+          'const connThStatusEl = document.getElementById("connThStatus");',
+          'const connTableBodyEl = document.getElementById("connTableBody");',
+          'const connEmptyEl = document.getElementById("connEmpty");',
+          'const connTableWrapEl = document.getElementById("connTableWrap");',
           'const barEl = document.getElementById("bar");',
           'const sizeEl = document.getElementById("size");',
-          'const downloadedEl = document.getElementById("downloaded");',
           'const speedEl = document.getElementById("speed");',
+          'const avgSpeedEl = document.getElementById("avgSpeed");',
+          'const connectionsEl = document.getElementById("connections");',
           'const remainingEl = document.getElementById("remaining");',
+          'const piecesInfoEl = document.getElementById("piecesInfo");',
+          'const piecesBarEl = document.getElementById("piecesBar");',
+          'const legendCompletedEl = document.getElementById("legendCompleted");',
+          'const legendPartialEl = document.getElementById("legendPartial");',
+          'const legendPendingEl = document.getElementById("legendPending");',
           'const pauseBtn = document.getElementById("pause");',
           'const resumeBtn = document.getElementById("resume");',
           'const cancelBtn = document.getElementById("cancel");',
+          'function switchTab(tab) {',
+          '  currentTab = tab;',
+          '  if (tabInfoBtn) tabInfoBtn.classList.toggle("active", tab === "info");',
+          '  if (tabConnectionsBtn) tabConnectionsBtn.classList.toggle("active", tab === "connections");',
+          '  if (tabPiecesBtn) tabPiecesBtn.classList.toggle("active", tab === "pieces");',
+          '  if (contentInfoEl) contentInfoEl.classList.toggle("active", tab === "info");',
+          '  if (contentConnectionsEl) contentConnectionsEl.classList.toggle("active", tab === "connections");',
+          '  if (contentPiecesEl) contentPiecesEl.classList.toggle("active", tab === "pieces");',
+          '}',
+          'if (tabInfoBtn) tabInfoBtn.onclick = () => switchTab("info");',
+          'if (tabConnectionsBtn) tabConnectionsBtn.onclick = () => switchTab("connections");',
+          'if (tabPiecesBtn) tabPiecesBtn.onclick = () => switchTab("pieces");',
           'try {',
           '  const remote = require("@electron/remote");',
           '  const currentWindow = remote.getCurrentWindow();',
@@ -687,6 +799,7 @@
           '  const controlsDivider = payload.controlsDivider || "#e4e7ed";',
           '  const controlsItemColor = payload.controlsItemColor || "#606266";',
           '  const controlsItemHoverBg = payload.controlsItemHoverBg || "#f2f6fc";',
+          '  const titleBtnHoverBg = payload.titleBtnHoverBg || "rgba(0,0,0,0.08)";',
           '  document.body.style.backgroundColor = bodyBg;',
           '  document.body.style.color = textColor;',
           '  const titleBarEl = document.querySelector(".title-bar");',
@@ -699,9 +812,6 @@
           '    titleBtnEls.forEach(el => {',
           '      el.style.color = textColor;',
           '    });',
-          '  }',
-          '  if (statusEl) {',
-          '    statusEl.style.color = statusColor;',
           '  }',
           '  const metaEl = document.querySelector(".meta");',
           '  if (metaEl) {',
@@ -733,7 +843,85 @@
           '  }',
           '  const styleEl = document.getElementById("dynamic-theme-style");',
           '  if (styleEl) {',
-          '    styleEl.textContent = ".controls-btn:hover:not(:disabled){background-color:" + controlsItemHoverBg + ";}";',
+          '    styleEl.textContent = ".title-btn:hover{background-color:" + titleBtnHoverBg + ";}.controls-btn:hover:not(:disabled){background-color:" + controlsItemHoverBg + ";}";',
+          '  }',
+          '  const connSummaryEl = document.querySelector(".conn-summary");',
+          '  if (connSummaryEl) {',
+          '    connSummaryEl.style.backgroundColor = barBg;',
+          '  }',
+          '  const connSummaryLabelEls = document.querySelectorAll(".conn-summary-label");',
+          '  if (connSummaryLabelEls && connSummaryLabelEls.length) {',
+          '    connSummaryLabelEls.forEach(el => {',
+          '      el.style.color = metaColor;',
+          '    });',
+          '  }',
+          '  const connSummaryValueEls = document.querySelectorAll(".conn-summary-value");',
+          '  if (connSummaryValueEls && connSummaryValueEls.length) {',
+          '    connSummaryValueEls.forEach(el => {',
+          '      el.style.color = textColor;',
+          '    });',
+          '  }',
+          '  const connTableThEls = document.querySelectorAll(".conn-table th");',
+          '  if (connTableThEls && connTableThEls.length) {',
+          '    const tabBg = payload.tabBg || "#f5f7fa";',
+          '    const tabBorder = payload.tabBorder || "#dcdfe6";',
+          '    connTableThEls.forEach(el => {',
+          '      el.style.backgroundColor = tabBg;',
+          '      el.style.borderColor = tabBorder;',
+          '      el.style.color = textColor;',
+          '    });',
+          '  }',
+          '  const connTableTdEls = document.querySelectorAll(".conn-table td");',
+          '  if (connTableTdEls && connTableTdEls.length) {',
+          '    const tabBorder = payload.tabBorder || "#dcdfe6";',
+          '    connTableTdEls.forEach(el => {',
+          '      el.style.borderColor = tabBorder;',
+          '      if (!el.classList.contains("speed-active")) {',
+          '        el.style.color = metaColor;',
+          '      }',
+          '    });',
+          '  }',
+          '  const connEmptyEl = document.querySelector(".conn-empty");',
+          '  if (connEmptyEl) {',
+          '    connEmptyEl.style.color = metaColor;',
+          '  }',
+          '  const tabNavEl = document.querySelector(".tab-nav");',
+          '  if (tabNavEl) {',
+          '    const tabBorder = payload.tabBorder || "#dcdfe6";',
+          '    tabNavEl.style.borderColor = tabBorder;',
+          '  }',
+          '  const tabBtnEls = document.querySelectorAll(".tab-btn");',
+          '  if (tabBtnEls && tabBtnEls.length) {',
+          '    const tabBg = payload.tabBg || "#f5f7fa";',
+          '    const tabColor = payload.tabColor || "#606266";',
+          '    const tabBorder = payload.tabBorder || "#dcdfe6";',
+          '    tabBtnEls.forEach(el => {',
+          '      if (!el.classList.contains("active")) {',
+          '        el.style.backgroundColor = tabBg;',
+          '        el.style.color = tabColor;',
+          '      }',
+          '      el.style.borderColor = tabBorder;',
+          '    });',
+          '  }',
+          '  const piecesInfoEl = document.querySelector(".pieces-info");',
+          '  if (piecesInfoEl) {',
+          '    piecesInfoEl.style.color = metaColor;',
+          '  }',
+          '  const piecesLegendEl = document.querySelector(".pieces-legend");',
+          '  if (piecesLegendEl) {',
+          '    piecesLegendEl.style.color = metaColor;',
+          '  }',
+          '  const piecePendingEls = document.querySelectorAll(".piece:not(.completed):not(.partial)");',
+          '  if (piecePendingEls && piecePendingEls.length) {',
+          '    const piecePending = payload.piecePending || "#dcdfe6";',
+          '    piecePendingEls.forEach(el => {',
+          '      el.style.backgroundColor = piecePending;',
+          '    });',
+          '  }',
+          '  const legendPendingEl = document.querySelector(".legend-pending");',
+          '  if (legendPendingEl) {',
+          '    const piecePending = payload.piecePending || "#dcdfe6";',
+          '    legendPendingEl.style.backgroundColor = piecePending;',
           '  }',
           '});',
           'ipcRenderer.on("task-progress-update", (event, payload) => {',
@@ -746,23 +934,114 @@
           '  if (windowTitleEl) {',
           '    windowTitleEl.innerText = title;',
           '  }',
-          '  if (statusEl) {',
-          '    statusEl.innerText = payload.statusText || "";',
+          '  if (tabInfoBtn) {',
+          '    tabInfoBtn.innerText = payload.tabInfoText || "Info";',
+          '  }',
+          '  if (tabConnectionsBtn) {',
+          '    tabConnectionsBtn.innerText = payload.tabConnectionsText || "Connections";',
           '  }',
           '  if (barEl) {',
           '    barEl.style.width = percentText;',
+          '    barEl.style.backgroundColor = payload.isPaused ? "#909399" : "#409EFF";',
           '  }',
           '  if (sizeEl) {',
           '    sizeEl.innerText = payload.sizeText || "";',
           '  }',
-          '  if (downloadedEl) {',
-          '    downloadedEl.innerText = payload.downloadedText || "";',
-          '  }',
           '  if (speedEl) {',
           '    speedEl.innerText = payload.speedText || "";',
           '  }',
+          '  if (avgSpeedEl) {',
+          '    avgSpeedEl.innerText = payload.avgSpeedText || "";',
+          '  }',
+          '  if (connectionsEl) {',
+          '    connectionsEl.innerText = payload.connectionsText || "";',
+          '  }',
           '  if (remainingEl) {',
           '    remainingEl.innerText = payload.remainingText || "";',
+          '  }',
+          '  if (payload.piecesData && payload.piecesData.numPieces > 0) {',
+          '    const pd = payload.piecesData;',
+          '    if (tabPiecesBtn) {',
+          '      tabPiecesBtn.style.display = "block";',
+          '      tabPiecesBtn.innerText = pd.tabText || "Pieces";',
+          '    }',
+          '    if (piecesInfoEl) {',
+          '      piecesInfoEl.innerText = pd.infoText || "";',
+          '    }',
+          '    if (piecesBarEl && pd.pieces) {',
+          '      piecesBarEl.innerHTML = pd.pieces.map(p => {',
+          '        const cls = p === 2 ? "completed" : (p === 1 ? "partial" : "");',
+          '        return "<div class=\\"piece " + cls + "\\"></div>";',
+          '      }).join("");',
+          '    }',
+          '    if (legendCompletedEl) {',
+          '      legendCompletedEl.innerText = pd.completedText || "";',
+          '    }',
+          '    if (legendPartialEl) {',
+          '      legendPartialEl.innerText = pd.partialText || "";',
+          '    }',
+          '    if (legendPendingEl) {',
+          '      legendPendingEl.innerText = pd.pendingText || "";',
+          '    }',
+          '  } else {',
+          '    if (tabPiecesBtn) {',
+          '      tabPiecesBtn.style.display = "none";',
+          '    }',
+          '    if (currentTab === "pieces") {',
+          '      switchTab("info");',
+          '    }',
+          '  }',
+          '  if (payload.connectionsData) {',
+          '    const cd = payload.connectionsData;',
+          '    if (connTotalLabelEl) connTotalLabelEl.innerText = cd.totalLabel || "";',
+          '    if (connTotalValueEl) connTotalValueEl.innerText = cd.totalValue || "0";',
+          '    if (connActiveLabelEl) connActiveLabelEl.innerText = cd.activeLabel || "";',
+          '    if (connActiveValueEl) connActiveValueEl.innerText = cd.activeValue || "0";',
+          '    if (connSpeedLabelEl) connSpeedLabelEl.innerText = cd.speedLabel || "";',
+          '    if (connSpeedValueEl) connSpeedValueEl.innerText = cd.speedValue || "0 B/s";',
+          '    if (connThHostEl) connThHostEl.innerText = cd.thHost || "";',
+          '    if (connThSpeedEl) connThSpeedEl.innerText = cd.thSpeed || "";',
+          '    if (connThStatusEl) connThStatusEl.innerText = cd.thStatus || "";',
+          '    const hasExistingRows = connTableBodyEl && connTableBodyEl.querySelectorAll("tr").length > 0;',
+          '    if (cd.servers && cd.servers.length > 0) {',
+          '      if (connTableWrapEl) connTableWrapEl.style.display = "block";',
+          '      if (connEmptyEl) connEmptyEl.style.display = "none";',
+          '      if (connTableBodyEl) {',
+          '        const rows = Array.from(connTableBodyEl.querySelectorAll("tr"));',
+          '        const newServers = cd.servers;',
+          '        const rowCount = rows.length;',
+          '        const serverCount = newServers.length;',
+          '        for (let i = 0; i < serverCount; i++) {',
+          '          const s = newServers[i];',
+          '          if (i < rowCount) {',
+          '            const row = rows[i];',
+          '            const hostCell = row.cells[0];',
+          '            const speedCell = row.cells[1];',
+          '            const statusCell = row.cells[2];',
+          '            if (hostCell && hostCell.innerText !== s.host) hostCell.innerText = s.host || "-";',
+          '            if (speedCell) {',
+          '              if (speedCell.innerText !== s.speed) speedCell.innerText = s.speed || "0 B/s";',
+          '              const newClass = s.isActive ? "speed-active" : "";',
+          '              if (speedCell.className !== newClass) speedCell.className = newClass;',
+          '            }',
+          '            if (statusCell && statusCell.innerText !== s.status) statusCell.innerText = s.status || "-";',
+          '          } else {',
+          '            const newRow = document.createElement("tr");',
+          '            newRow.innerHTML = "<td>" + (s.host || "-") + "</td><td class=\\"" + (s.isActive ? "speed-active" : "") + "\\">" + (s.speed || "0 B/s") + "</td><td>" + (s.status || "-") + "</td>";',
+          '            connTableBodyEl.appendChild(newRow);',
+          '          }',
+          '        }',
+          '        for (let i = rowCount - 1; i >= serverCount; i--) {',
+          '          rows[i].remove();',
+          '        }',
+          '      }',
+          '    } else if (!hasExistingRows) {',
+          '      if (connTableWrapEl) connTableWrapEl.style.display = "none";',
+          '      if (connEmptyEl) {',
+          '        connEmptyEl.style.display = "block";',
+          '        connEmptyEl.innerText = cd.emptyText || "";',
+          '      }',
+          '    }',
           '  }',
           '  if (pauseBtn) {',
           '    pauseBtn.title = payload.pauseText || "";',
@@ -787,34 +1066,36 @@
         return html
       },
       async refreshProgressTaskDirectly () {
-        if (!this.progressWindow || (this.progressWindow.isDestroyed && this.progressWindow.isDestroyed())) {
-          return
-        }
-        const gid = this.progressTaskGid
-        if (!gid) {
-          return
-        }
-        const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
-        try {
-          const task = await api.fetchTaskItem({ gid })
-          if (!task || !task.gid) {
-            this.closeProgressWindow()
+        // Refresh all progress windows
+        this.progressWindows.forEach(async (win, gid) => {
+          if (!win || (win.isDestroyed && win.isDestroyed())) {
+            this.progressWindows.delete(gid)
             return
           }
-          if (doneStatuses.includes(task.status)) {
-            this.closeProgressWindow()
-            return
+
+          const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
+          try {
+            const task = await api.fetchTaskItem({ gid })
+            if (!task || !task.gid) {
+              this.closeProgressWindowByGid(gid)
+              return
+            }
+            if (doneStatuses.includes(task.status)) {
+              this.closeProgressWindowByGid(gid)
+              return
+            }
+            this.updateProgressWindow(task)
+          } catch (e) {
+            this.closeProgressWindowByGid(gid)
           }
-          this.updateProgressWindow(task)
-        } catch (e) {
-          this.closeProgressWindow()
-        }
+        })
       },
       buildProgressPayload (task) {
         const t = task || {}
         const completed = Number(t.completedLength || 0)
         const total = Number(t.totalLength || 0)
         const speed = Number(t.downloadSpeed || 0)
+        const connections = Number(t.connections || 0)
         const percent = total > 0 ? Math.floor((completed * 100) / total) : 0
         const title = getTaskName(t, {
           defaultName: this.$t('task.get-task-name'),
@@ -824,6 +1105,78 @@
         const totalText = total > 0 ? bytesToSize(total, 2) : ''
         const sizeText = totalText ? `${completedText} / ${totalText}` : completedText
         const speedValue = speed > 0 ? `${bytesToSize(speed, 2)}/s` : `${bytesToSize(0, 2)}/s`
+
+        // 计算平均速度
+        const gid = t && t.gid ? `${t.gid}` : ''
+        const speedSamplesMap = this.$store.state.task.taskSpeedSamples || {}
+        const speedSamples = gid && Array.isArray(speedSamplesMap[gid]) ? speedSamplesMap[gid] : []
+        let avgSpeed = 0
+        if (speedSamples.length > 0) {
+          const normalized = speedSamples
+            .map(s => {
+              if (typeof s === 'number') {
+                const spd = Number(s)
+                if (!Number.isFinite(spd) || spd < 0) return null
+                return { bytes: spd, durationMs: 1000 }
+              }
+              if (!s || typeof s !== 'object') return null
+              const bytes = Number(s.bytes)
+              const durationMs = Number(s.durationMs)
+              if (!Number.isFinite(bytes) || bytes < 0) return null
+              if (!Number.isFinite(durationMs) || durationMs <= 0) return null
+              return { bytes, durationMs }
+            })
+            .filter(Boolean)
+          if (normalized.length > 0) {
+            const totalBytes = normalized.reduce((sum, it) => sum + it.bytes, 0)
+            const totalDurationMs = normalized.reduce((sum, it) => sum + it.durationMs, 0)
+            avgSpeed = totalDurationMs > 0 ? Math.round((totalBytes * 1000) / totalDurationMs) : 0
+          }
+        } else if (t.averageDownloadSpeed != null) {
+          const v = Number(t.averageDownloadSpeed)
+          avgSpeed = Number.isFinite(v) && v >= 0 ? v : 0
+        }
+        const avgSpeedValue = avgSpeed > 0 ? `${bytesToSize(avgSpeed, 2)}/s` : `${bytesToSize(0, 2)}/s`
+
+        // 解析分片进度
+        let piecesData = null
+        const bitfield = t.bitfield || ''
+        const numPieces = Number(t.numPieces || 0)
+        if (bitfield && numPieces > 0) {
+          const pieces = []
+          let completedCount = 0
+          let partialCount = 0
+          let pendingCount = 0
+          for (let i = 0; i < bitfield.length; i++) {
+            const hex = parseInt(bitfield[i], 16)
+            // hex 值 0-15 对应状态 0-3 (0=0%, 1-3=25%, 4-7=50%, 8-11=75%, 12-15=100%)
+            // 简化为: 0=pending, 1-14=partial, 15=completed
+            let status
+            if (hex === 0) {
+              status = 0 // pending
+              pendingCount++
+            } else if (hex === 15) {
+              status = 2 // completed (f = 15 = 100%)
+              completedCount++
+            } else {
+              status = 1 // partial
+              partialCount++
+            }
+            pieces.push(status)
+          }
+          const pieceSize = Number(t.pieceLength || 0)
+          const pieceSizeText = pieceSize > 0 ? bytesToSize(pieceSize, 2) : ''
+          piecesData = {
+            numPieces,
+            pieces,
+            tabText: this.$t('task.task-pieces-progress'),
+            infoText: `${this.$t('task.task-num-pieces')}: ${numPieces} ${this.$t('task.task-pieces-unit')}` + (pieceSizeText ? ` (${pieceSizeText}/${this.$t('task.task-piece-unit')})` : ''),
+            completedText: `${this.$t('task.piece-completed')} (${completedCount})`,
+            partialText: `${this.$t('task.piece-partial')} (${partialCount})`,
+            pendingText: `${this.$t('task.piece-pending')} (${pendingCount})`
+          }
+        }
+
         let remainingText = ''
         if (total > 0 && speed > 0 && completed < total) {
           const remainingSeconds = timeRemaining(total, completed, speed)
@@ -843,17 +1196,8 @@
           remainingText = `${this.$t('task.remaining-prefix')}: --`
         }
         const status = t.status
-        let statusText = ''
-        if (status === TASK_STATUS.ACTIVE) {
-          statusText = this.$t('task.active')
-        } else if (status === TASK_STATUS.WAITING) {
-          statusText = this.$t('task.waiting')
-        } else if (status === TASK_STATUS.PAUSED) {
-          statusText = this.$t('task.pause')
-        } else {
-          statusText = ''
-        }
         const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
+        const isPaused = status === TASK_STATUS.PAUSED || status === TASK_STATUS.WAITING
         const canPause = status === TASK_STATUS.ACTIVE && completed > 0
         const canResume = status === TASK_STATUS.WAITING || status === TASK_STATUS.PAUSED
         const canCancel = !doneStatuses.includes(status)
@@ -863,11 +1207,16 @@
           percent,
           percentText: `${percent}%`,
           nameText: title,
-          statusText,
+          isPaused,
+          tabInfoText: this.$t('task.task-progress-info'),
+          tabConnectionsText: this.$t('task.task-connections-detail'),
           sizeText: sizeText ? `${this.$t('task.task-file-size')}: ${sizeText}` : '',
-          downloadedText: `${this.$t('task.task-download-length')}: ${completedText}`,
           speedText: `${this.$t('task.task-download-speed')}: ${speedValue}`,
+          avgSpeedText: `${this.$t('task.task-average-speed')}: ${avgSpeedValue}`,
+          connectionsText: `${this.$t('task.task-connections')}: ${connections}`,
           remainingText,
+          piecesData,
+          connectionsData: null, // 将在 updateProgressWindow 中填充
           pauseText: this.$t('task.pause'),
           resumeText: this.$t('task.resume'),
           cancelText: this.$t('task.delete'),
@@ -879,6 +1228,57 @@
           showCancel: true
         }
       },
+      buildConnectionsData (servers = [], taskSpeed = 0) {
+        let totalConnections = 0
+        let activeConnections = 0
+        const serverList = []
+
+        if (Array.isArray(servers)) {
+          servers.forEach(file => {
+            const fileServers = file.servers || []
+            fileServers.forEach(server => {
+              totalConnections++
+              const speed = Number(server.downloadSpeed) || 0
+              const isActive = speed > 0
+              if (isActive) {
+                activeConnections++
+              }
+              // 提取主机名
+              let host = '-'
+              const uri = server.currentUri || server.uri || ''
+              if (uri) {
+                try {
+                  const url = new URL(uri)
+                  host = url.hostname
+                } catch (e) {
+                  const match = uri.match(/:\/\/([^/:]+)/)
+                  host = match ? match[1] : uri
+                }
+              }
+              serverList.push({
+                host,
+                speed: `${bytesToSize(speed, 2)}/s`,
+                isActive,
+                status: isActive ? this.$t('task.connection-status-active') : this.$t('task.connection-status-idle')
+              })
+            })
+          })
+        }
+
+        return {
+          totalLabel: this.$t('task.connections-total'),
+          totalValue: String(totalConnections),
+          activeLabel: this.$t('task.connections-active'),
+          activeValue: String(activeConnections),
+          speedLabel: this.$t('task.connections-total-speed'),
+          speedValue: `${bytesToSize(taskSpeed, 2)}/s`,
+          thHost: this.$t('task.connection-host'),
+          thSpeed: this.$t('task.connection-speed'),
+          thStatus: this.$t('task.connection-status'),
+          servers: serverList,
+          emptyText: this.$t('task.no-connections')
+        }
+      },
       openProgressWindowForTask (task) {
         if (!task) {
           return
@@ -887,7 +1287,16 @@
         if (!gid) {
           return
         }
-        this.progressTaskGid = gid
+
+        // 检查是否已经有窗口
+        const existingWindow = this.progressWindows.get(gid)
+        if (existingWindow && (typeof existingWindow.isDestroyed !== 'function' || !existingWindow.isDestroyed())) {
+          existingWindow.focus()
+          this.updateProgressWindow(task)
+          return
+        }
+
+        this.progressTaskGids.add(gid)
         const prefState = this.$store && this.$store.state && this.$store.state.preference
         const prefConfig = prefState && prefState.config ? prefState.config : {}
         const themeConfig = prefConfig.theme || APP_THEME.LIGHT
@@ -899,11 +1308,10 @@
         const isWin = process && process.platform === 'win32'
         const isLinux = process && process.platform === 'linux'
         const useCustomFrame = hideAppMenu && (isWin || isLinux)
-        const winExisting = this.progressWindow
-        if (winExisting && (typeof winExisting.isDestroyed !== 'function' || !winExisting.isDestroyed())) {
-          winExisting.focus()
-          this.updateProgressWindow(task)
-          return
+
+        // 移除已有的窗口引用
+        if (existingWindow) {
+          this.progressWindows.delete(gid)
         }
         const { BrowserWindow } = require('@electron/remote')
         let icon = null
@@ -918,10 +1326,18 @@
             }
           }
         } catch (e) {}
+
+        // 读取保存的窗口大小，如果没有就使用默认值
+        const savedProgressWindowSize = prefConfig.progressWindowSize || { width: 360, height: 240 }
+        const defaultWidth = Math.max(savedProgressWindowSize.width || 360, 360)
+        const defaultHeight = Math.max(savedProgressWindowSize.height || 240, 220)
+
         const win = new BrowserWindow({
-          width: 500,
-          height: 210,
-          resizable: false,
+          width: defaultWidth,
+          height: defaultHeight,
+          resizable: true,
+          minWidth: 360,
+          minHeight: 220,
           minimizable: true,
           maximizable: false,
           useContentSize: true,
@@ -934,10 +1350,23 @@
             nodeIntegration: true
           }
         })
-        this.progressWindow = win
+        this.progressWindows.set(gid, win)
+
+        // 监听窗口大小改变并保存
+        win.on('resized', () => {
+          try {
+            const [width, height] = win.getSize()
+            this.$store.dispatch('preference/save', {
+              progressWindowSize: { width, height }
+            })
+          } catch (e) {
+            console.warn('Failed to save progress window size:', e.message)
+          }
+        })
+
         win.on('closed', () => {
-          this.progressWindow = null
-          this.progressTaskGid = ''
+          this.progressWindows.delete(gid)
+          this.progressTaskGids.delete(gid)
         })
         const html = this.buildProgressWindowHtml(useCustomFrame)
         win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
@@ -959,29 +1388,62 @@
           this.updateProgressWindow(task)
         })
       },
-      updateProgressWindow (task) {
-        if (!this.progressWindow || (this.progressWindow.isDestroyed && this.progressWindow.isDestroyed())) {
+      async updateProgressWindow (task) {
+        if (!task || !task.gid) {
+          return
+        }
+        const gid = task.gid
+        const win = this.progressWindows.get(gid)
+        if (!win || (win.isDestroyed && win.isDestroyed())) {
           return
         }
         const payload = this.buildProgressPayload(task)
+        const taskSpeed = Number(task.downloadSpeed) || 0
+
+        // 只在任务活跃或等待状态时获取连接数，暂停时不显示
+        if (task.status === TASK_STATUS.ACTIVE || task.status === TASK_STATUS.WAITING) {
+          try {
+            const servers = await api.fetchTaskServers({ gid })
+            payload.connectionsData = this.buildConnectionsData(servers, taskSpeed)
+          } catch (e) {
+            payload.connectionsData = this.buildConnectionsData([], taskSpeed)
+          }
+        } else {
+          // 暂停、停止等状态时连接数为空
+          payload.connectionsData = this.buildConnectionsData([], taskSpeed)
+        }
+
         const windowTitle = this.$t('task.task-info-dialog-title', {
           title: payload.title
         })
-        this.progressWindow.setTitle(windowTitle)
+        win.setTitle(windowTitle)
         try {
-          this.progressWindow.webContents.send('task-progress-update', payload)
+          win.webContents.send('task-progress-update', payload)
         } catch (e) {}
       },
       closeProgressWindow () {
-        if (!this.progressWindow) {
-          this.progressTaskGid = ''
-          return
+        // Close all progress windows
+        this.progressWindows.forEach((win, gid) => {
+          try {
+            if (win && (!win.isDestroyed || !win.isDestroyed())) {
+              win.close()
+            }
+          } catch (e) {}
+        })
+        this.progressWindows.clear()
+        this.progressTaskGids.clear()
+      },
+      closeProgressWindowByGid (gid) {
+        const win = this.progressWindows.get(gid)
+        if (win) {
+          try {
+            if (!win.isDestroyed || !win.isDestroyed()) {
+              win.close()
+            }
+          } catch (e) {}
+          this.progressWindows.delete(gid)
         }
-        try {
-          this.progressWindow.close()
-        } catch (e) {}
-        this.progressWindow = null
-        this.progressTaskGid = ''
+        this.progressTaskGids.delete(gid)
       },
       handleTaskListChange (list) {
         const prev = this.lastTaskStatuses || {}
@@ -1010,31 +1472,49 @@
           const prefState = this.$store && this.$store.state && this.$store.state.preference
           const prefConfig = prefState && prefState.config ? prefState.config : {}
           const autoOpenTaskProgressWindow = prefConfig.autoOpenTaskProgressWindow !== false
+          const taskProgressWindowMode = prefConfig.taskProgressWindowMode || 'first'
           if (autoOpenTaskProgressWindow) {
-            this.openProgressWindowForTask(candidate)
+            if (taskProgressWindowMode === 'all') {
+              // 为所有新的活跃任务打开窗口
+              list.forEach(task => {
+                const gid = task && task.gid ? `${task.gid}` : ''
+                if (!gid) return
+                const prevStatus = prev[gid]
+                const currentStatus = task.status
+                if (currentStatus === TASK_STATUS.ACTIVE && prevStatus !== TASK_STATUS.ACTIVE) {
+                  this.openProgressWindowForTask(task)
+                }
+              })
+            } else {
+              // 只为第一个任务打开窗口
+              this.openProgressWindowForTask(candidate)
+            }
           }
         }
-        if (this.progressWindow && this.progressTaskGid) {
-          const gid = this.progressTaskGid
+
+        // Update existing progress windows
+        const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
+        const taskState = this.$store && this.$store.state && this.$store.state.task
+        const currentListType = taskState && taskState.currentList ? taskState.currentList : 'all'
+        const closeWhenMissingLists = ['all']
+
+        this.progressWindows.forEach((win, gid) => {
           const current = list.find(item => item && `${item.gid}` === gid)
-          const doneStatuses = [TASK_STATUS.COMPLETE, TASK_STATUS.ERROR, TASK_STATUS.REMOVED]
-          const taskState = this.$store && this.$store.state && this.$store.state.task
-          const currentListType = taskState && taskState.currentList ? taskState.currentList : 'all'
-          const closeWhenMissingLists = ['all']
           if (!current) {
             if (closeWhenMissingLists.includes(currentListType)) {
-              this.closeProgressWindow()
+              this.closeProgressWindowByGid(gid)
             } else {
+              // Keep window open but refresh data
               this.refreshProgressTaskDirectly()
             }
             return
           }
           if (doneStatuses.includes(current.status)) {
-            this.closeProgressWindow()
+            this.closeProgressWindowByGid(gid)
           } else {
             this.updateProgressWindow(current)
           }
-        }
+        })
       }
     },
     mounted () {
@@ -1082,7 +1562,7 @@
     left: 50%;
     bottom: 24px;
     transform: translateX(87px);
-    z-index: 20;
+    z-index: 25;
     height: 40px;
     width: 40px;
     padding: 0;
@@ -1093,9 +1573,9 @@
     border: 1px solid $--speedometer-border-color;
     background-color: $--floating-bar-background;
     opacity: 0.5;
-    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-      border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.15s ease-out,
+      border-color 0.15s ease-out,
+      transform 0.15s ease-out;
     cursor: pointer;
     user-select: none;
     outline: none;
@@ -1127,12 +1607,16 @@
 
     &.is-search-open {
       transform: translateX(121px);
-      transition-delay: 0.1s;
+      transition-delay: 0s;
     }
 
     &.is-search-expanded {
       transform: translateX(277px);
       transition-delay: 0s;
+    }
+
+    &:not(.is-search-open):not(.is-search-expanded) {
+      transition-delay: 0.1s;
     }
   }
 

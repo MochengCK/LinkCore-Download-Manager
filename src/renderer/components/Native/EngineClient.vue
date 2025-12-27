@@ -33,7 +33,8 @@
         dataAccessZeroMap: {},
         dataAccessLastCompletedMap: {},
         pollingCount: 0,
-        taskSpeedSampleBaseMap: {}
+        taskSpeedSampleBaseMap: {},
+        downloadStartNotifiedGids: new Set()
       }
     },
     computed: {
@@ -120,6 +121,12 @@
         if (seedingList.includes(gid)) {
           return
         }
+
+        // 检查是否已经显示过这个任务的开始下载通知，防止重复显示
+        if (this.downloadStartNotifiedGids.has(gid)) {
+          return
+        }
+        this.downloadStartNotifiedGids.add(gid)
 
         this.fetchTaskItem({ gid })
           .then(async (task) => {
