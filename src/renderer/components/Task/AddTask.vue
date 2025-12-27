@@ -1337,10 +1337,12 @@
           }
         } catch (err) {
           if (err.message === 'BILIBILI_COLLECTION') {
+            // 保存集合数据供选择视频使用
+            this.videoCollection = err.collection
             if (this.videoCollection && Array.isArray(this.videoCollection.videos)) {
+              // 如果没有手动选择，则自动选择所有视频
               if (this.selectedVideos.length === 0) {
-                this.$msg.warning(this.$t('task.please-select-videos'))
-                return
+                this.selectedVideos = this.videoCollection.videos.map(v => v.index)
               }
               const selectedVideoData = this.videoCollection.videos.filter(v => this.selectedVideos.includes(v.index))
               if (selectedVideoData.length === 0) {

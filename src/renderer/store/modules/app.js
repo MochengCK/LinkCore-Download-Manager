@@ -190,8 +190,7 @@ const actions = {
           const interval = BASE_INTERVAL - PER_INTERVAL * numActive
           dispatch('updateInterval', interval)
         } else {
-          // fix downloadSpeed when numActive = 0
-          stat.downloadSpeed = 0
+          // 只在彻底没有任务时才重置速度，不要在轮询时频繁设置为0
           dispatch('increaseInterval')
         }
         commit('UPDATE_GLOBAL_STAT', stat)

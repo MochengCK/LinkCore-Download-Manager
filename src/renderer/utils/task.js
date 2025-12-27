@@ -454,7 +454,8 @@ export const buildUriPayload = async (form, autoCategorize = false, categories =
     if (isBilibiliCandidateUrl(u)) {
       const parsed = await resolveBilibiliResources(u, {
         qn: form && (form.videoQn !== undefined ? form.videoQn : form.qn),
-        cookie: form && form.cookie ? `${form.cookie}` : ''
+        cookie: form && form.cookie ? `${form.cookie}` : '',
+        forceSingle: true
       })
 
       if (parsed.type === 'collection') {
