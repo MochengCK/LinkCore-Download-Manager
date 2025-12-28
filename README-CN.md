@@ -2,7 +2,6 @@
 <div align="center">
   <table width="100%">
     <tr>
-      <td align="left">本项目由 Mo"moXC 个人维护，隶属于 HuanXinStudio</td>
       <td align="right"><a href="./README.md">English</a></td>
     </tr>
   </table>
