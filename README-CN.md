@@ -249,7 +249,9 @@ LinkCore-Download-Manager/
 
 ## 🙏 致谢
 
-- **原始项目**：[Motrix](https://github.com/agalwood/Motrix) by Dr_rOot
+- **本项目基于agalwood开源项目
+[Motrix](https://github.com/agalwood/Motrix) 开发，
+并在其基础上进行了大量修改和功能扩展。**
 - **UI框架**：[Vue.js](https://vuejs.org/)
 - **桌面框架**：[Electron](https://www.electronjs.org/)
 
