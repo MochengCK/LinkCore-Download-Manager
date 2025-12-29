@@ -507,9 +507,60 @@
           </el-form-item>
         </div>
 
+        <!-- 安全卡片 -->
+        <div class="preference-card">
+          <h3 class="card-title">{{ $t('preferences.security') }}</h3>
+          <div class="card-content">
+          <el-form-item size="mini">
+            <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.enableSecurityScan" @change="autoSaveForm">
+                {{ $t('preferences.enable-security-scan') }}
+              </el-checkbox>
+              <div class="el-form-item__info" style="margin-top: 8px;">
+                {{ $t('preferences.security-scan-tips') }}
+              </div>
+            </el-col>
+            <el-col class="form-item-sub" :span="24" v-if="form.enableSecurityScan">
+              <el-form-item :label="$t('preferences.security-scan-tool')">
+                <el-select
+                  v-model="form.securityScanTool"
+                  size="mini"
+                  @change="autoSaveForm"
+                >
+                  <el-option
+                    :label="$t('preferences.security-scan-tool-system')"
+                    value="system"
+                  />
+                  <el-option
+                    :label="$t('preferences.security-scan-tool-custom')"
+                    value="custom"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col class="form-item-sub" :span="24" v-if="form.enableSecurityScan && form.securityScanTool === 'custom'">
+              <el-form-item :label="$t('preferences.custom-security-scan-path')">
+                <el-input
+                  v-model="form.customSecurityScanPath"
+                  @change="autoSaveForm"
+                  :placeholder="$t('preferences.custom-security-scan-path-tips')">
+                  <mo-select-directory
+                    v-if="isRenderer"
+                    slot="append"
+                    type="file"
+                    @selected="handleSecurityScanPathSelected"
+                  />
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-form-item>
+          </div>
+        </div>
+
         <!-- 剪贴板卡片 -->
         <div class="preference-card">
           <h3 class="card-title">{{ $t('preferences.clipboard-settings') }}</h3>
+          <div class="card-content">
           <el-form-item size="mini">
             <el-col class="form-item-sub" :span="24">
               <el-checkbox v-model="form.clipboardAutoPaste" @change="autoSaveForm">
@@ -520,6 +571,7 @@
               </div>
             </el-col>
           </el-form-item>
+          </div>
         </div>
       </el-form>
 
@@ -705,7 +757,10 @@
       autoOpenTaskProgressWindow,
       taskProgressWindowMode,
       clipboardAutoPaste,
-      floatingBarDisplayMode
+      floatingBarDisplayMode,
+      enableSecurityScan,
+      securityScanTool,
+      customSecurityScanPath
     } = config
 
     let normalizedEngineMax = engineMaxConnectionPerServer
@@ -779,7 +834,10 @@
       autoOpenTaskProgressWindow: autoOpenTaskProgressWindow === undefined ? true : !!autoOpenTaskProgressWindow,
       taskProgressWindowMode: taskProgressWindowMode || 'first',
       clipboardAutoPaste: clipboardAutoPaste === undefined ? true : !!clipboardAutoPaste,
-      floatingBarDisplayMode: floatingBarDisplayMode || 'hover'
+      floatingBarDisplayMode: floatingBarDisplayMode || 'hover',
+      enableSecurityScan: enableSecurityScan || false,
+      securityScanTool: securityScanTool || 'system',
+      customSecurityScanPath: customSecurityScanPath || ''
     }
     return result
   }
@@ -1327,6 +1385,10 @@
       handleNativeDirectorySelected (dir) {
         this.form.dir = dir
         this.$store.dispatch('preference/recordHistoryDirectory', dir)
+        this.autoSaveForm()
+      },
+      handleSecurityScanPathSelected (path) {
+        this.form.customSecurityScanPath = path
         this.autoSaveForm()
       },
       copyChannelUrl () {

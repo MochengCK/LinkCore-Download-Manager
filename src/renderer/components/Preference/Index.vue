@@ -247,6 +247,10 @@
     border-bottom: 1px solid $--border-color-light;
   }
 
+  .card-content {
+    padding-top: 0;
+  }
+
   .el-switch__label {
     font-weight: normal;
     color: $--color-text-regular;

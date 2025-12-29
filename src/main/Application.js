@@ -1506,6 +1506,137 @@ export default class Application extends EventEmitter {
     return completed >= total
   }
 
+  performSecurityScan (task, filePath) {
+    const window = this.windowManager && this.windowManager.getWindow('index')
+    const sendStatus = (status, extra = {}) => {
+      try {
+        if (!window || !window.webContents || !task || !task.gid || !filePath) {
+          return
+        }
+        window.webContents.send('security-scan-status', {
+          gid: task.gid,
+          filePath,
+          status,
+          ...extra
+        })
+      } catch (e) {
+        logger.warn('[Motrix] send security-scan-status failed:', e.message)
+      }
+    }
+
+    try {
+      const enableSecurityScan = this.configManager.getUserConfig('enable-security-scan')
+      if (!enableSecurityScan) {
+        sendStatus('skipped')
+        return
+      }
+
+      const securityScanTool = this.configManager.getUserConfig('security-scan-tool') || 'system'
+      const customSecurityScanPath = this.configManager.getUserConfig('custom-security-scan-path')
+
+      const fs = require('fs')
+
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        logger.warn('[Motrix] Security scan: file not found:', filePath)
+        sendStatus('failed', { reason: 'file-not-found' })
+        return
+      }
+
+      let scanCommand = ''
+      let scanArgs = []
+
+      if (securityScanTool === 'custom') {
+        // 使用自定义杀毒软件
+        if (!customSecurityScanPath || !fs.existsSync(customSecurityScanPath)) {
+          logger.warn('[Motrix] Security scan: custom antivirus not found:', customSecurityScanPath)
+          sendStatus('failed', { reason: 'custom-tool-not-found' })
+          return
+        }
+        scanCommand = customSecurityScanPath
+        scanArgs = [filePath]
+      } else {
+        // 使用系统默认杀毒软件
+        if (is.windows()) {
+          // Windows Defender
+          scanCommand = 'powershell.exe'
+          scanArgs = [
+            '-Command',
+            `Start-MpScan -ScanType CustomScan -ScanPath "${filePath}"`
+          ]
+        } else if (is.macOS()) {
+          // macOS 没有内置命令行杀毒工具，使用 xattr 检查隔离属性
+          // 如果文件被系统标记为危险，会有 com.apple.quarantine 属性
+          scanCommand = 'xattr'
+          scanArgs = ['-l', filePath]
+        } else if (is.linux()) {
+          // Linux 尝试使用 ClamAV
+          // 先检查 clamscan 是否存在
+          const { execSync } = require('child_process')
+          try {
+            execSync('which clamscan', { stdio: 'ignore' })
+            scanCommand = 'clamscan'
+            scanArgs = ['--no-summary', filePath]
+          } catch (e) {
+            logger.warn('[Motrix] Security scan: clamscan not found on Linux, skipping scan')
+            sendStatus('skipped', { reason: 'clamscan-not-installed' })
+            return
+          }
+        } else {
+          logger.warn('[Motrix] Security scan: unsupported platform')
+          sendStatus('skipped', { reason: 'unsupported-platform' })
+          return
+        }
+      }
+
+      logger.info('[Motrix] Starting security scan:', filePath)
+      sendStatus('running')
+
+      const scanProcess = spawn(scanCommand, scanArgs, {
+        detached: false,
+        stdio: ['ignore', 'pipe', 'pipe']
+      })
+
+      let stderr = ''
+
+      if (scanProcess.stderr) {
+        scanProcess.stderr.on('data', (data) => {
+          stderr += data.toString()
+        })
+      }
+
+      scanProcess.on('error', (error) => {
+        logger.warn('[Motrix] Security scan error:', error.message)
+        sendStatus('failed', { reason: 'process-error', error: error.message })
+      })
+
+      scanProcess.on('exit', (code) => {
+        if (code === 0) {
+          logger.info('[Motrix] Security scan completed successfully:', filePath)
+          sendStatus('success')
+        } else {
+          logger.warn('[Motrix] Security scan exited with code:', code)
+          if (stderr) {
+            logger.warn('[Motrix] Security scan stderr:', stderr)
+          }
+          // 在 macOS 上，xattr 返回非 0 表示文件可能有问题
+          // 在 Windows 上，非 0 通常表示发现威胁或错误
+          // 在 Linux 上，clamscan 返回 1 表示发现病毒，2 表示错误
+          if (is.linux() && code === 1) {
+            sendStatus('failed', { reason: 'virus-detected', code })
+          } else if (code !== 0) {
+            sendStatus('failed', { reason: 'scan-error', code })
+          } else {
+            sendStatus('success')
+          }
+        }
+      })
+    } catch (error) {
+      logger.error('[Motrix] Security scan failed:', error.message)
+      sendStatus('failed', { reason: 'exception', error: error.message })
+    }
+  }
+
   scheduleCheckTaskPlan (delay = 800) {
     const action = this.getTaskPlanAction()
     if (action === 'none') {
@@ -2134,6 +2265,9 @@ export default class Application extends EventEmitter {
       if (this.priorityManager) {
         this.priorityManager.onTaskComplete(task.gid)
       }
+
+      // 执行安全扫描
+      this.performSecurityScan(task, path)
 
       if (is.linux()) {
         return

@@ -61,7 +61,11 @@ const userKeys = [
   'task-plan-gids',
   'task-plan-only-when-idle',
   'clipboard-auto-paste',
-  'floating-bar-display-mode'
+  'floating-bar-display-mode',
+  'preference-cards-collapsed',
+  'enable-security-scan',
+  'security-scan-tool',
+  'custom-security-scan-path'
 ]
 
 const systemKeys = [

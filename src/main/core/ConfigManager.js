@@ -156,7 +156,10 @@ export default class ConfigManager {
         'extension-shift-toggle-enabled': false,
         'task-plan-type': 'complete',
         'task-plan-time': '',
-        'task-plan-action': 'none'
+        'task-plan-action': 'none',
+        'enable-security-scan': false,
+        'security-scan-tool': 'system',
+        'custom-security-scan-path': ''
       }
       /* eslint-enable quote-props */
     })

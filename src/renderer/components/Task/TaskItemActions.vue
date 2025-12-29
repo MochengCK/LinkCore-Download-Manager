@@ -16,6 +16,12 @@
             ref="verifyTrigger"
             @click.stop="onVerifyDefaultClick"
           >
+            <span
+              v-if="securityScanStatusText"
+              class="task-security-scan-label"
+            >
+              {{ securityScanStatusText }}
+            </span>
             <mo-icon name="verify-file" width="14" height="14" />
           </span>
           <transition name="verify-panel">
@@ -90,6 +96,12 @@
             ref="verifyTrigger"
             @click.stop="onVerifyDefaultClick"
           >
+            <span
+              v-if="securityScanStatusText"
+              class="task-security-scan-label"
+            >
+              {{ securityScanStatusText }}
+            </span>
             <mo-icon name="verify-file" width="14" height="14" />
           </span>
           <transition name="verify-panel">
@@ -181,6 +193,9 @@
         noConfirmBeforeDelete: state => state.config.noConfirmBeforeDeleteTask,
         preferenceConfig: state => state.config
       }),
+      ...mapState('task', {
+        securityScanStatuses: state => state.taskSecurityScanStatuses || {}
+      }),
       verifyPanelVisible () {
         return this.verifyPanelVisibleInternal
       },
@@ -262,6 +277,28 @@
       primaryActions () {
         const { taskActions, showVerifyBar } = this
         return taskActions.filter(action => action !== 'VERIFY' || !showVerifyBar)
+      },
+      securityScanStatus () {
+        const { securityScanStatuses, task } = this
+        if (!securityScanStatuses || !task || !task.gid) {
+          return null
+        }
+        return securityScanStatuses[task.gid] || null
+      },
+      securityScanStatusText () {
+        const status = this.securityScanStatus && this.securityScanStatus.status
+        switch (status) {
+        case 'running':
+          return this.$t('task.security-scan-running')
+        case 'success':
+          return this.$t('task.security-scan-success')
+        case 'failed':
+          return this.$t('task.security-scan-failed')
+        case 'skipped':
+          return this.$t('task.security-scan-skipped')
+        default:
+          return ''
+        }
       }
     },
     methods: {
