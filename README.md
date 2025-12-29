@@ -252,9 +252,12 @@ Contributions are welcome! Whether you're fixing bugs, adding new features, or i
 
 ## 🙏 Credits
 
-- **Original Project**: [Motrix](https://github.com/agalwood/Motrix) by Dr_rOot
-- **UI Framework**: [Vue.js](https://vuejs.org/)
-- **Desktop Framework**: [Electron](https://www.electronjs.org/)
+This project is based on the open-source project
+[Motrix](https://github.com/agalwood/Motrix) by agalwood,
+and has been significantly modified and extended.
+
+UI Framework: Vue.js  
+Desktop Framework: Electron
 
 ## 📞 Support
 
