@@ -180,11 +180,11 @@
       },
       sortOptions () {
         return [
-          { label: '完成时间', value: 'completedTime' },
-          { label: '剩余时间', value: 'remainingTime' },
-          { label: '速度', value: 'speed' },
-          { label: '大小', value: 'size' },
-          { label: '名称', value: 'name' }
+          { label: this.$t('task.sort-by-completed-time'), value: 'completedTime' },
+          { label: this.$t('task.sort-by-remaining-time'), value: 'remainingTime' },
+          { label: this.$t('task.sort-by-speed'), value: 'speed' },
+          { label: this.$t('task.sort-by-size'), value: 'size' },
+          { label: this.$t('task.sort-by-name'), value: 'name' }
         ]
       },
       floatingBarDisplayMode () {
