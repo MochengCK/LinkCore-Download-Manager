@@ -257,6 +257,7 @@ Contributions are welcome! Whether you're fixing bugs, adding new features, or i
 and has been significantly modified and extended.
 - UI Framework: [Vue.js](https://vuejs.org/)
 - Desktop Framework: [Electron](https://www.electronjs.org/)
+- Video Processing: [FFmpeg](https://ffmpeg.org/)
 
 ## 📞 Support
 

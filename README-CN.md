@@ -254,6 +254,7 @@ LinkCore-Download-Manager/
 并在其基础上进行了大量修改和功能扩展。
 - UI框架：[Vue.js](https://vuejs.org/)
 - 桌面框架：[Electron](https://www.electronjs.org/)
+- 视频处理：[FFmpeg](https://ffmpeg.org/)
 
 ## 📞 支持
 
