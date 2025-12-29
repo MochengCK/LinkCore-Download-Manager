@@ -141,11 +141,13 @@ let rendererConfig = {
       filename: 'index.html',
       chunks: ['index'],
       template: path.resolve(__dirname, '../src/index.ejs'),
-      // minify: {
-      //   collapseWhitespace: true,
-      //   removeAttributeQuotes: true,
-      //   removeComments: true
-      // },
+      minify: devMode ? false : {
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+        removeComments: true,
+        minifyCSS: true,
+        minifyJS: true
+      },
       isBrowser: false,
       isDev: process.env.NODE_ENV !== 'production',
       nodeModules: devMode
@@ -180,9 +182,35 @@ let rendererConfig = {
     minimizer: [
       new TerserPlugin({
         extractComments: false,
+        terserOptions: {
+          compress: {
+            drop_console: !devMode,
+            drop_debugger: !devMode,
+            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug'] : []
+          },
+          mangle: !devMode,
+          output: {
+            comments: false
+          }
+        }
       }),
       new CssMinimizerPlugin(),
     ],
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          priority: 10
+        },
+        elementUI: {
+          test: /[\\/]node_modules[\\/]element-ui[\\/]/,
+          name: 'element-ui',
+          priority: 20
+        }
+      }
+    }
   },
 }
 

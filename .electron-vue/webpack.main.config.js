@@ -58,6 +58,17 @@ let mainConfig = {
     minimizer: [
       new TerserPlugin({
         extractComments: false,
+        terserOptions: {
+          compress: {
+            drop_console: !devMode,
+            drop_debugger: !devMode,
+            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug'] : []
+          },
+          mangle: !devMode,
+          output: {
+            comments: false
+          }
+        }
       })
     ],
   },
