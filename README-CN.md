@@ -255,6 +255,7 @@ LinkCore-Download-Manager/
 - UI框架：[Vue.js](https://vuejs.org/)
 - 桌面框架：[Electron](https://www.electronjs.org/)
 - 视频处理：[FFmpeg](https://ffmpeg.org/)
+- 下载引擎：[aria2](https://aria2.github.io/)
 
 ## 📞 支持
 

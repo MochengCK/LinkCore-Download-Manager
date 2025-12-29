@@ -258,6 +258,7 @@ and has been significantly modified and extended.
 - UI Framework: [Vue.js](https://vuejs.org/)
 - Desktop Framework: [Electron](https://www.electronjs.org/)
 - Video Processing: [FFmpeg](https://ffmpeg.org/)
+- Download Engine: [aria2](https://aria2.github.io/)
 
 ## 📞 Support
 
