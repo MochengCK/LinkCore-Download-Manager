@@ -20,9 +20,12 @@ class PriorityManager extends EventEmitter {
     this.maxConnectionsPerTask = 16
     this.minConnectionsPerTask = 4
 
-    // 调度定时器
-    this.scheduleInterval = null
+    // 是否启用优先级引擎
+    this.enabled = false
     this.initialized = false
+
+    // 记录上次任务列表，用于检测变化
+    this.lastTaskGids = new Set()
   }
 
   init (options = {}) {
@@ -30,15 +33,15 @@ class PriorityManager extends EventEmitter {
 
     this.engine = options.engine
     this.loadConfig()
-    this.startScheduler()
     this.initialized = true
-    logger.info('[PriorityManager] Initialized')
+    logger.info('[PriorityManager] Initialized, enabled:', this.enabled)
   }
 
   loadConfig () {
     if (!this.configManager) return
 
     try {
+      this.enabled = this.configManager.getUserConfig('enablePriorityEngine') || false
       this.maxConcurrentDownloads = this.configManager.getSystemConfig('max-concurrent-downloads') || 5
       this.maxConnectionsPerTask = this.configManager.getSystemConfig('max-connection-per-server') || 16
       // 最小连接数自动根据每个服务器最大连接数计算，取其 1/4，最小为 1，最大为 4
@@ -49,15 +52,25 @@ class PriorityManager extends EventEmitter {
     }
   }
 
-  startScheduler () {
-    if (this.scheduleInterval) return
+  /**
+   * 开启优先级引擎
+   */
+  enable () {
+    if (this.enabled) return
+    this.enabled = true
+    logger.info('[PriorityManager] Enabled')
+    // 立即执行一次资源分配
+    this.rebalanceResources()
+  }
 
-    // 每 2 秒检查一次资源分配
-    this.scheduleInterval = setInterval(() => {
-      if (this.engine) {
-        this.rebalanceResources()
-      }
-    }, 2000)
+  /**
+   * 关闭优先级引擎
+   */
+  disable () {
+    if (!this.enabled) return
+    this.enabled = false
+    this.lastTaskGids.clear()
+    logger.info('[PriorityManager] Disabled')
   }
 
   /**
@@ -123,12 +136,24 @@ class PriorityManager extends EventEmitter {
    * 重新平衡资源分配
    */
   async rebalanceResources () {
-    if (!this.engine) return
+    if (!this.engine || !this.enabled) return
 
     try {
       this.loadConfig()
 
       const activeTasks = await this.engine.call('tellActive')
+
+      // 检查任务列表是否变化
+      const currentGids = new Set((activeTasks || []).map(t => t.gid))
+      const hasChange = currentGids.size !== this.lastTaskGids.size ||
+                        [...currentGids].some(gid => !this.lastTaskGids.has(gid))
+
+      // 只有当任务列表发生变化时才重新分配
+      if (!hasChange && this.lastTaskGids.size > 0) {
+        return
+      }
+
+      this.lastTaskGids = currentGids
 
       const allActive = (activeTasks || []).map(task => ({
         ...task,
@@ -202,6 +227,18 @@ class PriorityManager extends EventEmitter {
   }
 
   async applyTaskAllocation (task, connections) {
+    // 检查当前连接数，如果已经是目标值则跳过
+    try {
+      const currentMaxConn = Number(task.maxConnection) || 0
+
+      // 如果当前连接数已经是目标值，跳过调整
+      if (currentMaxConn === connections) {
+        return
+      }
+    } catch (err) {
+      // 如果无法获取当前值，继续执行调整
+    }
+
     const options = {
       'max-connection-per-server': String(connections),
       split: String(connections)
@@ -214,6 +251,12 @@ class PriorityManager extends EventEmitter {
   }
 
   onTaskComplete () {
+    if (!this.enabled) return
+    this.rebalanceResources()
+  }
+
+  onTaskStart () {
+    if (!this.enabled) return
     this.rebalanceResources()
   }
 
@@ -227,15 +270,15 @@ class PriorityManager extends EventEmitter {
 
   updateConfig () {
     this.loadConfig()
-    logger.info('[PriorityManager] Config updated')
-    this.rebalanceResources()
+    logger.info('[PriorityManager] Config updated, enabled:', this.enabled)
+    if (this.enabled) {
+      this.rebalanceResources()
+    }
   }
 
   stop () {
-    if (this.scheduleInterval) {
-      clearInterval(this.scheduleInterval)
-      this.scheduleInterval = null
-    }
+    this.enabled = false
+    this.lastTaskGids.clear()
     logger.info('[PriorityManager] Stopped')
   }
 }

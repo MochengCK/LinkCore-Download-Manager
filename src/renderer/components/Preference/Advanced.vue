@@ -477,6 +477,11 @@
           <h3 class="card-title">{{ $t('preferences.priority-engine') }}</h3>
           <el-form-item size="mini">
             <el-col class="form-item-sub" :span="24">
+              <el-checkbox v-model="form.enablePriorityEngine" @change="handlePriorityEngineChange">
+                {{ $t('preferences.enable-priority-engine') }}
+              </el-checkbox>
+            </el-col>
+            <el-col class="form-item-sub" :span="24">
               <div class="el-form-item__info" style="margin-bottom: 12px;">
                 {{ $t('preferences.priority-engine-tips') }}
               </div>
@@ -737,6 +742,7 @@
       autoSyncTrackerTime,
       btTracker,
       dhtListenPort,
+      enablePriorityEngine,
       enableUpnp,
       hideAppMenu,
       lastCheckUpdateTime,
@@ -780,6 +786,7 @@
       autoSyncTrackerTime: autoSyncTrackerTime !== undefined ? autoSyncTrackerTime : (config['auto-sync-tracker-time'] !== undefined ? config['auto-sync-tracker-time'] : '00:00'),
       btTracker: convertCommaToLine(btTracker),
       dhtListenPort,
+      enablePriorityEngine: enablePriorityEngine !== undefined ? enablePriorityEngine : false,
       enableUpnp,
       hideAppMenu,
       lastCheckUpdateTime,
@@ -1033,6 +1040,10 @@
       }
     },
     methods: {
+      handlePriorityEngineChange (val) {
+        this.$electron.ipcRenderer.send('command', 'application:toggle-priority-engine', val)
+        this.autoSaveForm()
+      },
       filterCards (keyword) {
         this.$nextTick(() => {
           if (!this.$el) return

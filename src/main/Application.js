@@ -764,6 +764,21 @@ export default class Application extends EventEmitter {
     })
   }
 
+  watchPriorityEngineChange () {
+    const { userConfig } = this.configManager
+    const key = 'enablePriorityEngine'
+    this.configListeners[key] = userConfig.onDidChange(key, async (newValue, oldValue) => {
+      logger.info(`[Motrix] detected ${key} value change event:`, newValue, oldValue)
+      if (this.priorityManager) {
+        if (newValue) {
+          this.priorityManager.enable()
+        } else {
+          this.priorityManager.disable()
+        }
+      }
+    })
+  }
+
   watchShowProgressBarChange () {
     const { userConfig } = this.configManager
     const key = 'show-progress-bar'
@@ -1905,6 +1920,17 @@ export default class Application extends EventEmitter {
       this.openExternal(url)
     })
 
+    this.on('application:toggle-priority-engine', (enabled) => {
+      logger.info('[Motrix] toggle priority engine:', enabled)
+      if (this.priorityManager) {
+        if (enabled) {
+          this.priorityManager.enable()
+        } else {
+          this.priorityManager.disable()
+        }
+      }
+    })
+
     this.on('task-progress:control', (payload = {}) => {
       const window = this.windowManager.getWindow('index')
       if (!window) {
@@ -2083,6 +2109,7 @@ export default class Application extends EventEmitter {
     this.watchLocaleChange()
     this.watchThemeChange()
     this.watchAutoCheckUpdateChange()
+    this.watchPriorityEngineChange()
 
     this.on('download-status-change', (downloading) => {
       this.trayManager.handleDownloadStatusChange(downloading)
@@ -2113,6 +2140,13 @@ export default class Application extends EventEmitter {
       }
       app.addRecentDocument(path)
       this.scheduleCheckTaskPlan()
+    })
+
+    this.on('download-start', (event) => {
+      // 通知优先级管理器任务开始
+      if (this.priorityManager) {
+        this.priorityManager.onTaskStart()
+      }
     })
 
     if (this.configManager.userConfig.get('show-progress-bar')) {
@@ -2156,6 +2190,30 @@ export default class Application extends EventEmitter {
     ipcMain.on('event', (event, eventName, ...args) => {
       logger.log('[Motrix] ipc receive event', eventName, ...args)
       this.emit(eventName, ...args)
+    })
+
+    // Handle minimize-progress-window
+    ipcMain.on('minimize-progress-window', (event) => {
+      try {
+        const win = require('electron').BrowserWindow.fromWebContents(event.sender)
+        if (win && typeof win.minimize === 'function') {
+          win.minimize()
+        }
+      } catch (e) {
+        logger.warn('[Motrix] Failed to minimize progress window:', e.message)
+      }
+    })
+
+    // Handle close-progress-window
+    ipcMain.on('close-progress-window', (event) => {
+      try {
+        const win = require('electron').BrowserWindow.fromWebContents(event.sender)
+        if (win && typeof win.close === 'function') {
+          win.close()
+        }
+      } catch (e) {
+        logger.warn('[Motrix] Failed to close progress window:', e.message)
+      }
     })
   }
 
@@ -2233,6 +2291,38 @@ export default class Application extends EventEmitter {
         return { success: true }
       }
       return { success: false, error: 'PriorityManager not initialized' }
+    })
+
+    // Get progress window size
+    ipcMain.handle('get-progress-window-size', async (event) => {
+      try {
+        const win = require('electron').BrowserWindow.fromWebContents(event.sender)
+        if (win) {
+          const size = win.getContentSize()
+          return { width: size[0], height: size[1] }
+        }
+      } catch (e) {
+        logger.warn('[Motrix] Failed to get progress window size:', e.message)
+      }
+      return null
+    })
+
+    // Resize progress window
+    ipcMain.handle('resize-progress-window', async (event, payload) => {
+      try {
+        const { isPanelOpen, panelHeight, initialWidth } = payload || {}
+        const win = require('electron').BrowserWindow.fromWebContents(event.sender)
+        if (win) {
+          const size = win.getContentSize()
+          const currentWidth = initialWidth > 0 ? initialWidth : size[0]
+          const newHeight = isPanelOpen ? (size[1] + panelHeight) : (size[1] - panelHeight)
+          win.setContentSize(currentWidth, newHeight)
+          return { success: true }
+        }
+      } catch (e) {
+        logger.warn('[Motrix] Failed to resize progress window:', e.message)
+      }
+      return { success: false }
     })
   }
 

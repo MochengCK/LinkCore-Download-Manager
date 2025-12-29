@@ -147,7 +147,7 @@
                 <span>{{ scope.row.sizeText }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('task.task-priority')" min-width="150">
+            <el-table-column v-if="isPriorityEngineEnabled" :label="$t('task.task-priority')" min-width="150">
               <template slot-scope="scope">
                 <el-input-number
                   size="mini"
@@ -436,6 +436,9 @@
       ...mapState('preference', {
         config: state => state.config
       }),
+      isPriorityEngineEnabled () {
+        return !!(this.config && this.config.enablePriorityEngine)
+      },
       taskType () {
         return this.type
       },

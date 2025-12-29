@@ -503,6 +503,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.downloads.onCreated.addListener((item) => {
   const handleDownloadCreated = async () => {
+    // 只处理正在进行中的下载，忽略历史记录
+    // 历史记录的状态通常是 'complete' 或 'interrupted'
+    // 只有真正的新下载才会是 'in_progress'
+    if (item.state !== 'in_progress') {
+      console.log('[LinkCore] Ignoring non-active download (state: ' + item.state + '):', item.url)
+      return
+    }
+    
     const overrideDisabled = await getAutoHijackOverride()
     if (overrideDisabled) {
       return
@@ -535,6 +543,8 @@ chrome.downloads.onCreated.addListener((item) => {
       const ok = await addUri(url, item.referrer)
       if (ok) {
         chrome.downloads.cancel(item.id)
+        // 从下载历史中删除记录，避免留下痕迹
+        chrome.downloads.erase({ id: item.id })
       }
     } catch (e) {
     }

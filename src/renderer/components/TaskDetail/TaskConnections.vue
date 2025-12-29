@@ -30,7 +30,7 @@
       <i class="el-icon-loading"></i>
       <p>{{ $t('task.loading-connections') }}</p>
     </div>
-    <div class="mo-table-wrapper" v-show="!initialLoading && serverList.length > 0">
+    <div class="mo-table-wrapper" v-if="!initialLoading && serverList.length > 0">
       <el-table
         stripe
         class="mo-connection-table"
