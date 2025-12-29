@@ -12,17 +12,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/v/release/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
   </a>
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/downloads/MochengCK/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
   </a>
   <a href="#platforms">
     <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge" alt="Support Platforms" />
   </a>
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
   </a>
 </p>
 
@@ -92,13 +92,13 @@ LinkCore Download Manager is currently available for:
 
 ### Windows
 
-1. Visit the [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) page
+1. Visit the [GitHub Releases](https://github.com/MochengCK/LinkCore-Download-Manager/releases) page
 2. Download the latest `LinkCore-Download-Manager-Setup-x.y.z.exe` installer
 3. Run the installer and follow the on-screen instructions
 
 ### macOS
 
-1. Visit the [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) page
+1. Visit the [GitHub Releases](https://github.com/MochengCK/LinkCore-Download-Manager/releases) page
 2. Download `*.dmg` or `*-arm64-mac.zip` (Apple Silicon, arm64)
 3. Using `*.dmg`: double-click to open, then drag the app to `/Applications`
 4. Using `*-arm64-mac.zip`: unzip and move the app to `/Applications`
@@ -194,7 +194,7 @@ Tip: You can customize these shortcuts in “Preferences → Basic → Shortcuts
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/HuanXinStudio/LinkCore-Download-Manager.git
+   git clone https://github.com/MochengCK/LinkCore-Download-Manager.git
    cd LinkCore-Download-Manager
    ```
 
@@ -260,7 +260,7 @@ Contributions are welcome! Whether you're fixing bugs, adding new features, or i
 
 If you encounter any issues or have questions:
 
-- Open an [issue](https://github.com/HuanXinStudio/LinkCore-Download-Manager/issues) on GitHub
+- Open an [issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues) on GitHub
 - Join our community for discussions and support
 ## 📄 License
 

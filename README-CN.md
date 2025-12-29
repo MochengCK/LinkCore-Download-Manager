@@ -12,17 +12,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/v/release/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/v/release/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
   </a>
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases">
-    <img src="https://img.shields.io/github/downloads/HuanXinStudio/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/releases">
+    <img src="https://img.shields.io/github/downloads/MochengCK/LinkCore-Download-Manager/total.svg?style=for-the-badge" alt="Total Downloads" />
   </a>
   <a href="#支持平台">
     <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge" alt="Support Platforms" />
   </a>
-  <a href="https://github.com/HuanXinStudio/LinkCore-Download-Manager/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/HuanXinStudio/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
+  <a href="https://github.com/MochengCK/LinkCore-Download-Manager/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
   </a>
 </p>
 
@@ -89,13 +89,13 @@ LinkCore Download Manager（联芯下载管理器）是一款简洁易用的跨�
 
 ### Windows
 
-1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
+1. 访问 [GitHub Releases](https://github.com/MochengCK/LinkCore-Download-Manager/releases) 页面
 2. 下载最新版本的 `LinkCore-Download-Manager-Setup-x.y.z.exe` 安装程序
 3. 运行安装程序并按照屏幕提示完成安装
 
 ### macOS
 
-1. 访问 [GitHub Releases](https://github.com/HuanXinStudio/LinkCore-Download-Manager/releases) 页面
+1. 访问 [GitHub Releases](https://github.com/MochengCK/LinkCore-Download-Manager/releases) 页面
 2. 下载 `*.dmg` 或 `*-arm64-mac.zip`（Apple Silicon，arm64）
 3. 使用 `*.dmg`：双击打开，将应用拖拽到 `/Applications`
 4. 使用 `*-arm64-mac.zip`：解压后将应用移动到 `/Applications`
@@ -191,7 +191,7 @@ LinkCore Download Manager（联芯下载管理器）是一款简洁易用的跨�
 
 1. 克隆仓库：
    ```bash
-   git clone https://github.com/HuanXinStudio/LinkCore-Download-Manager.git
+   git clone https://github.com/MochengCK/LinkCore-Download-Manager.git
    cd LinkCore-Download-Manager
    ```
 
@@ -257,7 +257,7 @@ LinkCore-Download-Manager/
 
 如果您遇到任何问题或有疑问：
 
-- 在GitHub上 [提交issue](https://github.com/HuanXinStudio/LinkCore-Download-Manager/issues)
+- 在GitHub上 [提交issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues)
 - 加入我们的社区进行讨论和获取支持
 ## 📄 许可证
 

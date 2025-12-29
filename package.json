@@ -1,13 +1,13 @@
 {
   "name": "linkcore-download-manager",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "LinkCore Download Manager",
-  "homepage": "https://github.com/HuanXinStudio/LinkCore-Download-Manager",
+  "homepage": "https://github.com/MochengCK/LinkCore-Download-Manager",
   "author": {
-    "name": "HuanXinStudio",
-    "email": "huanxin@example.com"
+    "name": "MochengCK",
+    "email": "mocheng@example.com"
   },
-  "copyright": "Copyright© 2024 HuanXinStudio",
+  "copyright": "Copyright© 2024 MochengCK",
   "original_author": {
     "name": "Dr_rOot",
     "email": "agalwood.net@gmail.com"
@@ -16,7 +16,7 @@
   "main": "./dist/electron/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HuanXinStudio/LinkCore-Download-Manager.git"
+    "url": "https://github.com/MochengCK/LinkCore-Download-Manager.git"
   },
   "scripts": {
     "release": "npm run build -- --publish onTagOrDraft",

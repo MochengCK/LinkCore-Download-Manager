@@ -54,4 +54,4 @@ A: When a new version is available, re-download and install the latest extension
 ### Q: How to uninstall the extension?
 A: Go to `chrome://extensions/` page, find LinkCore extension, and click "Remove" button
 
-Technical Support: https：//github.com/HuanXinStudio/LinkCore-Download-Manager/issues
+Technical Support: https://github.com/MochengCK/LinkCore-Download-Manager/issues

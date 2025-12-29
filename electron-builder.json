@@ -155,7 +155,7 @@
     "publish": [
   {
     "provider": "github",
-    "owner": "HuanXinStudio",
+    "owner": "MochengCK",
     "repo": "LinkCore-Download-Manager"
   }
 ]
