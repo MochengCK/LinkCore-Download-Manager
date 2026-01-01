@@ -4,5 +4,20 @@ export default {
   'minimize': 'Свернуть',
   'zoom': 'Увеличение',
   'toggle-fullscreen': 'Перейти в полноэкранный режим',
-  'front': 'Поверх всех окон'
+  'front': 'Поверх всех окон',
+  'video-sniffer-settings-title': 'Настройки Video Sniffer',
+  'video-sniffer-enabled': 'Включить Video Sniffer',
+  'video-sniffer-enabled-tips': 'Когда включено, расширение браузера будет автоматически обнаруживать видеоресурсы',
+  'video-sniffer-auto-combine': 'Автоматически объединять DASH видео',
+  'video-sniffer-auto-combine-tips': 'При обнаружении формата DASH автоматически отображать параметры загрузки полного видео (видео+аудио)',
+  'video-sniffer-formats': 'Форматы сниффинга',
+  'video-sniffer-formats-tips': 'Установите расширения видеофайлов для сниффинга',
+  'video-sniffer-format-placeholder': 'Введите формат (например: mp4)',
+  'video-sniffer-add-format': 'Добавить',
+  'video-sniffer-format-exists': 'Этот формат уже существует',
+  'video-sniffer-settings-saved': 'Настройки сохранены',
+  'video-sniffer-reset-confirm': 'Вы уверены, что хотите сбросить настройки по умолчанию?',
+  'video-sniffer-reset-success': 'Настройки сброшены по умолчанию',
+  'save': 'Сохранить',
+  'reset': 'Сброс'
 }

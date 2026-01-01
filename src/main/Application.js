@@ -2468,6 +2468,10 @@ export default class Application extends EventEmitter {
       return result
     })
 
+    ipcMain.handle('get-app-locale', async () => {
+      return this.configManager.getUserConfig('locale') || this.configManager.getSystemConfig('locale')
+    })
+
     ipcMain.handle('get-engine-list', async () => {
       const { platform, arch } = process
       const engines = getEngineList(platform, arch)

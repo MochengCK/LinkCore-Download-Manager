@@ -4,5 +4,20 @@ export default {
   'minimize': '最小化',
   'zoom': '放大',
   'toggle-fullscreen': '进入全屏幕',
-  'front': '前置全部窗口'
+  'front': '前置全部窗口',
+  'video-sniffer-settings-title': '视频嗅探设置',
+  'video-sniffer-enabled': '启用视频资源嗅探',
+  'video-sniffer-enabled-tips': '启用后，浏览器扩展将自动检测视频资源',
+  'video-sniffer-auto-combine': '自动合并 DASH 视频',
+  'video-sniffer-auto-combine-tips': '检测到DASH格式时，自动显示完整视频（视频+音频）下载选项',
+  'video-sniffer-formats': '嗅探格式',
+  'video-sniffer-formats-tips': '设置要嗅探的视频文件扩展名',
+  'video-sniffer-format-placeholder': '输入格式（如 mp4）',
+  'video-sniffer-add-format': '添加',
+  'video-sniffer-format-exists': '该格式已存在',
+  'video-sniffer-settings-saved': '设置已保存',
+  'video-sniffer-reset-confirm': '确定要恢复默认设置吗？',
+  'video-sniffer-reset-success': '设置已恢复默认',
+  'save': '保存',
+  'reset': '恢复默认'
 }

@@ -4,5 +4,20 @@ export default {
   'minimize': '最小化',
   'zoom': '放大',
   'toggle-fullscreen': '切換全螢幕',
-  'front': '將全部視窗移至最前方'
+  'front': '將全部視窗移至最前方',
+  'video-sniffer-settings-title': '視訊嗅探設定',
+  'video-sniffer-enabled': '啟用視訊資源嗅探',
+  'video-sniffer-enabled-tips': '啟用後，瀏覽器擴充功能將自動偵測視訊資源',
+  'video-sniffer-auto-combine': '自動合併 DASH 視訊',
+  'video-sniffer-auto-combine-tips': '偵測到DASH格式時，自動顯示完整視訊（視訊+音訊）下載選項',
+  'video-sniffer-formats': '嗅探格式',
+  'video-sniffer-formats-tips': '設定要嗅探的視訊檔案副檔名',
+  'video-sniffer-format-placeholder': '輸入格式（如 mp4）',
+  'video-sniffer-add-format': '新增',
+  'video-sniffer-format-exists': '該格式已存在',
+  'video-sniffer-settings-saved': '設定已儲存',
+  'video-sniffer-reset-confirm': '確定要恢復預設設定嗎？',
+  'video-sniffer-reset-success': '設定已恢復預設',
+  'save': '儲存',
+  'reset': '恢復預設'
 }

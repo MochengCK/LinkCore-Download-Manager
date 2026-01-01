@@ -4,5 +4,20 @@ export default {
   'minimize': '最小化',
   'zoom': '拡大',
   'toggle-fullscreen': 'フルスクリーンにする',
-  'front': '全てを手前に移動'
+  'front': '全てを手前に移動',
+  'video-sniffer-settings-title': 'ビデオスニファー設定',
+  'video-sniffer-enabled': 'ビデオリソースのスニファーを有効にする',
+  'video-sniffer-enabled-tips': '有効にすると、ブラウザ拡張機能が自動的にビデオリソースを検出します',
+  'video-sniffer-auto-combine': 'DASHビデオを自動結合',
+  'video-sniffer-auto-combine-tips': 'DASH形式を検出した場合、完全なビデオ（ビデオ+オーディオ）のダウンロードオプションを自動的に表示します',
+  'video-sniffer-formats': 'スニファー形式',
+  'video-sniffer-formats-tips': 'スニファーするビデオファイルの拡張子を設定します',
+  'video-sniffer-format-placeholder': '形式を入力（例：mp4）',
+  'video-sniffer-add-format': '追加',
+  'video-sniffer-format-exists': 'この形式は既に存在します',
+  'video-sniffer-settings-saved': '設定が保存されました',
+  'video-sniffer-reset-confirm': 'デフォルト設定に戻しますか？',
+  'video-sniffer-reset-success': '設定がデフォルトに戻りました',
+  'save': '保存',
+  'reset': 'リセット'
 }

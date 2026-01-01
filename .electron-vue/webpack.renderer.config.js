@@ -233,11 +233,18 @@ if (devMode) {
 if (!devMode) {
   rendererConfig.plugins.push(
     new CopyWebpackPlugin({
-      patterns: [{
-        from: path.join(__dirname, '../static'),
-        to: path.join(__dirname, '../dist/electron/static'),
-        globOptions: { ignore: [ '.*' ] }
-      }]
+      patterns: [
+        {
+          from: path.join(__dirname, '../static'),
+          to: path.join(__dirname, '../dist/electron/static'),
+          globOptions: { ignore: [ '.*' ] }
+        },
+        {
+          from: path.join(__dirname, '../src/shared/locales'),
+          to: path.join(__dirname, '../dist/electron/shared/locales'),
+          noErrorOnMissing: true
+        }
+      ]
     }),
     new Webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'

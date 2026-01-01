@@ -14,8 +14,41 @@
   }
 
   let useCustomFrame = false
+  let locale = 'en-US'
+  let translations = {}
 
   const defaultFormats = ['m4s', 'mp4', 'flv', 'm3u8', 'ts']
+
+  async function loadTranslations (locale) {
+    try {
+      const isDev = typeof __dirname === 'string' && __dirname.includes('src')
+      const localePath = isDev ? `../../shared/locales/${locale}/window.js` : `../shared/locales/${locale}/window.js`
+      try {
+        const module = await import(localePath)
+        translations = module.default || {}
+        log('Translations loaded for locale:', locale)
+      } catch (importError) {
+        console.error('[Video Sniffer] Failed to import translations:', importError)
+        const response = await fetch(localePath)
+        if (response.ok) {
+          const text = await response.text()
+          const match = text.match(/export default\s*\{([\s\S]*?)\}/)
+          if (match && match[1]) {
+            // eslint-disable-next-line no-new-func
+            const func = new Function(`return {${match[1]}}`)
+            translations = func()
+            log('Translations loaded for locale:', locale, '(fallback)')
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[Video Sniffer] Failed to load translations:', e)
+    }
+  }
+
+  function t (key) {
+    return translations[key] || key
+  }
 
   function applyTheme (theme) {
     const isDark = theme === 'dark'
@@ -77,7 +110,6 @@
       console.error('[Video Sniffer] Failed to load settings:', e)
     }
 
-    // 从主进程加载最新配置
     try {
       if (window.require) {
         const { ipcRenderer } = window.require('electron')
@@ -146,11 +178,74 @@
     }
   }
 
+  function applyTranslations () {
+    const pageTitle = document.getElementById('pageTitle')
+    const titleText = document.getElementById('titleText')
+    const videoSnifferEnabledLabel = document.getElementById('videoSnifferEnabledLabel')
+    const videoSnifferEnabledTips = document.getElementById('videoSnifferEnabledTips')
+    const videoSnifferAutoCombineLabel = document.getElementById('videoSnifferAutoCombineLabel')
+    const videoSnifferAutoCombineTips = document.getElementById('videoSnifferAutoCombineTips')
+    const videoSnifferFormatsLabel = document.getElementById('videoSnifferFormatsLabel')
+    const videoSnifferFormatsTips = document.getElementById('videoSnifferFormatsTips')
+    const addFormatBtn = document.getElementById('addFormatBtn')
+    const newFormatInput = document.getElementById('newFormat')
+    const resetBtn = document.getElementById('resetBtn')
+    const saveBtn = document.getElementById('saveBtn')
+
+    if (pageTitle) {
+      pageTitle.textContent = `${t('video-sniffer-settings-title')} - LinkCore Download Manager`
+    }
+
+    if (titleText) {
+      titleText.textContent = t('video-sniffer-settings-title')
+    }
+
+    if (videoSnifferEnabledLabel) {
+      videoSnifferEnabledLabel.textContent = t('video-sniffer-enabled')
+    }
+
+    if (videoSnifferEnabledTips) {
+      videoSnifferEnabledTips.textContent = t('video-sniffer-enabled-tips')
+    }
+
+    if (videoSnifferAutoCombineLabel) {
+      videoSnifferAutoCombineLabel.textContent = t('video-sniffer-auto-combine')
+    }
+
+    if (videoSnifferAutoCombineTips) {
+      videoSnifferAutoCombineTips.textContent = t('video-sniffer-auto-combine-tips')
+    }
+
+    if (videoSnifferFormatsLabel) {
+      videoSnifferFormatsLabel.textContent = t('video-sniffer-formats')
+    }
+
+    if (videoSnifferFormatsTips) {
+      videoSnifferFormatsTips.textContent = t('video-sniffer-formats-tips')
+    }
+
+    if (addFormatBtn) {
+      addFormatBtn.textContent = t('video-sniffer-add-format')
+    }
+
+    if (newFormatInput) {
+      newFormatInput.placeholder = t('video-sniffer-format-placeholder')
+    }
+
+    if (resetBtn) {
+      resetBtn.textContent = t('reset')
+    }
+
+    if (saveBtn) {
+      saveBtn.textContent = t('save')
+    }
+  }
+
   function addFormat (format) {
     format = format.trim().toLowerCase()
     if (!format) return
     if (config.formats.includes(format)) {
-      alert('该格式已存在')
+      alert(t('video-sniffer-format-exists'))
       return
     }
     config.formats.push(format)
@@ -173,11 +268,27 @@
     log('Settings reset to default')
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  async function init () {
+    try {
+      if (window.require) {
+        const { ipcRenderer } = window.require('electron')
+        const appLocale = await ipcRenderer.invoke('get-app-locale')
+        locale = appLocale || 'en-US'
+        log('Current locale:', locale)
+        await loadTranslations(locale)
+      }
+    } catch (e) {
+      console.error('[Video Sniffer] Failed to get locale:', e)
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
     log('DOM Content Loaded')
+    await init()
     getCurrentTheme()
     loadSettings()
     updateUI()
+    applyTranslations()
 
     const enabledCheckbox = document.getElementById('videoSnifferEnabled')
     const autoCombineCheckbox = document.getElementById('videoSnifferAutoCombine')
@@ -256,13 +367,13 @@
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
         saveSettings()
-        alert('设置已保存')
+        alert(t('video-sniffer-settings-saved'))
       })
     }
 
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
-        if (confirm('确定要恢复默认设置吗？')) {
+        if (confirm(t('video-sniffer-reset-confirm'))) {
           resetSettings()
         }
       })

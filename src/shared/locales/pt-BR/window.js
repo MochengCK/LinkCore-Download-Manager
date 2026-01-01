@@ -4,5 +4,20 @@ export default {
   'minimize': 'Minimizar',
   'zoom': 'Zoom',
   'toggle-fullscreen': 'Modo Full Screen',
-  'front': 'Trazer Tudo Para a Frente'
+  'front': 'Trazer Tudo Para a Frente',
+  'video-sniffer-settings-title': 'Configurações do Video Sniffer',
+  'video-sniffer-enabled': 'Habilitar Video Sniffer',
+  'video-sniffer-enabled-tips': 'Quando habilitado, a extensão do navegador detectará automaticamente recursos de vídeo',
+  'video-sniffer-auto-combine': 'Combinar automaticamente vídeos DASH',
+  'video-sniffer-auto-combine-tips': 'Quando o formato DASH for detectado, as opções de download de vídeo completo (vídeo+áudio) serão exibidas automaticamente',
+  'video-sniffer-formats': 'Formatos do Sniffer',
+  'video-sniffer-formats-tips': 'Definir extensões de arquivos de vídeo para sniffer',
+  'video-sniffer-format-placeholder': 'Digite o formato (ex: mp4)',
+  'video-sniffer-add-format': 'Adicionar',
+  'video-sniffer-format-exists': 'Este formato já existe',
+  'video-sniffer-settings-saved': 'Configurações salvas',
+  'video-sniffer-reset-confirm': 'Tem certeza que deseja restaurar as configurações padrão?',
+  'video-sniffer-reset-success': 'Configurações restauradas para o padrão',
+  'save': 'Salvar',
+  'reset': 'Restaurar'
 }

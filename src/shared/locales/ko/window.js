@@ -4,5 +4,20 @@ export default {
   'minimize': '최소화',
   'zoom': '확대',
   'toggle-fullscreen': '전체 화면',
-  'front': '모두 앞으로 가져오기'
+  'front': '모두 앞으로 가져오기',
+  'video-sniffer-settings-title': '비디오 스니퍼 설정',
+  'video-sniffer-enabled': '비디오 리소스 스니핑 활성화',
+  'video-sniffer-enabled-tips': '활성화하면 브라우저 확장 프로그램이 자동으로 비디오 리소스를 감지합니다',
+  'video-sniffer-auto-combine': 'DASH 비디오 자동 병합',
+  'video-sniffer-auto-combine-tips': 'DASH 형식을 감지하면 완전한 비디오(비디오+오디오) 다운로드 옵션을 자동으로 표시합니다',
+  'video-sniffer-formats': '스니핑 형식',
+  'video-sniffer-formats-tips': '스니핑할 비디오 파일 확장자를 설정합니다',
+  'video-sniffer-format-placeholder': '형식 입력(예: mp4)',
+  'video-sniffer-add-format': '추가',
+  'video-sniffer-format-exists': '이 형식은 이미 존재합니다',
+  'video-sniffer-settings-saved': '설정이 저장되었습니다',
+  'video-sniffer-reset-confirm': '기본 설정으로 복원하시겠습니까?',
+  'video-sniffer-reset-success': '설정이 기본값으로 복원되었습니다',
+  'save': '저장',
+  'reset': '재설정'
 }

@@ -26,7 +26,7 @@ export default {
     attrs: {
       title: '视频嗅探设置',
       width: 500,
-      height: 400,
+      height: 399,
       resizable: false,
       maximizable: false,
       minimizable: true

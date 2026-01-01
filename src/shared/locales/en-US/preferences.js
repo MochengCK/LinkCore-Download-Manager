@@ -261,7 +261,7 @@ export default {
   'extension-shift-toggle-enabled': 'Allow using Shift key to temporarily disable/restore browser hijacking',
   'extension-skip-file-extensions': 'Do not hijack the following file types (extensions)',
   'extension-skip-file-extensions-tips': 'Example: exe,msi,zip; separate multiple with commas or new lines',
-  'video-sniffer-settings': 'Video Sniffer Settings',
+  'video-detection-settings': 'Video Sniffer Settings',
   'extension-download': 'Get extension',
   'extension-download-tips': 'Click to save the browser extension file to desktop',
   'extension-download-success': 'Extension file has been saved',

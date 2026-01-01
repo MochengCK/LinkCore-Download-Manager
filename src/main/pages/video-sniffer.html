@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>视频嗅探设置 - LinkCore Download Manager</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'">
     <style>
       * {
         margin: 0;
@@ -49,6 +49,10 @@
 
       .form-item {
         margin-bottom: 20px;
+      }
+
+      .form-item:last-child {
+        margin-bottom: 0;
       }
 
       .form-label {
@@ -223,14 +227,8 @@
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-        margin-top: 24px;
+        margin-top: -20px;
         padding-top: 20px;
-        border-top: 1px solid #ebeef5;
-        transition: border-color 0.3s;
-      }
-
-      body.dark .button-group {
-        border-top-color: #4a4a4a;
       }
 
       .button-group button {
@@ -272,17 +270,17 @@
         justify-content: space-between;
         padding: 0 16px;
         background: #fff;
-        -webkit-app-region: drag;
         z-index: 1000;
         transition: background 0.3s;
       }
 
-      body.dark .title-bar {
-        background: #1a1a1a;
-      }
-
       body.use-custom-frame .title-bar {
         display: flex;
+        -webkit-app-region: drag;
+      }
+
+      body.dark .title-bar {
+        background: #1a1a1a;
       }
 
       .title-text {
@@ -294,6 +292,9 @@
         margin-right: 8px;
         color: #303133;
         transition: color 0.3s;
+      }
+
+      body.use-custom-frame .title-text {
         -webkit-app-region: drag;
       }
 
@@ -336,7 +337,7 @@
   </head>
   <body>
     <div class="title-bar">
-      <span class="title-text">视频嗅探设置</span>
+      <span class="title-text" id="titleText">视频嗅探设置</span>
       <div class="title-actions">
         <button class="title-btn" id="minimizeBtn">−</button>
         <button class="title-btn" id="closeBtn">×</button>
@@ -350,10 +351,10 @@
               <input type="checkbox" id="videoSnifferEnabled">
               <span class="slider"></span>
             </label>
-            启用视频资源嗅探
+            <span id="videoSnifferEnabledLabel">启用视频资源嗅探</span>
           </div>
         </label>
-        <div class="form-tip">启用后，浏览器扩展将自动检测视频资源</div>
+        <div class="form-tip" id="videoSnifferEnabledTips">启用后，浏览器扩展将自动检测视频资源</div>
       </div>
 
       <div class="form-item">
@@ -363,26 +364,26 @@
               <input type="checkbox" id="videoSnifferAutoCombine">
               <span class="slider"></span>
             </label>
-            自动合并 DASH 视频
+            <span id="videoSnifferAutoCombineLabel">自动合并 DASH 视频</span>
           </div>
         </label>
-        <div class="form-tip">检测到DASH格式时，自动显示完整视频（视频+音频）下载选项</div>
+        <div class="form-tip" id="videoSnifferAutoCombineTips">检测到DASH格式时，自动显示完整视频（视频+音频）下载选项</div>
       </div>
 
       <div class="form-item">
-        <label class="form-label">嗅探格式</label>
-        <div class="format-list" id="formatList"></div>
-        <div class="add-format">
-          <input type="text" id="newFormat" placeholder="输入格式（如 mp4）" />
-          <button id="addFormatBtn">添加</button>
+          <label class="form-label" id="videoSnifferFormatsLabel">嗅探格式</label>
+          <div class="format-list" id="formatList"></div>
+          <div class="add-format">
+            <input type="text" id="newFormat" />
+            <button id="addFormatBtn">添加</button>
+          </div>
+          <div class="form-tip" id="videoSnifferFormatsTips">设置要嗅探的视频文件扩展名</div>
         </div>
-        <div class="form-tip">设置要嗅探的视频文件扩展名</div>
-      </div>
 
-      <div class="button-group">
-        <button class="button-secondary" id="resetBtn">恢复默认</button>
-        <button id="saveBtn">保存</button>
-      </div>
+        <div class="button-group">
+          <button class="button-secondary" id="resetBtn">恢复默认</button>
+          <button id="saveBtn">保存</button>
+        </div>
     </div>
 
     <script src="./video-sniffer.js"></script>
