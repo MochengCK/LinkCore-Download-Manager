@@ -202,17 +202,72 @@ if (typeof window !== 'undefined' && window.addEventListener) {
     dStyle.overflow = 'hidden'
     dStyle.border = '1px solid #e5e5e5'
 
+    // 顶部固定区域（放置清空按钮）
+    const header = document.createElement('div')
+    header.id = 'linkcore-dropdown-header'
+    const hStyle = header.style
+    hStyle.flexShrink = '0'
+    hStyle.flexGrow = '0'
+
     // 内容区域
     const content = document.createElement('div')
     content.id = 'linkcore-resource-list'
     const cStyle = content.style
+    cStyle.flexGrow = '1'
     cStyle.maxHeight = '400px'
     cStyle.overflowY = 'auto'
     cStyle.overflowX = 'hidden'
 
+    dropdown.appendChild(header)
     dropdown.appendChild(content)
 
     return dropdown
+  }
+
+  // 创建清空资源按钮
+  const createClearButton = () => {
+    const clearBtn = document.createElement('div')
+    clearBtn.id = 'linkcore-clear-resources-btn'
+    const bStyle = clearBtn.style
+    bStyle.padding = '10px 12px'
+    bStyle.backgroundColor = '#fff1f0'
+    bStyle.borderTop = '1px solid #ffccc7'
+    bStyle.borderBottom = '1px solid #ffccc7'
+    bStyle.cursor = 'pointer'
+    bStyle.display = 'flex'
+    bStyle.alignItems = 'center'
+    bStyle.justifyContent = 'center'
+    bStyle.gap = '6px'
+    bStyle.transition = 'background-color 0.2s ease'
+    bStyle.fontSize = '12px'
+    bStyle.color = '#ff4d4f'
+    bStyle.fontWeight = '500'
+
+    clearBtn.addEventListener('mouseenter', () => {
+      clearBtn.style.backgroundColor = '#ffccc7'
+    })
+    clearBtn.addEventListener('mouseleave', () => {
+      clearBtn.style.backgroundColor = '#fff1f0'
+    })
+
+    clearBtn.addEventListener('click', () => {
+      log('Clear button clicked')
+      window.dispatchEvent(new Event('linkcore-clear-resources'))
+      const dropdown = document.getElementById('linkcore-resource-dropdown')
+      if (dropdown) dropdown.style.display = 'none'
+    })
+
+    const icon = document.createElement('span')
+    icon.textContent = '🗑️'
+    icon.style.fontSize = '14px'
+
+    const text = document.createElement('span')
+    text.textContent = '清空资源列表'
+
+    clearBtn.appendChild(icon)
+    clearBtn.appendChild(text)
+
+    return clearBtn
   }
 
   // 更新资源列表
@@ -231,6 +286,16 @@ if (typeof window !== 'undefined' && window.addEventListener) {
     content.innerHTML = ''
 
     const referer = window.location.href
+
+    // 如果有资源，添加清空按钮到顶部固定区域
+    const header = document.getElementById('linkcore-dropdown-header')
+    if (header) {
+      header.innerHTML = ''
+      if (sniffedResources.total > 0) {
+        const clearBtn = createClearButton()
+        header.appendChild(clearBtn)
+      }
+    }
 
     // 优先显示组合的DASH视频（视频+音频）
     if (sniffedResources.combined && sniffedResources.combined.length > 0) {
@@ -640,7 +705,12 @@ if (typeof window !== 'undefined' && window.addEventListener) {
             .trim()
 
           if (cleanTitle) {
-            filename = `${cleanTitle}.${ext}`
+            // 如果有质量信息，添加到文件名
+            if (resource.quality && resource.quality !== ext.toUpperCase()) {
+              filename = `${cleanTitle}_${resource.quality}.${ext}`
+            } else {
+              filename = `${cleanTitle}.${ext}`
+            }
           }
         }
       } catch (e) {

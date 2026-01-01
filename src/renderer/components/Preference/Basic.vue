@@ -232,6 +232,7 @@
                 <el-button
                   type="primary"
                   size="small"
+                  class="video-detection-settings-btn"
                   @click="openVideoDetectionSettings"
                   style="width: 100%;">
                   {{ $t('preferences.video-detection-settings') }}
@@ -1954,5 +1955,25 @@
  .el-form-item__info .edit-rules-btn {
    vertical-align: middle;
    margin-top: -2px;
+ }
+
+ /* 视频嗅探设置按钮样式 */
+ .video-detection-settings-btn {
+   background: #409EFF;
+   border-color: #409EFF;
+   color: #fff;
+   transition: all 0.2s ease-in-out;
+ }
+
+ .video-detection-settings-btn:hover {
+   background: #66b1ff;
+   border-color: #66b1ff;
+   color: #fff;
+ }
+
+ .video-detection-settings-btn:active {
+   background: #3a8ee6;
+   border-color: #3a8ee6;
+   color: #fff;
  }
 </style>

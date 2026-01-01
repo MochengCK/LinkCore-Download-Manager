@@ -1,4 +1,3 @@
-// B站视频嗅探器 - 支持M4S格式
 (function() {
   'use strict'
 
@@ -29,18 +28,13 @@
         lowerUrl.includes('/api/') ||
         lowerUrl.includes('/stat') ||
         lowerUrl.includes('analytics') ||
-        lowerUrl.includes('tracking') ||
-        lowerUrl.includes('data.bilibili.com/log')) {
+        lowerUrl.includes('tracking')) {
       return false
     }
     
-    // M4S 格式（B站DASH视频/音频）
     if (lowerUrl.includes('.m4s')) {
       // 确保是视频流域名
-      if (lowerUrl.includes('bilivideo.com') || lowerUrl.includes('hdslb.com')) {
-        return true
-      }
-      return false
+      return true
     }
     
     // 常见视频格式
@@ -55,17 +49,13 @@
     // 过滤非音频资源
     if (lowerUrl.includes('/log/') || 
         lowerUrl.includes('/api/') ||
-        lowerUrl.includes('/stat') ||
-        lowerUrl.includes('data.bilibili.com/log')) {
+        lowerUrl.includes('/stat')) {
       return false
     }
     
     // M4S音频
     if (lowerUrl.includes('.m4s') && (lowerUrl.includes('audio') || lowerUrl.includes('30280'))) {
-      if (lowerUrl.includes('bilivideo.com') || lowerUrl.includes('hdslb.com')) {
-        return true
-      }
-      return false
+      return true
     }
     
     const audioExts = ['.mp3', '.aac', '.m4a', '.wav', '.ogg']
@@ -95,9 +85,9 @@
       const parts = pathname.split('/')
       info.name = parts[parts.length - 1] || 'unknown'
 
-      // B站M4S资源质量解析
+      // M4S资源质量解析
       if (isM4SResource(url)) {
-        // B站视频质量码映射（实际格式）：
+        // 视频质量码映射（实际格式）：
         // 100026 -> 1080P, 100024 -> 720P, 100023 -> 480P, 100022 -> 360P
         // 以及旧格式：30080 -> 1080P, 30064 -> 720P, 30032 -> 480P, 30016 -> 360P
         const qualityMap = {
@@ -333,7 +323,7 @@
     })
   }
 
-  // 监听 iframe 内的视频资源（支持B站主界面预览播放）
+  // 监听 iframe 内的视频资源
   const observeIframeMedia = () => {
     const iframes = document.querySelectorAll('iframe')
     iframes.forEach(iframe => {
@@ -442,7 +432,7 @@
 
   // 暴露清除资源的方法
   window.addEventListener('linkcore-clear-resources', () => {
-    log('Clearing resources from bilibili-sniffer')
+    log('Clearing resources from dash-sniffer')
     sniffedResources.video = []
     sniffedResources.audio = []
     sniffedResources.m4s = []

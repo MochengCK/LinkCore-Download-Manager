@@ -310,7 +310,7 @@ export const initTaskForm = state => {
     maxConnectionPerServer,
     newTaskShowDownloading,
     newTaskJumpTarget: newTaskJumpTarget || 'downloading',
-    out: '',
+    out: addTaskOptions.suggestedFilename || '',
     customOuts: [],
     referer: '',
     selectFile: NONE_SELECTED_FILES,

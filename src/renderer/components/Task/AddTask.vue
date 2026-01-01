@@ -431,8 +431,10 @@
       isRenderer: () => is.renderer(),
       isMas: () => is.mas(),
       ...mapState('app', {
-        taskList: state => state.taskList,
         addTaskUrlFromStore: state => state.addTaskUrl
+      }),
+      ...mapState('task', {
+        taskList: state => state.taskList
       }),
       ...mapState('preference', {
         config: state => state.config
@@ -1294,8 +1296,9 @@
       },
       buildHistoryUrlSet () {
         try {
-          const historyTasks = taskHistory.getHistory()
           const set = new Set()
+
+          const historyTasks = taskHistory.getHistory()
           if (Array.isArray(historyTasks)) {
             historyTasks.forEach(t => {
               const uri = getTaskUri(t) || ''
@@ -1305,6 +1308,18 @@
               }
             })
           }
+
+          const taskList = this.taskList || []
+          if (Array.isArray(taskList)) {
+            taskList.forEach(t => {
+              const uri = getTaskUri(t) || ''
+              const normalized = sanitizeLink(uri)
+              if (normalized) {
+                set.add(normalized)
+              }
+            })
+          }
+
           return set
         } catch (_) {
           return new Set()

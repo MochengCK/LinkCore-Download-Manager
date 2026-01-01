@@ -176,7 +176,7 @@ export default class Application extends EventEmitter {
           req.on('end', async () => {
             try {
               const payload = body ? JSON.parse(body) : {}
-              const { url, referer, headers } = payload
+              const { url, referer, headers, suggestedFilename } = payload
               const downloadUrl = `${url || ''}`.trim()
               if (!downloadUrl || !/^https?:/i.test(downloadUrl)) {
                 res.writeHead(400, { 'Content-Type': 'application/json' })
@@ -291,6 +291,10 @@ export default class Application extends EventEmitter {
                 type: ADD_TASK_TYPE.URI,
                 uri: downloadUrl,
                 fromBrowserExtension: true
+              }
+              if (suggestedFilename) {
+                const uniqueFilename = await this.generateUniqueTaskName(suggestedFilename)
+                taskPayload.suggestedFilename = uniqueFilename
               }
               if (options.referer) {
                 taskPayload.referer = options.referer
@@ -577,6 +581,58 @@ export default class Application extends EventEmitter {
       port,
       secret
     })
+  }
+
+  async generateUniqueTaskName (suggestedFilename) {
+    if (!suggestedFilename) {
+      return suggestedFilename
+    }
+
+    try {
+      const existingTasks = []
+      const active = await this.engineClient.call('tellActive', ['gid', 'files'])
+      if (Array.isArray(active) && active.length > 0) {
+        existingTasks.push(...active)
+      }
+      const waiting = await this.engineClient.call('tellWaiting', 0, 1000, ['gid', 'files'])
+      if (Array.isArray(waiting) && waiting.length > 0) {
+        existingTasks.push(...waiting)
+      }
+      const stopped = await this.engineClient.call('tellStopped', 0, 10000, ['gid', 'files'])
+      if (Array.isArray(stopped) && stopped.length > 0) {
+        existingTasks.push(...stopped)
+      }
+
+      const existingNames = new Set()
+      for (const task of existingTasks) {
+        if (task.files && task.files.length > 0) {
+          const path = task.files[0].path || ''
+          const name = basename(path)
+          if (name) {
+            existingNames.add(name)
+          }
+        }
+      }
+
+      if (!existingNames.has(suggestedFilename)) {
+        return suggestedFilename
+      }
+
+      const ext = extname(suggestedFilename)
+      const baseName = basename(suggestedFilename, ext)
+
+      for (let i = 1; i <= 100; i++) {
+        const newName = `${baseName}${i}${ext}`
+        if (!existingNames.has(newName)) {
+          return newName
+        }
+      }
+
+      return suggestedFilename
+    } catch (err) {
+      logger.warn('[Motrix] Failed to generate unique task name:', err.message)
+      return suggestedFilename
+    }
   }
 
   initPythonManager () {

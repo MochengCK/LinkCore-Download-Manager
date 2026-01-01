@@ -127,7 +127,7 @@ export default {
   'copy-link': 'Copy Link',
   'copy-link-success': 'Successfully copied link',
   'remove-duplicate-links-message': 'Removed {{count}} duplicate link(s)',
-  'duplicate-history-links-message': '{{count}} link(s) already exist in history. You can resolve this by renaming the task.',
+  'duplicate-history-links-message': '{{count}} link(s) already exist in task list. You can resolve this by renaming task.',
   'double-click-to-edit': 'Double-click to edit',
   'parsed-tasks': 'Parsed Tasks',
   'advanced-presets': 'Advanced Presets',
