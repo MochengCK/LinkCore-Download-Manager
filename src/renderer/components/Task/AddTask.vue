@@ -230,8 +230,7 @@
           </el-col>
           <el-col :span="8" :xs="10" style="text-align:right;">
             <div class="preset-actions">
-              <el-button type="primary" size="mini" @click="openSavePresetDialog">{{ $t('task.save-advanced-preset') }}</el-button>
-              <el-button type="success" size="mini" :disabled="!selectedAdvancedPresetId" @click="updateAdvancedPreset">{{ $t('task.update-advanced-preset') }}</el-button>
+              <el-button type="primary" size="mini" @click="saveOrUpdateAdvancedPreset">{{ selectedAdvancedPresetId ? $t('task.update-advanced-preset') : $t('task.save-advanced-preset') }}</el-button>
               <el-button type="danger" size="mini" :disabled="!selectedAdvancedPresetId" @click="deleteAdvancedPreset">{{ $t('task.delete-advanced-preset') }}</el-button>
             </div>
           </el-col>
@@ -626,6 +625,13 @@
         this.advancedPresets = updatedPresets
         this.$store.dispatch('preference/save', { advancedOptionPresets: updatedPresets })
         this.$msg.success(this.$t('task.update-preset-success'))
+      },
+      saveOrUpdateAdvancedPreset () {
+        if (this.selectedAdvancedPresetId) {
+          this.updateAdvancedPreset()
+        } else {
+          this.openSavePresetDialog()
+        }
       },
       async autofillResourceLink () {
         try {
