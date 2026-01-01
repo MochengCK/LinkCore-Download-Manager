@@ -1,6 +1,5 @@
 export default {
-  'official-website': 'Motrix Website',
-  'manual': 'Manual',
+  'official-website': 'LinkCore Website',
   'release-notes': 'Release Notes...',
   'report-problem': 'Report Problem',
   'toggle-dev-tools': 'Toggle Developer Tools'

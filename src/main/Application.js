@@ -2172,22 +2172,17 @@ export default class Application extends EventEmitter {
     })
 
     this.on('help:official-website', () => {
-      const url = 'https://motrix.app/'
-      this.openExternal(url)
-    })
-
-    this.on('help:manual', () => {
-      const url = 'https://motrix.app/manual'
+      const url = 'https://github.com/MochengCK/LinkCore-Download-Manager'
       this.openExternal(url)
     })
 
     this.on('help:release-notes', () => {
-      const url = 'https://motrix.app/release'
+      const url = 'https://github.com/MochengCK/LinkCore-Download-Manager/releases'
       this.openExternal(url)
     })
 
     this.on('help:report-problem', () => {
-      const url = 'https://motrix.app/report'
+      const url = 'https://github.com/MochengCK/LinkCore-Download-Manager/issues'
       this.openExternal(url)
     })
   }
