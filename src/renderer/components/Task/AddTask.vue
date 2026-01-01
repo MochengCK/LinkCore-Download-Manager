@@ -218,7 +218,7 @@
           />
         </el-input>
       </el-form-item>
-      <div class="task-advanced-options" v-if="showAdvanced && taskType !== 'video'">
+      <div class="task-advanced-options" v-if="showAdvanced">
         <el-row :gutter="8" style="margin-bottom: 8px; align-items:center;">
           <el-col :span="16" :xs="14">
             <el-form-item :label="`${$t('task.advanced-presets')}: `" :label-width="formLabelWidth">
@@ -231,6 +231,7 @@
           <el-col :span="8" :xs="10" style="text-align:right;">
             <div class="preset-actions">
               <el-button type="primary" size="mini" @click="openSavePresetDialog">{{ $t('task.save-advanced-preset') }}</el-button>
+              <el-button type="success" size="mini" :disabled="!selectedAdvancedPresetId" @click="updateAdvancedPreset">{{ $t('task.update-advanced-preset') }}</el-button>
               <el-button type="danger" size="mini" :disabled="!selectedAdvancedPresetId" @click="deleteAdvancedPreset">{{ $t('task.delete-advanced-preset') }}</el-button>
             </div>
           </el-col>
@@ -318,7 +319,7 @@
       <div slot="footer" class="dialog-footer">
         <el-row>
           <el-col :span="12" :xs="12">
-            <el-checkbox class="chk" v-model="showAdvanced" :disabled="taskType === 'video'">
+            <el-checkbox class="chk" v-model="showAdvanced">
             {{$t('task.show-advanced-options')}}
           </el-checkbox>
         </el-col>
@@ -443,7 +444,7 @@
         return this.type
       },
       dialogTop () {
-        const advancedVisible = this.showAdvanced && this.taskType !== 'video'
+        const advancedVisible = this.showAdvanced
         return advancedVisible ? '8vh' : '15vh'
       },
       isAllSelected () {
@@ -598,6 +599,31 @@
         this.onAdvancedPresetChange('')
         this.$store.dispatch('preference/save', { advancedOptionPresets: next })
         this.$msg.success(this.$t('task.delete-preset-success'))
+      },
+      updateAdvancedPreset () {
+        const id = this.selectedAdvancedPresetId
+        if (!id) return
+        const presetIndex = this.advancedPresets.findIndex(p => p.id === id)
+        if (presetIndex === -1) return
+
+        const data = {
+          userAgent: this.form.userAgent || '',
+          authorization: this.form.authorization || '',
+          referer: this.form.referer || '',
+          cookie: this.form.cookie || '',
+          allProxy: this.form.allProxy || '',
+          newTaskShowDownloading: !!this.form.newTaskShowDownloading
+        }
+
+        const updatedPresets = [...this.advancedPresets]
+        updatedPresets[presetIndex] = {
+          ...updatedPresets[presetIndex],
+          data
+        }
+
+        this.advancedPresets = updatedPresets
+        this.$store.dispatch('preference/save', { advancedOptionPresets: updatedPresets })
+        this.$msg.success(this.$t('task.update-preset-success'))
       },
       async autofillResourceLink () {
         try {
@@ -880,9 +906,61 @@
           }
         }
 
+        // 如果只有一个 URL 且 form.out 存在（从浏览器扩展传入的建议文件名），使用它
+        const suggestedName = lines.length === 1 && this.form.out && typeof this.form.out === 'string' && this.form.out.trim()
+          ? this.form.out.trim()
+          : null
+
+        // 使用建议文件名后立即清空，避免影响后续操作
+        if (suggestedName) {
+          this.form.out = ''
+        }
+
         const items = lines.map((u, i) => {
           const normalizedUrl = sanitizeLink(u)
           const existsInHistory = this.checkUrlExistsInHistory(normalizedUrl)
+
+          // 如果有建议的文件名，即使 URL 已存在也要使用新的建议文件名
+          if (suggestedName) {
+            try {
+              const url = decodeURI(u)
+              const lastSlash = url.lastIndexOf('/')
+              let name = lastSlash >= 0 ? url.substring(lastSlash + 1) : url
+              if (name) {
+                const qIdx = name.indexOf('?')
+                const hIdx = name.indexOf('#')
+                const cutIdx = [qIdx, hIdx].filter(i => i >= 0).sort((a, b) => a - b)[0]
+                if (typeof cutIdx === 'number') {
+                  name = name.substring(0, cutIdx)
+                }
+              }
+              // 使用建议的文件名
+              return {
+                name: suggestedName,
+                originalName: suggestedName,
+                renamed: true,
+                sizeText: '-',
+                editing: false,
+                priority: 0,
+                url: u,
+                order: i,
+                existsInHistory
+              }
+            } catch (e) {
+              return {
+                name: suggestedName,
+                originalName: suggestedName,
+                renamed: true,
+                sizeText: '-',
+                editing: false,
+                priority: 0,
+                url: u,
+                order: i,
+                existsInHistory
+              }
+            }
+          }
+
           // 检查是否已存在该 URL，保留其优先值和其他属性
           const existing = existingMap.get(u)
           if (existing) {
@@ -908,10 +986,12 @@
                 name = name.substring(0, cutIdx)
               }
             }
+            // 使用建议的文件名（如果存在）
+            const finalName = suggestedName || name
             return {
-              name,
-              originalName: name,
-              renamed: false,
+              name: finalName,
+              originalName: finalName,
+              renamed: !!suggestedName,
               sizeText: '-',
               editing: false,
               priority: 0,
@@ -920,10 +1000,11 @@
               existsInHistory
             }
           } catch (e) {
+            const finalName = suggestedName || u
             return {
-              name: u,
-              originalName: u,
-              renamed: false,
+              name: finalName,
+              originalName: finalName,
+              renamed: !!suggestedName,
               sizeText: '-',
               editing: false,
               priority: 0,

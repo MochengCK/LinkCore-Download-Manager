@@ -111,6 +111,7 @@ const state = {
   taskSpeedSamples: {},
   taskDisplayNames: {},
   searchKeyword: '',
+  categoryFilter: '',
   sortField: 'name',
   sortOrder: 'asc'
 }
@@ -255,6 +256,9 @@ const mutations = {
   UPDATE_TASK_SEARCH_KEYWORD (state, keyword) {
     state.searchKeyword = `${keyword || ''}`
   },
+  UPDATE_CATEGORY_FILTER (state, filter) {
+    state.categoryFilter = filter
+  },
   SORT_TASK_LIST (state, payload) {
     const { field, order } = payload || {}
     if (!field || !order) {
@@ -279,6 +283,9 @@ const actions = {
   },
   updateTaskSearchKeyword ({ commit }, keyword) {
     commit('UPDATE_TASK_SEARCH_KEYWORD', keyword)
+  },
+  updateCategoryFilter ({ commit }, filter) {
+    commit('UPDATE_CATEGORY_FILTER', filter)
   },
   sortTasks ({ commit }, payload) {
     commit('SORT_TASK_LIST', payload)

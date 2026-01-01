@@ -8,7 +8,8 @@
     "downloads",
     "storage",
     "contextMenus",
-    "cookies"
+    "cookies",
+    "webRequest"
   ],
   "host_permissions": [
     "<all_urls>",
@@ -26,6 +27,7 @@
         "<all_urls>"
       ],
       "js": [
+        "video-sniffer.js",
         "key-listener.js"
       ],
       "run_at": "document_start",

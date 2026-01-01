@@ -158,7 +158,6 @@
     },
     data () {
       return {
-        categoryFilter: '',
         isHoveringCategoryPopper: false,
         isCategoryPopperEventsBound: false,
         categoryHoverCloseTimer: null,
@@ -215,6 +214,14 @@
         },
         set (val) {
           this.$store.dispatch('task/updateTaskSearchKeyword', val)
+        }
+      },
+      categoryFilter: {
+        get () {
+          return this.$store.state.task.categoryFilter
+        },
+        set (val) {
+          this.$store.dispatch('task/updateCategoryFilter', val)
         }
       }
     },
@@ -336,6 +343,8 @@
       },
       onCategoryChange () {
         this.$store.dispatch('task/selectTasks', [])
+        this.$store.dispatch('task/updateCategoryFilter', this.categoryFilter)
+        this.$store.dispatch('task/fetchList')
         this.$nextTick(() => {
           this.blurCategorySelect()
         })

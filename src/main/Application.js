@@ -54,6 +54,11 @@ export default class Application extends EventEmitter {
     this._taskPlanCheckTimer = null
     this._taskPlanScheduleTimer = null
     this._taskPlanScheduledNotBeforeTime = null
+    this._videoSnifferConfig = {
+      enabled: true,
+      formats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
+      autoCombine: true
+    }
     this.init()
   }
 
@@ -334,12 +339,20 @@ export default class Application extends EventEmitter {
               const normalizeSkipExt = (x) => removeExtensionDot(`${x}`.trim().toLowerCase())
               skipFileExtensions = skipRaw.map(normalizeSkipExt).filter(Boolean)
             }
+
+            const videoSnifferEnabled = this._videoSnifferConfig.enabled
+            const videoSnifferFormats = this._videoSnifferConfig.formats
+            const videoSnifferAutoCombine = this._videoSnifferConfig.autoCombine
+
             res.writeHead(200, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({
               interceptAllDownloads,
               silentDownload,
               shiftToggleEnabled,
-              skipFileExtensions
+              skipFileExtensions,
+              videoSnifferEnabled,
+              videoSnifferFormats,
+              videoSnifferAutoCombine
             }))
           } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
@@ -347,7 +360,10 @@ export default class Application extends EventEmitter {
               interceptAllDownloads: false,
               silentDownload: false,
               shiftToggleEnabled: false,
-              skipFileExtensions: []
+              skipFileExtensions: [],
+              videoSnifferEnabled: false,
+              videoSnifferFormats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
+              videoSnifferAutoCombine: true
             }))
           }
           return
@@ -1198,6 +1214,7 @@ export default class Application extends EventEmitter {
     this.themeManager.on('system-theme-change', (theme) => {
       this.trayManager.handleSystemThemeChange(theme)
       this.sendCommandToAll('application:update-system-theme', { theme })
+      this.sendMessageToAll('application:update-system-theme', { theme })
     })
   }
 
@@ -2349,6 +2366,26 @@ export default class Application extends EventEmitter {
         logger.warn('[Motrix] Failed to close progress window:', e.message)
       }
     })
+
+    // Handle open-video-detection-settings
+    ipcMain.on('open-video-detection-settings', () => {
+      this.windowManager.openWindow('video-detection-settings', {
+        hidden: false
+      })
+    })
+
+    // Handle video-sniffer-settings-updated
+    ipcMain.on('video-sniffer-settings-updated', (event, settings) => {
+      logger.log('[Motrix] Video sniffer settings updated:', settings)
+
+      this._videoSnifferConfig = {
+        enabled: settings.enabled,
+        formats: settings.formats,
+        autoCombine: settings.autoCombine
+      }
+
+      logger.log('[Motrix] Video sniffer config updated in main process:', this._videoSnifferConfig)
+    })
   }
 
   handleIpcInvokes () {
@@ -2457,6 +2494,11 @@ export default class Application extends EventEmitter {
         logger.warn('[Motrix] Failed to resize progress window:', e.message)
       }
       return { success: false }
+    })
+
+    // Get video sniffer config
+    ipcMain.handle('get-video-sniffer-config', async () => {
+      return this._videoSnifferConfig
     })
   }
 

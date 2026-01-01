@@ -243,6 +243,7 @@ export default {
   'extension-shift-toggle-enabled': '允许使用 Shift 键临时关闭/恢复接管浏览器下载',
   'extension-skip-file-extensions': '不接管以下文件类型（扩展名）',
   'extension-skip-file-extensions-tips': '例如：exe,msi,zip；多个请用逗号或换行分隔',
+  'video-detection-settings': '视频嗅探设置',
   'extension-download': '获取扩展',
   'extension-download-tips': '点击将浏览器扩展文件保存到桌面',
   'extension-download-success': '扩展文件已保存',

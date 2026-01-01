@@ -6,6 +6,7 @@ const path = require('node:path')
 const Webpack = require('webpack')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const { dependencies } = require('../package.json')
 const { appId } = require('../electron-builder.json')
 const devMode = process.env.NODE_ENV !== 'production'
@@ -43,6 +44,15 @@ let mainConfig = {
     new Webpack.NoEmitOnErrorsPlugin(),
     new ESLintPlugin({
       formatter: require('eslint-friendly-formatter')
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.join(__dirname, '../src/main/pages'),
+          to: path.join(__dirname, '../dist/electron/pages'),
+          noErrorOnMissing: true
+        }
+      ]
     })
   ],
   resolve: {

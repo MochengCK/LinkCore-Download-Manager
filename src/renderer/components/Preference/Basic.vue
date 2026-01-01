@@ -228,6 +228,15 @@
                   :placeholder="$t('preferences.extension-skip-file-extensions-tips')"
                 />
               </div>
+              <div class="form-item-sub" style="margin-top: 16px;">
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="openVideoDetectionSettings"
+                  style="width: 100%;">
+                  {{ $t('preferences.video-detection-settings') }}
+                </el-button>
+              </div>
             </el-col>
           </el-form-item>
         </div>
@@ -1442,6 +1451,9 @@
           console.error('下载扩展失败:', error)
           this.$msg.error(this.$t('preferences.extension-download-failed'))
         }
+      },
+      openVideoDetectionSettings () {
+        this.$electron.ipcRenderer.send('open-video-detection-settings')
       },
       onDirectorySelected (dir) {
         this.form.dir = dir

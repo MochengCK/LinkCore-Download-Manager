@@ -40,13 +40,6 @@
         {{ taskPriority }}
       </div>
     </el-form-item>
-    <el-form-item :label="`${$t('task.security-scan-status')}: `" v-if="isCompleted">
-      <div class="form-static-value">
-        <span :class="securityScanStatusClass">
-          {{ securityScanStatusText }}
-        </span>
-      </div>
-    </el-form-item>
     <el-form-item :label="`${$t('task.task-error-info')}: `" v-if="task.errorCode && task.errorCode !== '0'">
       <div class="form-static-value">
         {{ task.errorCode }} {{ task.errorMessage }}
@@ -147,9 +140,6 @@
         theme: state => state.config.theme,
         preferenceConfig: state => state.config
       }),
-      ...mapState('task', {
-        securityScanStatuses: state => state.taskSecurityScanStatuses || {}
-      }),
       currentTheme () {
         if (this.theme === APP_THEME.AUTO) {
           return this.systemTheme
@@ -196,41 +186,8 @@
         return completedStatuses.includes(this.task.status)
       },
       completionTime () {
-        // 使用任务保存时间作为完成时间，如果没有保存时间则使用当前时间
         const timestamp = this.task.savedAt || Date.now()
         return new Date(timestamp).toLocaleString()
-      },
-      securityScanStatus () {
-        const { securityScanStatuses, task } = this
-        if (!securityScanStatuses || !task || !task.gid) {
-          return null
-        }
-        return securityScanStatuses[task.gid] || null
-      },
-      securityScanStatusText () {
-        const status = this.securityScanStatus && this.securityScanStatus.status
-        switch (status) {
-        case 'running':
-          return this.$t('task.security-scan-running')
-        case 'success':
-          return this.$t('task.security-scan-success')
-        case 'failed':
-          return this.$t('task.security-scan-failed')
-        case 'skipped':
-          return this.$t('task.security-scan-skipped')
-        default:
-          return this.$t('task.security-scan-not-scanned')
-        }
-      },
-      securityScanStatusClass () {
-        const status = this.securityScanStatus && this.securityScanStatus.status
-        return {
-          'security-scan-status': true,
-          'security-scan-status--running': status === 'running',
-          'security-scan-status--success': status === 'success',
-          'security-scan-status--failed': status === 'failed',
-          'security-scan-status--skipped': status === 'skipped'
-        }
       }
     },
     filters: {

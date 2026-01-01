@@ -52,16 +52,6 @@ const router = new Router({
               }
             },
             {
-              path: 'video',
-              components: {
-                subnav: require('@/components/Subnav/PreferenceSubnav').default,
-                form: require('@/components/Preference/Video').default
-              },
-              props: {
-                subnav: { current: 'video' }
-              }
-            },
-            {
               path: 'lab',
               components: {
                 subnav: require('@/components/Subnav/PreferenceSubnav').default,

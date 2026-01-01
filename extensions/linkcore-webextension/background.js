@@ -9,7 +9,10 @@ const extConfigDefaults = {
   interceptAllDownloads: false,
   silentDownload: false,
   skipFileExtensions: [],
-  shiftToggleEnabled: false
+  shiftToggleEnabled: false,
+  videoSnifferEnabled: true,
+  videoSnifferFormats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
+  videoSnifferAutoCombine: true
 }
 
 let extConfig = { ...extConfigDefaults }
@@ -149,18 +152,31 @@ const syncExtConfigFromClient = async () => {
     const shiftToggleEnabled = !!data.shiftToggleEnabled
     const rawList = Array.isArray(data.skipFileExtensions) ? data.skipFileExtensions : []
     const skipFileExtensions = rawList.map(x => `${x}`.trim().toLowerCase()).filter(Boolean)
+    
+    // 视频嗅探器配置
+    const videoSnifferEnabled = data.videoSnifferEnabled !== undefined ? !!data.videoSnifferEnabled : true
+    const videoSnifferFormats = Array.isArray(data.videoSnifferFormats) ? data.videoSnifferFormats : ['m4s', 'mp4', 'flv', 'webm', 'm3u8', 'ts']
+    const videoSnifferAutoCombine = data.videoSnifferAutoCombine !== undefined ? !!data.videoSnifferAutoCombine : true
+    
     const nextConfig = {
       interceptAllDownloads,
       silentDownload,
       skipFileExtensions,
-      shiftToggleEnabled
+      shiftToggleEnabled,
+      videoSnifferEnabled,
+      videoSnifferFormats,
+      videoSnifferAutoCombine
     }
     extConfig = nextConfig
-    extConfigSyncedOnce = true
-    if (extConfigTimer) {
-      clearInterval(extConfigTimer)
-      extConfigTimer = null
-    }
+    
+    // 保存到 chrome.storage 以便 content script 可以读取
+    chrome.storage.local.set({
+      videoSnifferEnabled,
+      videoSnifferFormats,
+      videoSnifferAutoCombine
+    }, () => {
+      console.log('[Background] Video sniffer config saved to storage:', { videoSnifferEnabled, videoSnifferFormats, videoSnifferAutoCombine })
+    })
   } catch (e) {
   }
 }
@@ -171,18 +187,21 @@ const startExtConfigPolling = () => {
     extConfigTimer = null
   }
   syncExtConfigFromClient()
-  if (!extConfigSyncedOnce) {
-    extConfigTimer = setInterval(syncExtConfigFromClient, 3000)
-  }
+  extConfigTimer = setInterval(syncExtConfigFromClient, 3000)
 }
 
-const addUri = async (url, referer) => {
+const addUri = async (url, referer, suggestedFilename) => {
   try {
     const headers = await getHeadersForUrl(url, referer)
+    const payload = { url, referer, headers }
+    // 如果有建议的文件名，添加到请求中
+    if (suggestedFilename) {
+      payload.suggestedFilename = suggestedFilename
+    }
     const ok = await tryChannel('/linkcore/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, referer, headers })
+      body: JSON.stringify(payload)
     }, 3000)
     if (!ok) return false
     const data = await ok.resp.json().catch(() => ({}))
@@ -486,7 +505,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return
       }
       const referer = msg.referer || ''
-      const ok = await addUri(url, referer)
+      const suggestedFilename = msg.suggestedFilename || ''
+      const ok = await addUri(url, referer, suggestedFilename)
       sendResponse({ ok })
     }
     handleAddFromContent()

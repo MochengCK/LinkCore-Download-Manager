@@ -9,36 +9,69 @@
       :rules="rules"
     >
       <div class="preference-card">
-        <h3 class="card-title">{{ $t('preferences.video-bilibili-card') }}</h3>
-        <el-form-item :label="$t('preferences.video-cookie')">
-          <el-input
-            type="textarea"
-            rows="4"
-            auto-complete="off"
-            v-model="form.videoCookie"
-            @input="autoSaveForm"
-          />
+        <h3 class="card-title">{{ $t('preferences.video-sniffer-card') }}</h3>
+        <el-form-item :label="$t('preferences.video-sniffer-enabled')">
+          <el-col :span="16">
+            <el-switch
+              v-model="form.videoSnifferEnabled"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              @change="handleSwitchChange"
+            />
+          </el-col>
           <div class="el-form-item__info" style="margin-top: 8px;">
-            {{ $t('preferences.video-cookie-tips') }}
+            {{ $t('preferences.video-sniffer-enabled-tips') }}
           </div>
         </el-form-item>
 
-        <el-form-item :label="$t('preferences.video-preferred-quality')">
-          <el-select v-model="form.videoPreferredQn" @change="autoSaveForm" :placeholder="$t('preferences.video-preferred-quality-placeholder')">
-            <el-option v-for="q in qualityOptions" :key="q.value" :label="q.label" :value="q.value" />
-          </el-select>
+        <el-form-item :label="$t('preferences.video-sniffer-auto-combine')">
+          <el-col :span="16">
+            <el-switch
+              v-model="form.videoSnifferAutoCombine"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              @change="handleSwitchChange"
+            />
+          </el-col>
           <div class="el-form-item__info" style="margin-top: 8px;">
-            {{ $t('preferences.video-preferred-quality-tips') }}
+            {{ $t('preferences.video-sniffer-auto-combine-tips') }}
           </div>
         </el-form-item>
 
-        <el-form-item :label="$t('preferences.video-preferred-format')">
-          <el-select v-model="form.videoPreferredFormat" @change="autoSaveForm" :placeholder="$t('preferences.video-preferred-format-placeholder')">
-            <el-option :key="'auto'" :label="$t('preferences.video-preferred-format-auto')" :value="''" />
-            <el-option v-for="f in formatOptions" :key="f.value" :label="f.label" :value="f.value" />
-          </el-select>
+        <el-form-item :label="$t('preferences.video-sniffer-formats')">
+          <div class="format-list">
+            <div v-for="(format, index) in form.videoSnifferFormats" :key="index" class="format-item">
+              <span class="format-ext">.{{ format }}</span>
+              <el-button
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                circle
+                @click="removeFormat(index)"
+              />
+            </div>
+            <div class="format-add">
+              <el-input
+                v-model="newFormatExt"
+                size="mini"
+                :placeholder="$t('preferences.video-sniffer-format-placeholder')"
+                @keyup.enter.native="addFormat"
+                style="width: 200px; margin-right: 8px;"
+              >
+                <template slot="prepend">.</template>
+              </el-input>
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-plus"
+                @click="addFormat"
+              >
+                {{ $t('preferences.video-sniffer-add-format') }}
+              </el-button>
+            </div>
+          </div>
           <div class="el-form-item__info" style="margin-top: 8px;">
-            {{ $t('preferences.video-preferred-format-tips') }}
+            {{ $t('preferences.video-sniffer-formats-tips') }}
           </div>
         </el-form-item>
       </div>
@@ -55,14 +88,14 @@
 <script>
   import { mapState } from 'vuex'
   import { isEmpty } from 'lodash'
-  import { diffConfig, normalizeCookie } from '@shared/utils'
+  import { diffConfig } from '@shared/utils'
 
   const initForm = (config) => {
     const c = config || {}
     return {
-      videoCookie: c.videoCookie || '',
-      videoPreferredQn: c.videoPreferredQn !== undefined && c.videoPreferredQn !== null ? c.videoPreferredQn : '',
-      videoPreferredFormat: c.videoPreferredFormat || ''
+      videoSnifferEnabled: c['video-sniffer-enabled'] !== undefined ? c['video-sniffer-enabled'] : true,
+      videoSnifferFormats: c['video-sniffer-formats'] || ['m4s', 'mp4', 'flv', 'webm', 'm3u8', 'ts'],
+      videoSnifferAutoCombine: c['video-sniffer-auto-combine'] !== undefined ? c['video-sniffer-auto-combine'] : true
     }
   }
 
@@ -75,24 +108,7 @@
         rules: {},
         saveTimeout: null,
         hasNoResults: false,
-        qualityOptions: [
-          { value: '', label: this.$t('preferences.video-preferred-quality-auto') },
-          { value: 16, label: '360P (16)' },
-          { value: 32, label: '480P (32)' },
-          { value: 64, label: '720P (64)' },
-          { value: 80, label: '1080P (80)' },
-          { value: 112, label: '1080P+ (112)' },
-          { value: 116, label: '1080P60 (116)' },
-          { value: 120, label: '4K (120)' }
-        ],
-        formatOptions: [
-          { value: 'mp4', label: 'MP4' },
-          { value: 'mkv', label: 'MKV' },
-          { value: 'mov', label: 'MOV' },
-          { value: 'm4v', label: 'M4V' },
-          { value: 'flv', label: 'FLV' },
-          { value: 'ts', label: 'TS' }
-        ]
+        newFormatExt: ''
       }
     },
     computed: {
@@ -127,6 +143,12 @@
       }
     },
     methods: {
+      handleSwitchChange () {
+        this.autoSaveForm()
+        this.$nextTick(() => {
+          this.formOriginal = { ...this.form }
+        })
+      },
       filterCards (keyword) {
         this.$nextTick(() => {
           if (!this.$el) return
@@ -151,29 +173,76 @@
         })
       },
       autoSaveForm () {
+        console.log('[Video.vue] autoSaveForm triggered')
         if (this.saveTimeout) {
           clearTimeout(this.saveTimeout)
         }
         this.saveTimeout = setTimeout(() => {
           const diff = diffConfig(this.formOriginal, this.form)
+          console.log('[Video.vue] config diff:', diff)
           if (!isEmpty(diff)) {
             this.submitForm(diff)
+          } else {
+            console.log('[Video.vue] no changes detected')
           }
         }, 100)
       },
       submitForm (payload) {
-        const nextPayload = { ...payload }
-        if (Object.prototype.hasOwnProperty.call(nextPayload, 'videoCookie')) {
-          nextPayload.videoCookie = normalizeCookie(nextPayload.videoCookie || '')
-        }
-        this.$store.dispatch('preference/save', nextPayload)
+        console.log('[Video.vue] submitForm payload:', payload)
+        this.$store.dispatch('preference/save', payload)
           .then(() => {
-            this.formOriginal = initForm({ ...this.config, ...nextPayload })
+            this.formOriginal = initForm({ ...this.config, ...payload })
             this.$msg.success(this.$t('preferences.save-success-message'))
           })
           .catch(() => {
             this.$msg.error(this.$t('preferences.save-fail-message'))
           })
+      },
+      addFormat () {
+        let ext = (this.newFormatExt || '').trim().toLowerCase()
+        if (ext.startsWith('.')) {
+          ext = ext.substring(1)
+        }
+        if (!ext) {
+          this.$msg.warning(this.$t('preferences.video-sniffer-format-empty'))
+          return
+        }
+        if (this.form.videoSnifferFormats.includes(ext)) {
+          this.$msg.warning(this.$t('preferences.video-sniffer-format-exists'))
+          return
+        }
+        this.form = {
+          ...this.form,
+          videoSnifferFormats: [...this.form.videoSnifferFormats, ext]
+        }
+        this.newFormatExt = ''
+        this.autoSaveForm()
+        this.$msg.success(this.$t('preferences.video-sniffer-format-added'))
+        this.$nextTick(() => {
+          this.formOriginal = { ...this.form }
+        })
+      },
+      removeFormat (index) {
+        const format = this.form.videoSnifferFormats[index]
+        this.$confirm(
+          this.$t('preferences.video-sniffer-format-remove-confirm', { format }),
+          this.$t('preferences.video-sniffer-format-remove-title'),
+          {
+            confirmButtonText: this.$t('preferences.video-sniffer-format-remove-confirm-button'),
+            cancelButtonText: this.$t('preferences.video-sniffer-format-remove-cancel-button'),
+            type: 'warning'
+          }
+        ).then(() => {
+          this.form = {
+            ...this.form,
+            videoSnifferFormats: this.form.videoSnifferFormats.filter((_, i) => i !== index)
+          }
+          this.autoSaveForm()
+          this.$msg.success(this.$t('preferences.video-sniffer-format-removed'))
+          this.$nextTick(() => {
+            this.formOriginal = { ...this.form }
+          })
+        }).catch(() => {})
       }
     }
   }
@@ -201,5 +270,43 @@
   text-align: center;
   font-size: 14px;
   color: #666;
+}
+
+.format-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.format-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  border: 1px solid #e4e7ed;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #ecf5ff;
+    border-color: #b3d8ff;
+  }
+}
+
+.format-ext {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: #409eff;
+  flex: 1;
+}
+
+.format-add {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #dcdfe6;
 }
 </style>

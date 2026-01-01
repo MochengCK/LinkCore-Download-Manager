@@ -59,19 +59,6 @@
             <mo-icon name="preference-advanced" width="20" height="20" />
           </el-tooltip>
         </li>
-        <li
-          @click="navPreference('video')"
-          :class="{ active: isActive('/preference/video') }"
-        >
-          <el-tooltip
-            effect="dark"
-            :content="$t('preferences.video')"
-            placement="left"
-            :open-delay="500"
-          >
-            <mo-icon name="preference-video" width="20" height="20" />
-          </el-tooltip>
-        </li>
       </ul>
     </div>
   </el-container>
@@ -82,7 +69,6 @@
   import SubnavSwitcher from '@/components/Subnav/SubnavSwitcher'
   import '@/components/Icons/preference-basic'
   import '@/components/Icons/preference-advanced'
-  import '@/components/Icons/preference-video'
 
   export default {
     name: 'mo-content-preference',
@@ -104,11 +90,6 @@
             key: 'advanced',
             title: this.$t('preferences.advanced'),
             route: '/preference/advanced'
-          },
-          {
-            key: 'video',
-            title: this.$t('preferences.video'),
-            route: '/preference/video'
           }
         ]
       },

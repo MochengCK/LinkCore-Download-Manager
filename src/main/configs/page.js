@@ -1,4 +1,12 @@
 import is from 'electron-is'
+import path from 'path'
+
+const getVideoSnifferUrl = () => {
+  if (is.dev()) {
+    return `file://${path.resolve(__dirname, '../pages/video-sniffer.html').replace(/\\/g, '/')}`
+  }
+  return `file://${path.join(__dirname, 'pages/video-sniffer.html').replace(/\\/g, '/')}`
+}
 
 export default {
   index: {
@@ -12,6 +20,19 @@ export default {
     },
     bindCloseToHide: true,
     openDevTools: is.dev(),
-    url: is.dev() ? 'http://localhost:9080' : require('path').join('file://', __dirname, '/index.html')
+    url: is.dev() ? 'http://localhost:9080' : `file://${path.join(__dirname, 'index.html').replace(/\\/g, '/')}`
+  },
+  'video-detection-settings': {
+    attrs: {
+      title: '视频嗅探设置',
+      width: 500,
+      height: 400,
+      resizable: false,
+      maximizable: false,
+      minimizable: true
+    },
+    bindCloseToHide: false,
+    openDevTools: is.dev(),
+    url: getVideoSnifferUrl()
   }
 }
