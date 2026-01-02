@@ -245,10 +245,16 @@ Contributions are welcome! Whether you're fixing bugs, adding new features, or i
 
 ### Development Guidelines
 
-- Follow the existing code style
+- Follow existing code style
 - Write clear, concise commit messages
 - Include tests for new features
 - Update documentation as needed
+
+## 💰 Sponsor
+
+If you find this project helpful, please consider sponsoring to support its continued development and maintenance.
+
+- [Sponsor on Afdian](https://afdian.com/a/LinkCore)
 
 ## 🙏 Credits
 
