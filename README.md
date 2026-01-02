@@ -268,4 +268,4 @@ If you encounter any issues or have questions:
 - Join our community for discussions and support
 ## 📄 License
 
-LinkCore Download Manager is licensed under the [MIT License](LICENSE).
+LinkCore Download Manager is licensed under the [GPL License](LICENSE).
