@@ -265,4 +265,5 @@ LinkCore-Download-Manager/
 - 加入我们的社区进行讨论和获取支持
 ## 📄 许可证
 
-联芯下载管理器基于 [MIT License](LICENSE) 开源。
+
+本项目采用 GNU 通用公共许可证 [GPLv3.0 License](LICENSE) 开源。
