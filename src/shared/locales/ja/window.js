@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'デフォルト設定に戻しますか？',
   'video-sniffer-reset-success': '設定がデフォルトに戻りました',
   'save': '保存',
-  'reset': 'リセット'
+  'reset': 'リセット',
+  'cancel': 'キャンセル',
+  'confirm': '確認'
 }

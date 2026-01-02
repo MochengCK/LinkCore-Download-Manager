@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Voulez-vous vraiment réinitialiser les paramètres par défaut?',
   'video-sniffer-reset-success': 'Paramètres réinitialisés par défaut',
   'save': 'Enregistrer',
-  'reset': 'Réinitialiser'
+  'reset': 'Réinitialiser',
+  'cancel': 'Annuler',
+  'confirm': 'Confirmer'
 }

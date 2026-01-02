@@ -362,7 +362,10 @@
         info.name = baseName
       }
 
-      if (ext === 'm4s' && (url.includes('bilivideo.com') || url.includes('hdslb.com'))) {
+      if (ext === 'm4s') {
+        const u = new URL(url)
+        const host = u.hostname
+        if (host.endsWith('.bilivideo.com') || host.endsWith('.hdslb.com')) {
         const qualityMap = {
           '100027': '8K', '100026': '1080P', '100025': '4K', '100024': '720P',
           '100023': '480P', '100022': '360P', '100021': '240P',
@@ -396,6 +399,7 @@
         const params = new URLSearchParams(urlObj.search)
         if (params.has('len')) {
           info.size = parseInt(params.get('len')) || 0
+        }
         }
       } else {
         info.quality = ext.toUpperCase()

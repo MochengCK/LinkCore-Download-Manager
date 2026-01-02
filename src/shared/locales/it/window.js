@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Sei sicuro di voler ripristinare le impostazioni predefinite?',
   'video-sniffer-reset-success': 'Impostazioni ripristinate ai valori predefiniti',
   'save': 'Salva',
-  'reset': 'Ripristina'
+  'reset': 'Ripristina',
+  'cancel': 'Annulla',
+  'confirm': 'Conferma'
 }

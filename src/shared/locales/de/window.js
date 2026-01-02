@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Möchten Sie die Einstellungen wirklich auf Standard zurücksetzen?',
   'video-sniffer-reset-success': 'Einstellungen auf Standard zurückgesetzt',
   'save': 'Speichern',
-  'reset': 'Zurücksetzen'
+  'reset': 'Zurücksetzen',
+  'cancel': 'Abbrechen',
+  'confirm': 'Bestätigen'
 }

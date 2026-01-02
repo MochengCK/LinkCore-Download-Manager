@@ -1,8 +1,7 @@
 const defaults = {
   host: '127.0.0.1',
   port: 16800,
-  secret: '',
-  autoHijack: true
+  secret: ''
 }
 
 const extConfigDefaults = {
@@ -19,6 +18,86 @@ let extConfig = { ...extConfigDefaults }
 let extConfigTimer = null
 let extConfigSyncedOnce = false
 const AUTO_HIJACK_OVERRIDE_KEY = 'autoHijackTemporarilyDisabled'
+let sessionToken = null
+let tokenVersion = null
+
+const fetchHandshake = async () => {
+  try {
+    const result = await tryChannel('/linkcore/handshake', { method: 'GET' }, 2000)
+    if (!result || !result.resp || !result.resp.ok) {
+      return null
+    }
+    const data = await result.resp.json().catch(() => null)
+    if (data && data.challenge) {
+      console.log('[Background] Challenge acquired:', data.challenge)
+      return data
+    }
+  } catch (e) {
+    console.log('[Background] Failed to fetch handshake:', e)
+  }
+  return null
+}
+
+const authorizeWithChallenge = async (challenge) => {
+  try {
+    const extensionId = chrome.runtime.id
+    const timestamp = Date.now()
+
+    // 生成签名
+    const signatureString = `${challenge}${extensionId}${timestamp}`
+
+    // 使用简单的哈希作为签名
+    const encoder = new TextEncoder()
+    const encodedData = encoder.encode(signatureString)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encodedData)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const signature = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('')
+
+    console.log('[Background] Authorizing with challenge:', challenge.substring(0, 8) + '...')
+
+    // 直接使用 fetchWithTimeout，避免 tryChannel 的循环
+    const hosts = ['127.0.0.1', 'localhost']
+    for (const h of hosts) {
+      try {
+        const url = `http://${h}:${CHANNEL_PORT}/linkcore/authorize`
+        const resp = await fetchWithTimeout(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            challenge,
+            signature,
+            extensionId,
+            timestamp
+          })
+        }, 2000)
+
+        if (resp && resp.ok) {
+          const data = await resp.json().catch(() => null)
+          if (data && data.token) {
+            sessionToken = data.token
+            tokenVersion = data.tokenVersion
+            console.log('[Background] Session token acquired:', sessionToken.substring(0, 20) + '...', 'version:', tokenVersion)
+            return data
+          }
+        } else if (resp && resp.status === 401) {
+          console.log('[Background] Authorization failed: 401 Unauthorized')
+        } else if (resp) {
+          console.log('[Background] Authorization failed: status', resp.status)
+        }
+      } catch (e) {
+        console.log('[Background] Authorization error:', e.message)
+      }
+    }
+
+    console.log('[Background] Authorization failed for all hosts')
+    return null
+  } catch (e) {
+    console.log('[Background] Failed to authorize:', e)
+    return null
+  }
+}
 
 const getConfig = () => {
   return new Promise((resolve) => {
@@ -109,11 +188,65 @@ const notifyConnectionChange = (connected) => {
 
 const tryChannel = async (path, options = {}, timeout = 1000) => {
   const hosts = ['127.0.0.1', 'localhost']
-  
+
+  // 对于需要认证的请求，先确保 token 有效
+  if (!path.startsWith('/linkcore/handshake') && !path.startsWith('/linkcore/authorize')) {
+    const tokenValid = await ensureSessionToken()
+    if (!tokenValid) {
+      console.log('[Background] Failed to ensure session token')
+      return null
+    }
+  }
+
   for (const h of hosts) {
     try {
       const url = `http://${h}:${CHANNEL_PORT}${path}`
-      const resp = await fetchWithTimeout(url, options, timeout)
+      const headers = { ...options.headers }
+
+      // 只在非认证相关的请求中添加 Authorization header
+      if (sessionToken && !path.startsWith('/linkcore/handshake') && !path.startsWith('/linkcore/authorize')) {
+        headers['Authorization'] = `Bearer ${sessionToken}`
+        if (tokenVersion !== null) {
+          headers['X-Token-Version'] = tokenVersion.toString()
+        }
+      }
+
+      const resp = await fetchWithTimeout(url, { ...options, headers }, timeout)
+
+      if (resp && resp.status === 401) {
+        console.log('[Background] Token invalid, refreshing...')
+        const handshakeResult = await fetchHandshake()
+        if (handshakeResult && handshakeResult.challenge) {
+          console.log('[Background] Got challenge, authorizing...')
+          const authResult = await authorizeWithChallenge(handshakeResult.challenge)
+          if (authResult && authResult.token) {
+            console.log('[Background] Authorization successful, retrying request...')
+            if (sessionToken && !path.startsWith('/linkcore/handshake') && !path.startsWith('/linkcore/authorize')) {
+              headers['Authorization'] = `Bearer ${sessionToken}`
+              if (tokenVersion !== null) {
+                headers['X-Token-Version'] = tokenVersion.toString()
+              }
+              const retryResp = await fetchWithTimeout(url, { ...options, headers }, timeout)
+              console.log('[Background] Retry response status:', retryResp ? retryResp.status : 'no response')
+              if (retryResp && retryResp.ok) {
+                if (!lastConnectionCheck.connected) {
+                  notifyConnectionChange(true)
+                }
+                lastConnectionCheck.connected = true
+                lastConnectionCheck.lastCheckTime = Date.now()
+                return { host: h, resp: retryResp }
+              }
+            } else {
+              console.log('[Background] No session token after authorization')
+            }
+          } else {
+            console.log('[Background] Authorization failed')
+          }
+        } else {
+          console.log('[Background] Failed to get challenge')
+        }
+      }
+
       if (resp && resp.ok) {
         // 检测连接状态变化
         if (!lastConnectionCheck.connected) {
@@ -127,7 +260,7 @@ const tryChannel = async (path, options = {}, timeout = 1000) => {
       // 静默处理连接失败,不打印日志
     }
   }
-  
+
   // 所有主机都失败 - 检测连接状态变化
   if (lastConnectionCheck.connected) {
     notifyConnectionChange(false)
@@ -135,6 +268,30 @@ const tryChannel = async (path, options = {}, timeout = 1000) => {
   lastConnectionCheck.connected = false
   lastConnectionCheck.lastCheckTime = Date.now()
   return null
+}
+
+// 确保 session token 有效
+const ensureSessionToken = async () => {
+  if (sessionToken) {
+    console.log('[Background] Session token exists, skipping refresh')
+    return true
+  }
+
+  console.log('[Background] No session token, acquiring...')
+  const handshakeResult = await fetchHandshake()
+  if (handshakeResult && handshakeResult.challenge) {
+    const authResult = await authorizeWithChallenge(handshakeResult.challenge)
+    if (authResult && authResult.token) {
+      console.log('[Background] Session token acquired successfully')
+      return true
+    } else {
+      console.log('[Background] Failed to authorize')
+      return false
+    }
+  } else {
+    console.log('[Background] Failed to get challenge')
+    return false
+  }
 }
 
 const syncExtConfigFromClient = async () => {
@@ -231,7 +388,7 @@ const getHeadersForUrl = async (url, referer) => {
   return hs
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
     id: 'linkcore-download',
     title: chrome.i18n.getMessage('contextMenuDownload'),
@@ -242,6 +399,11 @@ chrome.runtime.onInstalled.addListener(() => {
   } catch (e) {}
   // 预探测一次,提升首用体验
   probeRpc()
+  // 获取 challenge 并授权
+  const handshakeResult = await fetchHandshake()
+  if (handshakeResult && handshakeResult.challenge) {
+    await authorizeWithChallenge(handshakeResult.challenge)
+  }
   // 同步客户端语言
   syncLocaleFromClient()
   // 启动语言监听
@@ -251,10 +413,15 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 // 启动时也要启动语言监听
-chrome.runtime.onStartup.addListener(() => {
+chrome.runtime.onStartup.addListener(async () => {
   try {
     chrome.storage.local.set({ [AUTO_HIJACK_OVERRIDE_KEY]: false }, () => {})
   } catch (e) {}
+  // 获取 challenge 并授权
+  const handshakeResult = await fetchHandshake()
+  if (handshakeResult && handshakeResult.challenge) {
+    await authorizeWithChallenge(handshakeResult.challenge)
+  }
   syncLocaleFromClient()
   startLocalePolling()
   startExtConfigPolling()
@@ -536,8 +703,7 @@ chrome.downloads.onCreated.addListener((item) => {
       return
     }
     await syncExtConfigFromClient()
-    const cfg = await getConfig()
-    const effectiveAutoHijack = !!cfg.autoHijack || !!extConfig.interceptAllDownloads
+    const effectiveAutoHijack = !!extConfig.interceptAllDownloads
     if (!effectiveAutoHijack) return
     const url = item && item.url ? item.url : ''
     if (!url || !/^https?:/i.test(url)) return

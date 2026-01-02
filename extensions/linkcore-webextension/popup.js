@@ -1,4 +1,4 @@
-const defaults = { host: '127.0.0.1', port: 16800, secret: '', autoHijack: true }
+const defaults = { host: '127.0.0.1', port: 16800, secret: '' }
 
 const getConfig = () => new Promise((r) => chrome.storage.local.get(defaults, (c) => r(c || defaults)))
 const setConfig = (d) => new Promise((r) => chrome.storage.local.set(d, () => r(true)))
@@ -18,8 +18,7 @@ const initI18n = async () => {
     { id: 'labelClientVersion', key: 'clientVersion' },
     { id: 'labelGlobalSpeed', key: 'totalSpeed' },
     { id: 'labelDownloadTasks', key: 'downloadTasks' },
-    { id: 'emptyState', key: 'noTasks' },
-    { id: 'labelAutoHijack', key: 'autoHijack' }
+    { id: 'emptyState', key: 'noTasks' }
   ]
   
   elements.forEach(({ id, key }) => {
@@ -51,7 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const cfg = await getConfig()
   document.getElementById('rpc').textContent = `RPC: http://${cfg.host}:${cfg.port}`
-  document.getElementById('autoHijack').checked = !!cfg.autoHijack
   startPolling()
   startVersionPolling()
   chrome.runtime.sendMessage({ type: 'probe' }, async (ok) => {
@@ -100,11 +98,6 @@ const setupLocaleChangeListener = () => {
   })
   console.log('[Popup] Locale change listener set up')
 }
-
-document.getElementById('autoHijack').addEventListener('change', async (e) => {
-  const cfg = await getConfig()
-  await setConfig({ ...cfg, autoHijack: !!e.target.checked })
-})
 
 let timer = null
 let versionTimer = null

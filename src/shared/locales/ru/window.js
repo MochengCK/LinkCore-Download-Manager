@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Вы уверены, что хотите сбросить настройки по умолчанию?',
   'video-sniffer-reset-success': 'Настройки сброшены по умолчанию',
   'save': 'Сохранить',
-  'reset': 'Сброс'
+  'reset': 'Сброс',
+  'cancel': 'Отмена',
+  'confirm': 'Подтвердить'
 }

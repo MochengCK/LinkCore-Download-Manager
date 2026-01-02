@@ -169,12 +169,56 @@
       config.formats.forEach((format, index) => {
         const tag = document.createElement('div')
         tag.className = 'format-tag'
-        tag.innerHTML = `
-          ${format}
-          <span class="remove-btn" data-index="${index}">×</span>
-        `
+        
+        const text = document.createTextNode(format)
+        tag.appendChild(text)
+        
+        const removeBtn = document.createElement('span')
+        removeBtn.className = 'remove-btn'
+        removeBtn.dataset.index = index
+        removeBtn.textContent = '×'
+        
+        tag.appendChild(removeBtn)
         formatList.appendChild(tag)
       })
+
+      const addBtn = document.createElement('div')
+      addBtn.className = 'format-tag add-btn'
+      addBtn.textContent = '+'
+      addBtn.addEventListener('click', showAddFormatDialog)
+      formatList.appendChild(addBtn)
+    }
+
+    adjustWindowSize()
+  }
+
+  function adjustWindowSize () {
+    try {
+      if (window.require) {
+        const { getCurrentWindow } = window.require('@electron/remote')
+        const win = getCurrentWindow()
+        if (!win) return
+
+        const formatList = document.getElementById('formatList')
+        if (!formatList) return
+
+        const formatCount = config.formats.length
+        const baseHeight = 420
+        const heightPerRow = 32
+        const formatsPerRow = Math.floor(500 / 80)
+        const rows = Math.ceil(formatCount / formatsPerRow)
+        const additionalHeight = rows > 1 ? (rows - 1) * heightPerRow : 0
+        const newHeight = baseHeight + additionalHeight
+
+        const [currentWidth, currentHeight] = win.getSize()
+        if (currentHeight !== newHeight) {
+          win.setSize(currentWidth, newHeight)
+          win.setMinimumSize(500, newHeight)
+          log('Window size adjusted to:', currentWidth, newHeight)
+        }
+      }
+    } catch (e) {
+      console.error('[Video Sniffer] Failed to adjust window size:', e)
     }
   }
 
@@ -187,8 +231,6 @@
     const videoSnifferAutoCombineTips = document.getElementById('videoSnifferAutoCombineTips')
     const videoSnifferFormatsLabel = document.getElementById('videoSnifferFormatsLabel')
     const videoSnifferFormatsTips = document.getElementById('videoSnifferFormatsTips')
-    const addFormatBtn = document.getElementById('addFormatBtn')
-    const newFormatInput = document.getElementById('newFormat')
     const resetBtn = document.getElementById('resetBtn')
     const saveBtn = document.getElementById('saveBtn')
 
@@ -224,14 +266,6 @@
       videoSnifferFormatsTips.textContent = t('video-sniffer-formats-tips')
     }
 
-    if (addFormatBtn) {
-      addFormatBtn.textContent = t('video-sniffer-add-format')
-    }
-
-    if (newFormatInput) {
-      newFormatInput.placeholder = t('video-sniffer-format-placeholder')
-    }
-
     if (resetBtn) {
       resetBtn.textContent = t('reset')
     }
@@ -241,19 +275,90 @@
     }
   }
 
+  async function showAddFormatDialog () {
+    try {
+      if (window.require) {
+        const { BrowserWindow } = window.require('@electron/remote')
+        const { ipcRenderer } = window.require('electron')
+        
+        const parentWindow = BrowserWindow.getFocusedWindow()
+        
+        ipcRenderer.removeAllListeners('video-sniffer-format-added')
+        
+        let useCustomFrame = false
+        try {
+          const appConfig = await ipcRenderer.invoke('get-app-config')
+          if (appConfig && appConfig['hide-app-menu']) {
+            useCustomFrame = appConfig['hide-app-menu']
+          }
+        } catch (e) {
+          console.error('[Video Sniffer] Failed to get app config:', e)
+        }
+        
+        const win = new BrowserWindow({
+          width: 400,
+          height: 220,
+          resizable: false,
+          maximizable: false,
+          minimizable: false,
+          frame: !useCustomFrame,
+          parent: parentWindow,
+          modal: true,
+          webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true
+          }
+        })
+        
+        const isDev = typeof __dirname === 'string' && __dirname.includes('src')
+        const url = isDev 
+          ? `file://${__dirname.replace(/\\/g, '/').replace('src/main/pages', 'src/main/pages')}/video-sniffer-add-format.html`
+          : `file://${__dirname.replace(/\\/g, '/')}/video-sniffer-add-format.html`
+        
+        win.loadURL(url)
+        
+        ipcRenderer.once('video-sniffer-format-added', (event, format) => {
+          addFormat(format)
+        })
+        
+        win.on('closed', () => {
+          ipcRenderer.removeAllListeners('video-sniffer-format-added')
+        })
+      }
+    } catch (e) {
+      console.error('[Video Sniffer] Failed to open add format window:', e)
+    }
+  }
+
   function addFormat (format) {
     format = format.trim().toLowerCase()
     if (!format) return
     if (config.formats.includes(format)) {
-      alert(t('video-sniffer-format-exists'))
+      try {
+        if (window.require) {
+          const { dialog } = window.require('@electron/remote')
+          dialog.showMessageBox({
+            type: 'warning',
+            title: t('video-sniffer-add-format'),
+            message: t('video-sniffer-format-exists'),
+            buttons: [t('confirm')],
+            defaultId: 0
+          })
+        }
+      } catch (e) {
+        console.error('[Video Sniffer] Failed to show dialog:', e)
+      }
       return
     }
     config.formats.push(format)
+    saveSettings()
     updateUI()
   }
 
   function removeFormat (index) {
     config.formats.splice(index, 1)
+    saveSettings()
     updateUI()
   }
 
@@ -292,9 +397,6 @@
 
     const enabledCheckbox = document.getElementById('videoSnifferEnabled')
     const autoCombineCheckbox = document.getElementById('videoSnifferAutoCombine')
-    const newFormatInput = document.getElementById('newFormat')
-    const addFormatBtn = document.getElementById('addFormatBtn')
-    const saveBtn = document.getElementById('saveBtn')
     const resetBtn = document.getElementById('resetBtn')
     const closeBtn = document.getElementById('closeBtn')
     const minimizeBtn = document.getElementById('minimizeBtn')
@@ -335,6 +437,7 @@
     if (enabledCheckbox) {
       enabledCheckbox.addEventListener('change', (e) => {
         config.enabled = e.target.checked
+        saveSettings()
         log('Enabled changed:', config.enabled)
       })
     }
@@ -342,32 +445,8 @@
     if (autoCombineCheckbox) {
       autoCombineCheckbox.addEventListener('change', (e) => {
         config.autoCombine = e.target.checked
-        log('AutoCombine changed:', config.autoCombine)
-      })
-    }
-
-    if (addFormatBtn) {
-      addFormatBtn.addEventListener('click', () => {
-        if (newFormatInput) {
-          addFormat(newFormatInput.value)
-          newFormatInput.value = ''
-        }
-      })
-    }
-
-    if (newFormatInput) {
-      newFormatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          addFormat(newFormatInput.value)
-          newFormatInput.value = ''
-        }
-      })
-    }
-
-    if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
         saveSettings()
-        alert(t('video-sniffer-settings-saved'))
+        log('AutoCombine changed:', config.autoCombine)
       })
     }
 
@@ -392,17 +471,35 @@
     try {
       if (window.require) {
         const { ipcRenderer } = window.require('electron')
-        ipcRenderer.on('application:update-system-theme', (event, data) => {
-          log('Theme updated:', data)
-          if (data && data.theme) {
-            const theme = data.theme
-            if (theme === 'dark') {
-              applyTheme('dark')
-            } else if (theme === 'light') {
-              applyTheme('light')
-            } else if (theme === 'auto') {
-              const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-              applyTheme(isDark ? 'dark' : 'light')
+        ipcRenderer.on('command', (event, command, ...args) => {
+          log('Command received:', command, args)
+          if (command === 'application:update-system-theme') {
+            const data = args[0]
+            log('System theme updated:', data)
+            if (data && data.theme) {
+              const theme = data.theme
+              if (theme === 'dark') {
+                applyTheme('dark')
+              } else if (theme === 'light') {
+                applyTheme('light')
+              } else if (theme === 'auto') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+                applyTheme(isDark ? 'dark' : 'light')
+              }
+            }
+          } else if (command === 'application:update-theme') {
+            const data = args[0]
+            log('Theme updated:', data)
+            if (data && data.theme) {
+              const theme = data.theme
+              if (theme === 'dark') {
+                applyTheme('dark')
+              } else if (theme === 'light') {
+                applyTheme('light')
+              } else if (theme === 'auto') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+                applyTheme(isDark ? 'dark' : 'light')
+              }
             }
           }
         })

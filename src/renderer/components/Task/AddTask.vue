@@ -942,11 +942,12 @@
                   name = name.substring(0, cutIdx)
                 }
               }
-              // 使用建议的文件名
+              // 使用建议的文件名并确保唯一
+              const uniqueName = this.generateUniqueTaskName(suggestedName)
               return {
-                name: suggestedName,
+                name: uniqueName,
                 originalName: suggestedName,
-                renamed: true,
+                renamed: uniqueName !== suggestedName,
                 sizeText: '-',
                 editing: false,
                 priority: 0,
@@ -955,10 +956,11 @@
                 existsInHistory
               }
             } catch (e) {
+              const uniqueName = this.generateUniqueTaskName(suggestedName)
               return {
-                name: suggestedName,
+                name: uniqueName,
                 originalName: suggestedName,
-                renamed: true,
+                renamed: uniqueName !== suggestedName,
                 sizeText: '-',
                 editing: false,
                 priority: 0,
@@ -973,10 +975,12 @@
           const existing = existingMap.get(u)
           if (existing) {
             const originalName = existing.originalName || existing.name || ''
+            const uniqueName = this.generateUniqueTaskName(existing.name)
             return {
               ...existing,
+              name: uniqueName,
               originalName,
-              renamed: !!existing.renamed,
+              renamed: uniqueName !== existing.name,
               order: i,
               existsInHistory
             }
@@ -994,12 +998,13 @@
                 name = name.substring(0, cutIdx)
               }
             }
-            // 使用建议的文件名（如果存在）
+            // 使用建议的文件名（如果存在）并确保唯一
             const finalName = suggestedName || name
+            const uniqueName = this.generateUniqueTaskName(finalName)
             return {
-              name: finalName,
+              name: uniqueName,
               originalName: finalName,
-              renamed: !!suggestedName,
+              renamed: uniqueName !== finalName,
               sizeText: '-',
               editing: false,
               priority: 0,
@@ -1009,10 +1014,11 @@
             }
           } catch (e) {
             const finalName = suggestedName || u
+            const uniqueName = this.generateUniqueTaskName(finalName)
             return {
-              name: finalName,
+              name: uniqueName,
               originalName: finalName,
-              renamed: !!suggestedName,
+              renamed: uniqueName !== finalName,
               sizeText: '-',
               editing: false,
               priority: 0,
@@ -1337,6 +1343,28 @@
           this._historyUrlSet = this.buildHistoryUrlSet()
         }
         return this._historyUrlSet.has(normalizedUrl)
+      },
+      generateUniqueTaskName (name) {
+        if (!name) return name
+
+        const taskList = this.taskList || []
+        const existingNames = new Set(taskList.map(t => t.name))
+
+        if (!existingNames.has(name)) {
+          return name
+        }
+
+        let counter = 1
+        let uniqueName = name
+        const nameWithoutExt = name.includes('.') ? name.substring(0, name.lastIndexOf('.')) : name
+        const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : ''
+
+        while (existingNames.has(uniqueName)) {
+          counter++
+          uniqueName = `${nameWithoutExt} (${counter})${ext}`
+        }
+
+        return uniqueName
       },
       warnDuplicateHistoryOnce () {
         const duplicates = (this.parsedTasks || []).filter(t => t && t.existsInHistory && !t.renamed)

@@ -8,6 +8,13 @@ const getVideoSnifferUrl = () => {
   return `file://${path.join(__dirname, 'pages/video-sniffer.html').replace(/\\/g, '/')}`
 }
 
+const getVideoSnifferAddFormatUrl = () => {
+  if (is.dev()) {
+    return `file://${path.resolve(__dirname, '../pages/video-sniffer-add-format.html').replace(/\\/g, '/')}`
+  }
+  return `file://${path.join(__dirname, 'pages/video-sniffer-add-format.html').replace(/\\/g, '/')}`
+}
+
 export default {
   index: {
     attrs: {
@@ -26,7 +33,8 @@ export default {
     attrs: {
       title: '视频嗅探设置',
       width: 500,
-      height: 399,
+      height: 450,
+      minHeight: 399,
       resizable: false,
       maximizable: false,
       minimizable: true
@@ -34,5 +42,18 @@ export default {
     bindCloseToHide: false,
     openDevTools: is.dev(),
     url: getVideoSnifferUrl()
+  },
+  'video-sniffer-add-format': {
+    attrs: {
+      title: '添加格式',
+      width: 400,
+      height: 220,
+      resizable: false,
+      maximizable: false,
+      minimizable: false
+    },
+    bindCloseToHide: false,
+    openDevTools: is.dev(),
+    url: getVideoSnifferAddFormatUrl()
   }
 }

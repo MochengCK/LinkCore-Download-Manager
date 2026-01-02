@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Tem certeza que deseja restaurar as configurações padrão?',
   'video-sniffer-reset-success': 'Configurações restauradas para o padrão',
   'save': 'Salvar',
-  'reset': 'Restaurar'
+  'reset': 'Restaurar',
+  'cancel': 'Cancelar',
+  'confirm': 'Confirmar'
 }

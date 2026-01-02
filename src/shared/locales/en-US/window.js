@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': 'Are you sure you want to reset to default settings?',
   'video-sniffer-reset-success': 'Settings reset to default',
   'save': 'Save',
-  'reset': 'Reset'
+  'reset': 'Reset',
+  'cancel': 'Cancel',
+  'confirm': 'Confirm'
 }

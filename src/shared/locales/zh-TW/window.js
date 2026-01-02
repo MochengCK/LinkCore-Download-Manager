@@ -19,5 +19,7 @@ export default {
   'video-sniffer-reset-confirm': '確定要恢復預設設定嗎？',
   'video-sniffer-reset-success': '設定已恢復預設',
   'save': '儲存',
-  'reset': '恢復預設'
+  'reset': '恢復預設',
+  'cancel': '取消',
+  'confirm': '確定'
 }

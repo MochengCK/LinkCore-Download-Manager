@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events'
 import { spawn } from 'node:child_process'
 import { readFile, unlink } from 'node:fs'
 import { extname, basename } from 'node:path'
+import { randomBytes, createHash } from 'node:crypto'
 import { app, shell, dialog, ipcMain } from 'electron'
 import { createServer } from 'node:http'
 import is from 'electron-is'
@@ -59,6 +60,18 @@ export default class Application extends EventEmitter {
       formats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
       autoCombine: true
     }
+
+    // 安全机制：挑战-响应认证
+    this.startupNonce = randomBytes(8).toString('hex')
+    this.challenges = new Map()
+    this.sessionTokens = new Map()
+    this.tokenVersion = Date.now()
+
+    // 清理过期的 challenge
+    setInterval(() => {
+      this.cleanupExpiredChallenges()
+    }, 30000) // 每30秒清理一次
+
     this.init()
   }
 
@@ -128,11 +141,265 @@ export default class Application extends EventEmitter {
 
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Token-Version, X-Signature, X-Extension-Id, X-Timestamp, X-Session-Token')
+        res.setHeader('Access-Control-Allow-Credentials', 'true')
+        res.setHeader('Access-Control-Max-Age', '86400')
 
         if (req.method === 'OPTIONS') {
           res.writeHead(204)
           res.end()
+          return
+        }
+
+        if (url.startsWith('/linkcore/handshake')) {
+          const challenge = randomBytes(16).toString('hex')
+          const expiresAt = Date.now() + 3000 // 3秒过期
+          this.challenges.set(challenge, {
+            expiresAt,
+            createdAt: Date.now()
+          })
+          const version = app.getVersion()
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({
+            challenge,
+            expires: 3000,
+            version
+          }))
+          return
+        }
+
+        if (url.startsWith('/linkcore/authorize')) {
+          if (req.method !== 'POST') {
+            res.writeHead(405, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'Method not allowed' }))
+            return
+          }
+
+          let body = ''
+          req.on('data', (chunk) => {
+            body += chunk
+          })
+          req.on('end', async () => {
+            try {
+              const payload = JSON.parse(body)
+              const { challenge, signature, extensionId } = payload
+
+              // 验证 challenge
+              const challengeData = this.challenges.get(challenge)
+              if (!challengeData) {
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Invalid challenge' }))
+                return
+              }
+
+              // 验证 challenge 是否过期
+              if (Date.now() > challengeData.expiresAt) {
+                this.challenges.delete(challenge)
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Challenge expired' }))
+                return
+              }
+
+              // 验证 extensionId 格式
+              if (!extensionId || typeof extensionId !== 'string' || extensionId.length < 10) {
+                console.log('[Security] Invalid extension ID:', extensionId)
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Invalid extension ID' }))
+                return
+              }
+
+              // 验证签名
+              // 签名应该包含：challenge + extensionId + timestamp
+              // 由于浏览器扩展无法访问应用程序的 startupNonce，这里我们使用 challenge + extensionId + timestamp
+              if (!signature || typeof signature !== 'string') {
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Invalid signature' }))
+                return
+              }
+
+              // 验证时间戳（防止重放攻击）
+              const timestamp = payload.timestamp
+              if (!timestamp || typeof timestamp !== 'number') {
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Invalid timestamp' }))
+                return
+              }
+
+              // 时间戳必须在 60 秒内
+              const now = Date.now()
+              if (Math.abs(now - timestamp) > 60000) {
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Timestamp expired' }))
+                return
+              }
+
+              // 计算预期的签名
+              const signatureString = `${challenge}${extensionId}${timestamp}`
+              const expectedSignature = createHash('sha256').update(signatureString).digest('hex')
+
+              // 验证签名是否匹配
+              if (signature !== expectedSignature) {
+                console.log('[Security] Signature mismatch:', {
+                  expected: expectedSignature,
+                  received: signature
+                })
+                res.writeHead(401, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ error: 'Signature mismatch' }))
+                return
+              }
+
+              // 生成 session token
+              const sessionToken = randomBytes(32).toString('hex')
+
+              this.sessionTokens.set(sessionToken, {
+                challenge,
+                extensionId,
+                createdAt: Date.now(),
+                tokenVersion: this.tokenVersion
+              })
+
+              // 删除已使用的 challenge
+              this.challenges.delete(challenge)
+
+              const responseData = {
+                token: sessionToken,
+                tokenVersion: this.tokenVersion
+              }
+              console.log('[Security] Authorization successful, returning:', {
+                token: sessionToken.substring(0, 20) + '...',
+                tokenVersion: this.tokenVersion
+              })
+
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify(responseData))
+            } catch (err) {
+              res.writeHead(400, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: 'Invalid request' }))
+            }
+          })
+          return
+        }
+
+        if (url.startsWith('/linkcore/ext-config')) {
+          try {
+            const interceptAllDownloads = !!this.configManager.getUserConfig('extension-intercept-all-downloads', false)
+            const silentDownload = !!this.configManager.getUserConfig('extension-silent-download', false)
+            const shiftToggleEnabled = !!this.configManager.getUserConfig('extension-shift-toggle-enabled', false)
+            const skipRaw = this.configManager.getUserConfig('extension-skip-file-extensions', '')
+            let skipFileExtensions = []
+            if (typeof skipRaw === 'string') {
+              const normalizeSkipExt = (x) => removeExtensionDot(`${x}`.trim().toLowerCase())
+              skipFileExtensions = skipRaw.split(/[,;\n]/).map(normalizeSkipExt).filter(Boolean)
+            } else if (Array.isArray(skipRaw)) {
+              const normalizeSkipExt = (x) => removeExtensionDot(`${x}`.trim().toLowerCase())
+              skipFileExtensions = skipRaw.map(normalizeSkipExt).filter(Boolean)
+            }
+
+            const videoSnifferEnabled = this._videoSnifferConfig.enabled
+            const videoSnifferFormats = this._videoSnifferConfig.formats
+            const videoSnifferAutoCombine = this._videoSnifferConfig.autoCombine
+
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+              interceptAllDownloads,
+              silentDownload,
+              shiftToggleEnabled,
+              skipFileExtensions,
+              videoSnifferEnabled,
+              videoSnifferFormats,
+              videoSnifferAutoCombine
+            }))
+          } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+              interceptAllDownloads: false,
+              silentDownload: false,
+              shiftToggleEnabled: false,
+              skipFileExtensions: [],
+              videoSnifferEnabled: false,
+              videoSnifferFormats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
+              videoSnifferAutoCombine: true
+            }))
+          }
+          return
+        }
+
+        if (url.startsWith('/linkcore/locale')) {
+          const locale = this.configManager.getLocale()
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ locale }))
+          return
+        }
+
+        const validateToken = () => {
+          const authHeader = req.headers.authorization || req.headers['x-session-token']
+          if (!authHeader) {
+            console.log('[Security] Token validation failed: no auth header', {
+              url: url,
+              method: req.method,
+              headers: Object.keys(req.headers)
+            })
+            return false
+          }
+          const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
+
+          const sessionData = this.sessionTokens.get(token)
+          if (!sessionData) {
+            console.log('[Security] Token validation failed: token not found', {
+              token: token.substring(0, 20) + '...',
+              url: url
+            })
+            return false
+          }
+
+          return true
+        }
+
+        if (!validateToken()) {
+          const clientIp = req.socket.remoteAddress || 'unknown'
+          const requestPath = url
+          const requestMethod = req.method || 'GET'
+
+          console.log('[Security] Unauthorized request detected:', {
+            ip: clientIp,
+            path: requestPath,
+            method: requestMethod,
+            timestamp: new Date().toISOString()
+          })
+
+          res.writeHead(401, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Unauthorized' }))
+          return
+        }
+
+        const validateTokenVersion = () => {
+          const authHeader = req.headers.authorization || req.headers['x-session-token']
+          if (!authHeader) {
+            console.log('[Security] Token version validation failed: no auth header')
+            return false
+          }
+          const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
+
+          const sessionData = this.sessionTokens.get(token)
+          if (!sessionData) {
+            console.log('[Security] Token version validation failed: token not found')
+            return false
+          }
+
+          const isValid = sessionData.tokenVersion === this.tokenVersion
+          if (!isValid) {
+            console.log('[Security] Token version mismatch:', {
+              sessionTokenVersion: sessionData.tokenVersion,
+              currentTokenVersion: this.tokenVersion,
+              token: token.substring(0, 20) + '...'
+            })
+          }
+          return isValid
+        }
+
+        if (!validateTokenVersion()) {
+          res.writeHead(401, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Token version mismatch' }))
           return
         }
 
@@ -329,60 +596,9 @@ export default class Application extends EventEmitter {
           return
         }
 
-        if (url.startsWith('/linkcore/ext-config')) {
-          try {
-            const interceptAllDownloads = !!this.configManager.getUserConfig('extension-intercept-all-downloads', false)
-            const silentDownload = !!this.configManager.getUserConfig('extension-silent-download', false)
-            const shiftToggleEnabled = !!this.configManager.getUserConfig('extension-shift-toggle-enabled', false)
-            const skipRaw = this.configManager.getUserConfig('extension-skip-file-extensions', '')
-            let skipFileExtensions = []
-            if (typeof skipRaw === 'string') {
-              const normalizeSkipExt = (x) => removeExtensionDot(`${x}`.trim().toLowerCase())
-              skipFileExtensions = skipRaw.split(/[,;\n]/).map(normalizeSkipExt).filter(Boolean)
-            } else if (Array.isArray(skipRaw)) {
-              const normalizeSkipExt = (x) => removeExtensionDot(`${x}`.trim().toLowerCase())
-              skipFileExtensions = skipRaw.map(normalizeSkipExt).filter(Boolean)
-            }
-
-            const videoSnifferEnabled = this._videoSnifferConfig.enabled
-            const videoSnifferFormats = this._videoSnifferConfig.formats
-            const videoSnifferAutoCombine = this._videoSnifferConfig.autoCombine
-
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({
-              interceptAllDownloads,
-              silentDownload,
-              shiftToggleEnabled,
-              skipFileExtensions,
-              videoSnifferEnabled,
-              videoSnifferFormats,
-              videoSnifferAutoCombine
-            }))
-          } catch (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({
-              interceptAllDownloads: false,
-              silentDownload: false,
-              shiftToggleEnabled: false,
-              skipFileExtensions: [],
-              videoSnifferEnabled: false,
-              videoSnifferFormats: ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
-              videoSnifferAutoCombine: true
-            }))
-          }
-          return
-        }
-
         if (url.startsWith('/linkcore/health')) {
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ ok: true }))
-          return
-        }
-
-        if (url.startsWith('/linkcore/locale')) {
-          const locale = this.configManager.getLocale()
-          res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({ locale }))
           return
         }
 
@@ -614,6 +830,27 @@ export default class Application extends EventEmitter {
         }
       }
 
+      const taskHistoryStore = new Store({
+        name: 'taskHistory',
+        cwd: this.configManager.getUserDataPath()
+      })
+      const historyTasks = taskHistoryStore.get('tasks', [])
+      if (Array.isArray(historyTasks)) {
+        for (const task of historyTasks) {
+          let name = null
+          if (task.files && task.files.length > 0) {
+            const path = task.files[0].path || ''
+            name = basename(path)
+          }
+          if (!name && task.name) {
+            name = task.name
+          }
+          if (name) {
+            existingNames.add(name)
+          }
+        }
+      }
+
       if (!existingNames.has(suggestedFilename)) {
         return suggestedFilename
       }
@@ -622,7 +859,7 @@ export default class Application extends EventEmitter {
       const baseName = basename(suggestedFilename, ext)
 
       for (let i = 1; i <= 100; i++) {
-        const newName = `${baseName}${i}${ext}`
+        const newName = `${baseName} (${i})${ext}`
         if (!existingNames.has(newName)) {
           return newName
         }
@@ -2440,6 +2677,28 @@ export default class Application extends EventEmitter {
   }
 
   handleIpcInvokes () {
+    ipcMain.on('get-app-config', (event) => {
+      const systemConfig = this.configManager.getSystemConfig()
+      const userConfig = this.configManager.getUserConfig()
+      const context = this.context.get()
+      const appVersion = require('../../package.json').version
+
+      const result = {
+        ...systemConfig,
+        ...userConfig,
+        ...context,
+        version: appVersion
+      }
+      try {
+        const customKeymap = this.configManager.getUserConfig('custom-keymap') ||
+          this.configManager.getUserConfig('customKeymap') || {}
+        if (customKeymap && Object.keys(customKeymap).length) {
+          this.menuManager && this.menuManager.setup()
+        }
+      } catch (e) {}
+      event.returnValue = result
+    })
+
     ipcMain.handle('get-app-config', async () => {
       const systemConfig = this.configManager.getSystemConfig()
       const userConfig = this.configManager.getUserConfig()
@@ -2593,6 +2852,20 @@ export default class Application extends EventEmitter {
       }
     } catch (error) {
       logger.warn('[Motrix] Failed to load and send update status:', error.message)
+    }
+  }
+
+  cleanupExpiredChallenges () {
+    const now = Date.now()
+    let cleaned = 0
+    for (const [challenge, data] of this.challenges.entries()) {
+      if (now > data.expiresAt) {
+        this.challenges.delete(challenge)
+        cleaned++
+      }
+    }
+    if (cleaned > 0) {
+      console.log('[Security] Cleaned up expired challenges:', cleaned)
     }
   }
 }
