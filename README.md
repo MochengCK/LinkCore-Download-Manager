@@ -266,6 +266,3 @@ If you encounter any issues or have questions:
 
 - Open an [issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues) on GitHub
 - Join our community for discussions and support
-## 📄 License
-
-This project is released under the GNU General Public License v3.0 [(GPL-3.0)](LICENSE)

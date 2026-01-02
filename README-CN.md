@@ -263,7 +263,3 @@ LinkCore-Download-Manager/
 
 - 在GitHub上 [提交issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues)
 - 加入我们的社区进行讨论和获取支持
-## 📄 许可证
-
-
-本项目基于 GNU 通用公共许可证 v3.0 [(GPL-3.0)](LICENSE) 发布
