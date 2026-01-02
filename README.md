@@ -266,3 +266,7 @@ If you encounter any issues or have questions:
 
 - Open an [issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues) on GitHub
 - Join our community for discussions and support
+
+## 📄 License
+
+LinkCore Download Manager is licensed under the [MIT License](LICENSE).

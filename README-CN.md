@@ -263,3 +263,7 @@ LinkCore-Download-Manager/
 
 - 在GitHub上 [提交issue](https://github.com/MochengCK/LinkCore-Download-Manager/issues)
 - 加入我们的社区进行讨论和获取支持
+
+## 📄 许可证
+
+LinkCore Download Manager基于 [MIT License](LICENSE) 开源。
