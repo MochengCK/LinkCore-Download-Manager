@@ -272,4 +272,4 @@ LinkCore-Download-Manager/
 
 ## 📄 许可证
 
-LinkCore Download Manager基于 [MIT License](LICENSE) 开源。
+本项目基于 GNU 通用公共许可证 v3.0 [(GPL-3.0)](LICENSE) 开源
