@@ -35,7 +35,14 @@
     "asar": true,
     "asarUnpack": [
       "static/parsers/**/*"
-    ]
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
   },
   "repository": {
     "type": "git",
