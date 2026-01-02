@@ -268,4 +268,4 @@ If you encounter any issues or have questions:
 - Join our community for discussions and support
 ## 📄 License
 
-LinkCore Download Manager is licensed under the [GPLv3.0 License](LICENSE).
+This project is licensed under the GNU General Public [GPLv3.0 License](LICENSE)
