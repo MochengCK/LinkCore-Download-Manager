@@ -169,15 +169,15 @@
       config.formats.forEach((format, index) => {
         const tag = document.createElement('div')
         tag.className = 'format-tag'
-        
+
         const text = document.createTextNode(format)
         tag.appendChild(text)
-        
+
         const removeBtn = document.createElement('span')
         removeBtn.className = 'remove-btn'
         removeBtn.dataset.index = index
         removeBtn.textContent = '×'
-        
+
         tag.appendChild(removeBtn)
         formatList.appendChild(tag)
       })
@@ -280,11 +280,11 @@
       if (window.require) {
         const { BrowserWindow } = window.require('@electron/remote')
         const { ipcRenderer } = window.require('electron')
-        
+
         const parentWindow = BrowserWindow.getFocusedWindow()
-        
+
         ipcRenderer.removeAllListeners('video-sniffer-format-added')
-        
+
         let useCustomFrame = false
         try {
           const appConfig = await ipcRenderer.invoke('get-app-config')
@@ -294,7 +294,7 @@
         } catch (e) {
           console.error('[Video Sniffer] Failed to get app config:', e)
         }
-        
+
         const win = new BrowserWindow({
           width: 400,
           height: 220,
@@ -310,18 +310,18 @@
             enableRemoteModule: true
           }
         })
-        
+
         const isDev = typeof __dirname === 'string' && __dirname.includes('src')
-        const url = isDev 
+        const url = isDev
           ? `file://${__dirname.replace(/\\/g, '/').replace('src/main/pages', 'src/main/pages')}/video-sniffer-add-format.html`
           : `file://${__dirname.replace(/\\/g, '/')}/video-sniffer-add-format.html`
-        
+
         win.loadURL(url)
-        
+
         ipcRenderer.once('video-sniffer-format-added', (event, format) => {
           addFormat(format)
         })
-        
+
         win.on('closed', () => {
           ipcRenderer.removeAllListeners('video-sniffer-format-added')
         })

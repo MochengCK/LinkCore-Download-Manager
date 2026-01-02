@@ -20,16 +20,6 @@
         log('Translations loaded for locale:', locale)
       } catch (importError) {
         console.error('[Video Sniffer Add Format] Failed to import translations:', importError)
-        const response = await fetch(localePath)
-        if (response.ok) {
-          const text = await response.text()
-          const match = text.match(/export default\s*\{([\s\S]*?)\}/)
-          if (match && match[1]) {
-            const func = new Function(`return {${match[1]}}`)
-            translations = func()
-            log('Translations loaded for locale:', locale, '(fallback)')
-          }
-        }
       }
     } catch (e) {
       console.error('[Video Sniffer Add Format] Failed to load translations:', e)
@@ -165,7 +155,7 @@
             const { getCurrentWindow } = window.require('@electron/remote')
             const win = getCurrentWindow()
             const parentWindow = win.getParentWindow()
-            
+
             if (parentWindow) {
               parentWindow.webContents.send('video-sniffer-format-added', format)
               log('Format sent via IPC:', format)
@@ -228,7 +218,7 @@
     try {
       if (window.require) {
         const { ipcRenderer } = window.require('electron')
-        
+
         ipcRenderer.on('command', (event, command, ...args) => {
           log('Command received:', command, args)
           if (command === 'application:update-system-theme') {
