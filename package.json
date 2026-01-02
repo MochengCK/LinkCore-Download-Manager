@@ -12,7 +12,7 @@
     "name": "Dr_rOot",
     "email": "agalwood.net@gmail.com"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "main": "./dist/electron/main.js",
   "repository": {
     "type": "git",
