@@ -186,73 +186,31 @@ let rendererConfig = {
           compress: {
             drop_console: !devMode,
             drop_debugger: !devMode,
-            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug', 'console.warn'] : [],
-            dead_code: true,
-            unused: true,
-            conditionals: true,
-            booleans: true,
-            if_return: true,
-            join_vars: true,
-            collapse_vars: true,
-            reduce_vars: true,
-            passes: 3
+            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug'] : []
           },
-          mangle: !devMode ? {
-            properties: true,
-            keep_fnames: false
-          } : false,
+          mangle: !devMode,
           output: {
-            comments: false,
-            ascii_only: true,
-            beautify: false
-          },
-          ecma: 2020,
-          module: true,
-          toplevel: !devMode
+            comments: false
+          }
         }
       }),
-      new CssMinimizerPlugin({
-        minimizerOptions: {
-          preset: [
-            'default',
-            {
-              discardComments: { removeAll: true },
-              normalizeWhitespace: true,
-              minifyFontValues: true,
-              minifySelectors: true
-            }
-          ]
-        }
-      }),
+      new CssMinimizerPlugin(),
     ],
     splitChunks: {
       chunks: 'all',
-      maxInitialRequests: Infinity,
-      minSize: 20000,
-      maxSize: 244000,
       cacheGroups: {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          priority: 10,
-          reuseExistingChunk: true
+          priority: 10
         },
         elementUI: {
           test: /[\\/]node_modules[\\/]element-ui[\\/]/,
           name: 'element-ui',
-          priority: 20,
-          reuseExistingChunk: true
-        },
-        common: {
-          minChunks: 2,
-          priority: 5,
-          reuseExistingChunk: true,
-          name: 'common'
+          priority: 20
         }
       }
-    },
-    moduleIds: 'deterministic',
-    runtimeChunk: 'single'
+    }
   },
 }
 
