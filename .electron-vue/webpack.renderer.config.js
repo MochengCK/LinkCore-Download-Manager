@@ -186,31 +186,73 @@ let rendererConfig = {
           compress: {
             drop_console: !devMode,
             drop_debugger: !devMode,
-            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug'] : []
+            pure_funcs: !devMode ? ['console.log', 'console.info', 'console.debug', 'console.warn'] : [],
+            dead_code: true,
+            unused: true,
+            conditionals: true,
+            booleans: true,
+            if_return: true,
+            join_vars: true,
+            collapse_vars: true,
+            reduce_vars: true,
+            passes: 3
           },
-          mangle: !devMode,
+          mangle: !devMode ? {
+            properties: true,
+            keep_fnames: false
+          } : false,
           output: {
-            comments: false
-          }
+            comments: false,
+            ascii_only: true,
+            beautify: false
+          },
+          ecma: 2020,
+          module: true,
+          toplevel: !devMode
         }
       }),
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            'default',
+            {
+              discardComments: { removeAll: true },
+              normalizeWhitespace: true,
+              minifyFontValues: true,
+              minifySelectors: true
+            }
+          ]
+        }
+      }),
     ],
     splitChunks: {
       chunks: 'all',
+      maxInitialRequests: Infinity,
+      minSize: 20000,
+      maxSize: 244000,
       cacheGroups: {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          priority: 10
+          priority: 10,
+          reuseExistingChunk: true
         },
         elementUI: {
           test: /[\\/]node_modules[\\/]element-ui[\\/]/,
           name: 'element-ui',
-          priority: 20
+          priority: 20,
+          reuseExistingChunk: true
+        },
+        common: {
+          minChunks: 2,
+          priority: 5,
+          reuseExistingChunk: true,
+          name: 'common'
         }
       }
-    }
+    },
+    moduleIds: 'deterministic',
+    runtimeChunk: 'single'
   },
 }
 
