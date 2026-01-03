@@ -221,26 +221,25 @@ const tryChannel = async (path, options = {}, timeout = 1000) => {
           const authResult = await authorizeWithChallenge(handshakeResult.challenge)
           if (authResult && authResult.token) {
             console.log('[Background] Authorization successful, retrying request...')
+            const retryHeaders = { ...options.headers }
             if (sessionToken && !path.startsWith('/linkcore/handshake') && !path.startsWith('/linkcore/authorize')) {
-              headers['Authorization'] = `Bearer ${sessionToken}`
+              retryHeaders['Authorization'] = `Bearer ${sessionToken}`
               if (tokenVersion !== null) {
-                headers['X-Token-Version'] = tokenVersion.toString()
+                retryHeaders['X-Token-Version'] = tokenVersion.toString()
               }
-              const retryResp = await fetchWithTimeout(url, { ...options, headers }, timeout)
-              console.log('[Background] Retry response status:', retryResp ? retryResp.status : 'no response')
-              if (retryResp && retryResp.ok) {
-                if (!lastConnectionCheck.connected) {
-                  notifyConnectionChange(true)
-                }
-                lastConnectionCheck.connected = true
-                lastConnectionCheck.lastCheckTime = Date.now()
-                return { host: h, resp: retryResp }
+            }
+            const retryResp = await fetchWithTimeout(url, { ...options, headers: retryHeaders }, timeout)
+            console.log('[Background] Retry response status:', retryResp ? retryResp.status : 'no response')
+            if (retryResp && retryResp.ok) {
+              if (!lastConnectionCheck.connected) {
+                notifyConnectionChange(true)
               }
-            } else {
-              console.log('[Background] No session token after authorization')
+              lastConnectionCheck.connected = true
+              lastConnectionCheck.lastCheckTime = Date.now()
+              return { host: h, resp: retryResp }
             }
           } else {
-            console.log('[Background] Authorization failed')
+            console.log('[Background] No session token after authorization')
           }
         } else {
           console.log('[Background] Failed to get challenge')

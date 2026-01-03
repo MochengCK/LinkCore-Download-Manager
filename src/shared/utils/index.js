@@ -846,3 +846,138 @@ export const getInverseTheme = (theme) => {
 
 export const changedConfig = { basic: {}, advanced: {} }
 export const backupConfig = { theme: undefined, locale: undefined }
+
+export const normalizeTaskUri = (uri = '') => {
+  return sanitizeLink(uri)
+}
+
+export const getTaskUriForComparison = (task) => {
+  const { files, bittorrent, infoHash } = task
+
+  if (bittorrent && infoHash) {
+    return `magnet:?xt=urn:btih:${infoHash}`
+  }
+
+  if (files && files.length > 0 && files[0].uris && files[0].uris.length > 0) {
+    return normalizeTaskUri(files[0].uris[0].uri)
+  }
+
+  return ''
+}
+
+export const checkTaskDuplicate = async (engineClient, taskUri, historyTasks = []) => {
+  if (!taskUri) {
+    return { isDuplicate: false, duplicateCount: 0 }
+  }
+
+  const normalizedUri = normalizeTaskUri(taskUri)
+  const duplicateSet = new Set()
+
+  try {
+    const [active, waiting, stopped] = await Promise.all([
+      engineClient.call('tellActive'),
+      engineClient.call('tellWaiting', 0, 1000),
+      engineClient.call('tellStopped', 0, 10000)
+    ])
+
+    const allTasks = [...(active || []), ...(waiting || []), ...(stopped || [])]
+
+    allTasks.forEach(task => {
+      const taskUri = getTaskUriForComparison(task)
+      if (taskUri && normalizeTaskUri(taskUri) === normalizedUri) {
+        duplicateSet.add(task.gid)
+      }
+    })
+  } catch (error) {
+    console.error('[Duplicate Check] Error checking engine tasks:', error)
+  }
+
+  if (Array.isArray(historyTasks)) {
+    historyTasks.forEach(task => {
+      const taskUri = getTaskUriForComparison(task)
+      if (taskUri && normalizeTaskUri(taskUri) === normalizedUri) {
+        duplicateSet.add(task.gid || task.uri)
+      }
+    })
+  }
+
+  return {
+    isDuplicate: duplicateSet.size > 0,
+    duplicateCount: duplicateSet.size
+  }
+}
+
+export const generateUniqueTaskName = (baseName, existingNames = new Set()) => {
+  if (!baseName) {
+    return baseName
+  }
+
+  const lastDotIndex = baseName.lastIndexOf('.')
+  let nameWithoutExt = baseName
+  let ext = ''
+
+  if (lastDotIndex > 0) {
+    nameWithoutExt = baseName.substring(0, lastDotIndex)
+    ext = baseName.substring(lastDotIndex)
+  }
+
+  let counter = 1
+  let uniqueName = baseName
+
+  while (existingNames.has(uniqueName)) {
+    uniqueName = `${nameWithoutExt} (${counter})${ext}`
+    counter++
+  }
+
+  return uniqueName
+}
+
+export const handleTaskDuplicate = async (engineClient, taskData, historyTasks = []) => {
+  const { uri, name } = taskData
+
+  if (!uri) {
+    return taskData
+  }
+
+  const { isDuplicate, duplicateCount } = await checkTaskDuplicate(engineClient, uri, historyTasks)
+
+  if (!isDuplicate) {
+    return taskData
+  }
+
+  const allTasks = []
+
+  try {
+    const [active, waiting, stopped] = await Promise.all([
+      engineClient.call('tellActive'),
+      engineClient.call('tellWaiting', 0, 1000),
+      engineClient.call('tellStopped', 0, 10000)
+    ])
+
+    allTasks.push(...(active || []), ...(waiting || []), ...(stopped || []))
+  } catch (error) {
+    console.error('[Duplicate Check] Error fetching tasks:', error)
+  }
+
+  if (Array.isArray(historyTasks)) {
+    allTasks.push(...historyTasks)
+  }
+
+  const existingNames = new Set()
+  allTasks.forEach(task => {
+    const taskName = task.bittorrent?.info?.name ||
+                     (task.files?.[0]?.path ? task.files[0].path.split(/[\\/]/).pop() : '')
+    if (taskName) {
+      existingNames.add(taskName)
+    }
+  })
+
+  const uniqueName = generateUniqueTaskName(name, existingNames)
+
+  return {
+    ...taskData,
+    name: uniqueName,
+    isDuplicate: true,
+    duplicateCount
+  }
+}

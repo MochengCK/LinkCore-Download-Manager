@@ -10,7 +10,8 @@ import {
   formatOptionsForEngine,
   mergeTaskResult,
   changeKeysToCamelCase,
-  changeKeysToKebabCase
+  changeKeysToKebabCase,
+  generateUniqueTaskName
 } from '@shared/utils'
 import { ENGINE_RPC_HOST, TASK_STATUS } from '@shared/constants'
 import taskHistory from './TaskHistory'
@@ -216,7 +217,7 @@ export default class Api {
     return this.client.call('getGlobalStat')
   }
 
-  addUri (params) {
+  async addUri (params) {
     const {
       uris,
       outs,
@@ -224,6 +225,32 @@ export default class Api {
       optionsList,
       dirs
     } = params
+
+    const historyTasks = taskHistory.getHistory()
+    const allTasks = []
+
+    try {
+      const [active, waiting, stopped] = await Promise.all([
+        this.client.call('tellActive'),
+        this.client.call('tellWaiting', 0, 1000),
+        this.client.call('tellStopped', 0, 10000)
+      ])
+      allTasks.push(...(active || []), ...(waiting || []), ...(stopped || []))
+    } catch (error) {
+      console.error('[Duplicate Check] Error fetching tasks:', error)
+    }
+
+    allTasks.push(...historyTasks)
+
+    const existingNames = new Set()
+    allTasks.forEach(task => {
+      const taskName = task.bittorrent?.info?.name ||
+                       (task.files?.[0]?.path ? task.files[0].path.split(/[\\/]/).pop() : '')
+      if (taskName) {
+        existingNames.add(taskName)
+      }
+    })
+
     const tasks = uris.map((uri, index) => {
       const perOptions = {
         ...options,
@@ -233,21 +260,59 @@ export default class Api {
         perOptions.dir = dirs[index]
       }
       const engineOptions = formatOptionsForEngine(perOptions)
-      if (outs && outs[index]) {
-        engineOptions.out = outs[index]
+
+      const out = outs && outs[index] ? outs[index] : undefined
+      if (out) {
+        const uniqueOut = generateUniqueTaskName(out, existingNames)
+        engineOptions.out = uniqueOut
+        existingNames.add(uniqueOut)
       }
+
       const args = compactUndefined([[uri], engineOptions])
       return ['aria2.addUri', ...args]
     })
     return this.client.multicall(tasks)
   }
 
-  addTorrent (params) {
+  async addTorrent (params) {
     const {
       torrent,
       options
     } = params
+
+    const historyTasks = taskHistory.getHistory()
+    const allTasks = []
+
+    try {
+      const [active, waiting, stopped] = await Promise.all([
+        this.client.call('tellActive'),
+        this.client.call('tellWaiting', 0, 1000),
+        this.client.call('tellStopped', 0, 10000)
+      ])
+      allTasks.push(...(active || []), ...(waiting || []), ...(stopped || []))
+    } catch (error) {
+      console.error('[Duplicate Check] Error fetching tasks:', error)
+    }
+
+    allTasks.push(...historyTasks)
+
+    const existingNames = new Set()
+    allTasks.forEach(task => {
+      const taskName = task.bittorrent?.info?.name ||
+                       (task.files?.[0]?.path ? task.files[0].path.split(/[\\/]/).pop() : '')
+      if (taskName) {
+        existingNames.add(taskName)
+      }
+    })
+
     const engineOptions = formatOptionsForEngine(options)
+
+    if (engineOptions.out) {
+      const uniqueOut = generateUniqueTaskName(engineOptions.out, existingNames)
+      engineOptions.out = uniqueOut
+      existingNames.add(uniqueOut)
+    }
+
     const args = compactUndefined([torrent, [], engineOptions])
     return this.client.call('addTorrent', ...args)
   }

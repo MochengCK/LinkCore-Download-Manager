@@ -451,36 +451,48 @@ export default class Application extends EventEmitter {
                 return
               }
 
-              const normalizeUri = (u) => `${u || ''}`.trim()
-              const taskHasUri = (task, target) => {
-                if (!task || !Array.isArray(task.files) || task.files.length !== 1) {
-                  return false
-                }
-                const file = task.files[0]
-                if (!file || !Array.isArray(file.uris) || file.uris.length === 0) {
-                  return false
-                }
-                return file.uris.some(it => normalizeUri(it && it.uri) === target)
+              const historyTasks = []
+              const allTasks = []
+
+              try {
+                const [active, waiting, stopped] = await Promise.all([
+                  this.engineClient.call('tellActive'),
+                  this.engineClient.call('tellWaiting', 0, 1000),
+                  this.engineClient.call('tellStopped', 0, 10000)
+                ])
+                allTasks.push(...(active || []), ...(waiting || []), ...(stopped || []))
+              } catch (error) {
+                console.error('[Duplicate Check] Error fetching tasks:', error)
               }
 
-              const existing = []
-              const active = await this.engineClient.call('tellActive')
-              if (Array.isArray(active) && active.length > 0) {
-                existing.push(...active)
-              }
-              const waiting = await this.engineClient.call('tellWaiting', 0, 1000)
-              if (Array.isArray(waiting) && waiting.length > 0) {
-                existing.push(...waiting)
-              }
-              const stopped = await this.engineClient.call('tellStopped', 0, 10000)
-              if (Array.isArray(stopped) && stopped.length > 0) {
-                existing.push(...stopped)
-              }
+              allTasks.push(...historyTasks)
 
-              if (existing.some(t => taskHasUri(t, downloadUrl))) {
-                res.writeHead(200, { 'Content-Type': 'application/json' })
-                res.end(JSON.stringify({ ok: true, duplicate: true }))
-                return
+              const existingNames = new Set()
+              allTasks.forEach(task => {
+                const taskName = task.bittorrent?.info?.name ||
+                                 (task.files?.[0]?.path ? task.files[0].path.split(/[\\/]/).pop() : '')
+                if (taskName) {
+                  existingNames.add(taskName)
+                }
+              })
+
+              let finalOut = suggestedFilename
+              if (finalOut && existingNames.has(finalOut)) {
+                const lastDotIndex = finalOut.lastIndexOf('.')
+                let nameWithoutExt = finalOut
+                let ext = ''
+
+                if (lastDotIndex > 0) {
+                  nameWithoutExt = finalOut.substring(0, lastDotIndex)
+                  ext = finalOut.substring(lastDotIndex)
+                }
+
+                let counter = 1
+                while (existingNames.has(finalOut)) {
+                  finalOut = `${nameWithoutExt} (${counter})${ext}`
+                  counter++
+                }
+                existingNames.add(finalOut)
               }
 
               const headerList = []
@@ -559,9 +571,8 @@ export default class Application extends EventEmitter {
                 uri: downloadUrl,
                 fromBrowserExtension: true
               }
-              if (suggestedFilename) {
-                const uniqueFilename = await this.generateUniqueTaskName(suggestedFilename)
-                taskPayload.suggestedFilename = uniqueFilename
+              if (finalOut) {
+                taskPayload.suggestedFilename = finalOut
               }
               if (options.referer) {
                 taskPayload.referer = options.referer
@@ -660,6 +671,26 @@ export default class Application extends EventEmitter {
   initConfigManager () {
     this.configListeners = {}
     this.configManager = new ConfigManager()
+    this.loadVideoSnifferConfig()
+  }
+
+  loadVideoSnifferConfig () {
+    try {
+      const savedEnabled = this.configManager.getUserConfig('video-sniffer-enabled')
+      const savedFormats = this.configManager.getUserConfig('video-sniffer-formats')
+      const savedAutoCombine = this.configManager.getUserConfig('video-sniffer-auto-combine')
+
+      if (savedEnabled !== undefined || savedFormats !== undefined || savedAutoCombine !== undefined) {
+        this._videoSnifferConfig = {
+          enabled: savedEnabled !== undefined ? savedEnabled : true,
+          formats: Array.isArray(savedFormats) ? savedFormats : ['m4s', 'mp4', 'flv', 'm3u8', 'ts'],
+          autoCombine: savedAutoCombine !== undefined ? savedAutoCombine : true
+        }
+        logger.log('[Motrix] Video sniffer config loaded from disk:', this._videoSnifferConfig)
+      }
+    } catch (e) {
+      logger.warn('[Motrix] Failed to load video sniffer config from disk:', e)
+    }
   }
 
   offConfigListeners () {
@@ -2673,6 +2704,13 @@ export default class Application extends EventEmitter {
       }
 
       logger.log('[Motrix] Video sniffer config updated in main process:', this._videoSnifferConfig)
+
+      this.configManager.setUserConfig({
+        'video-sniffer-enabled': settings.enabled,
+        'video-sniffer-formats': settings.formats,
+        'video-sniffer-auto-combine': settings.autoCombine
+      })
+      logger.log('[Motrix] Video sniffer config saved to disk')
     })
   }
 

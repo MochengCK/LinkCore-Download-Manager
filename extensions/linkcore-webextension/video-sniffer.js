@@ -68,20 +68,18 @@
         }
         log('Final config after loading:', JSON.stringify(config, null, 2))
 
-        if (configChanged) {
-          configLoaded = true
-          log('Config loaded from storage, marking as loaded and rechecking all resources')
-          sniffedResources.video = []
-          sniffedResources.audio = []
-          sniffedResources.combined = []
+        configLoaded = true
+        log('Config loaded from storage, marking as loaded and rechecking all resources')
+        sniffedResources.video = []
+        sniffedResources.audio = []
+        sniffedResources.combined = []
 
-          const resources = window.performance.getEntriesByType('resource')
-          log('Rechecking', resources.length, 'resources after loading config')
-          resources.forEach(entry => {
-            addResource(entry.name)
-          })
-          checkMediaElements()
-        }
+        const resources = window.performance.getEntriesByType('resource')
+        log('Rechecking', resources.length, 'resources after loading config')
+        resources.forEach(entry => {
+          addResource(entry.name)
+        })
+        checkMediaElements()
       })
     } catch (e) {
       console.error('[Video Sniffer] Failed to load config:', e)
@@ -606,10 +604,6 @@
 
   // 检查已加载的资源
   function checkExistingResources() {
-    if (!configLoaded) {
-      console.log('[Video Sniffer] Config not loaded yet, skipping existing resources check')
-      return
-    }
     if (window.performance && window.performance.getEntriesByType) {
       const resources = window.performance.getEntriesByType('resource')
       console.log('[Video Sniffer] Checking', resources.length, 'existing resources')

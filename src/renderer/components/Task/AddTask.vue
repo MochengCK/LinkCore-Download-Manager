@@ -361,7 +361,6 @@
   import HistoryDirectory from '@/components/Preference/HistoryDirectory'
   import SelectDirectory from '@/components/Native/SelectDirectory'
   import SelectTorrent from '@/components/Task/SelectTorrent'
-  import taskHistory from '@/api/TaskHistory'
   import {
     initTaskForm,
     buildUriPayload,
@@ -370,7 +369,7 @@
     isBilibiliUrl
   } from '@/utils/task'
   import { ADD_TASK_TYPE } from '@shared/constants'
-  import { detectResource, getTaskUri, sanitizeLink, splitTaskLinks, normalizeCookie } from '@shared/utils'
+  import { detectResource, splitTaskLinks, normalizeCookie, generateUniqueTaskName } from '@shared/utils'
   import '@/components/Icons/inbox'
 
   export default {
@@ -886,7 +885,6 @@
         this.$set(task, 'renamed', !!renamed)
       },
       async updateUriPreview (uris = '') {
-        this._historyUrlSet = this.buildHistoryUrlSet()
         const sanitized = splitTaskLinks(uris || '')
         const seen = new Set()
         const lines = []
@@ -925,9 +923,6 @@
         }
 
         const items = lines.map((u, i) => {
-          const normalizedUrl = sanitizeLink(u)
-          const existsInHistory = this.checkUrlExistsInHistory(normalizedUrl)
-
           // 如果有建议的文件名，即使 URL 已存在也要使用新的建议文件名
           if (suggestedName) {
             try {
@@ -952,8 +947,7 @@
                 editing: false,
                 priority: 0,
                 url: u,
-                order: i,
-                existsInHistory
+                order: i
               }
             } catch (e) {
               const uniqueName = this.generateUniqueTaskName(suggestedName)
@@ -965,8 +959,7 @@
                 editing: false,
                 priority: 0,
                 url: u,
-                order: i,
-                existsInHistory
+                order: i
               }
             }
           }
@@ -981,8 +974,7 @@
               name: uniqueName,
               originalName,
               renamed: uniqueName !== existing.name,
-              order: i,
-              existsInHistory
+              order: i
             }
           }
 
@@ -1009,8 +1001,7 @@
               editing: false,
               priority: 0,
               url: u,
-              order: i,
-              existsInHistory
+              order: i
             }
           } catch (e) {
             const finalName = suggestedName || u
@@ -1023,13 +1014,11 @@
               editing: false,
               priority: 0,
               url: u,
-              order: i,
-              existsInHistory
+              order: i
             }
           }
         })
         this.parsedTasks = items
-        this.warnDuplicateHistoryOnce()
 
         // 只对新增的 URL 获取文件大小
         const newLines = lines.filter(u => !existingMap.has(u))
@@ -1306,79 +1295,10 @@
         while (val >= 1024 && i < units.length - 1) { val /= 1024; i++ }
         return `${val.toFixed(1)} ${units[i]}`
       },
-      buildHistoryUrlSet () {
-        try {
-          const set = new Set()
-
-          const historyTasks = taskHistory.getHistory()
-          if (Array.isArray(historyTasks)) {
-            historyTasks.forEach(t => {
-              const uri = getTaskUri(t) || ''
-              const normalized = sanitizeLink(uri)
-              if (normalized) {
-                set.add(normalized)
-              }
-            })
-          }
-
-          const taskList = this.taskList || []
-          if (Array.isArray(taskList)) {
-            taskList.forEach(t => {
-              const uri = getTaskUri(t) || ''
-              const normalized = sanitizeLink(uri)
-              if (normalized) {
-                set.add(normalized)
-              }
-            })
-          }
-
-          return set
-        } catch (_) {
-          return new Set()
-        }
-      },
-      checkUrlExistsInHistory (normalizedUrl) {
-        if (!normalizedUrl) return false
-        if (!this._historyUrlSet) {
-          this._historyUrlSet = this.buildHistoryUrlSet()
-        }
-        return this._historyUrlSet.has(normalizedUrl)
-      },
       generateUniqueTaskName (name) {
-        if (!name) return name
-
         const taskList = this.taskList || []
         const existingNames = new Set(taskList.map(t => t.name))
-
-        if (!existingNames.has(name)) {
-          return name
-        }
-
-        let counter = 1
-        let uniqueName = name
-        const nameWithoutExt = name.includes('.') ? name.substring(0, name.lastIndexOf('.')) : name
-        const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : ''
-
-        while (existingNames.has(uniqueName)) {
-          counter++
-          uniqueName = `${nameWithoutExt} (${counter})${ext}`
-        }
-
-        return uniqueName
-      },
-      warnDuplicateHistoryOnce () {
-        const duplicates = (this.parsedTasks || []).filter(t => t && t.existsInHistory && !t.renamed)
-        const count = duplicates.length
-        const key = duplicates.map(t => t.url).join('\n')
-        if (!count) {
-          this.lastDuplicateHistoryKey = ''
-          return
-        }
-        if (key && key === this.lastDuplicateHistoryKey) {
-          return
-        }
-        this.lastDuplicateHistoryKey = key
-        this.$msg.warning(this.$t('task.duplicate-history-links-message', { count }))
+        return generateUniqueTaskName(name, existingNames)
       },
       async addTask (type, form) {
         let payload = null
@@ -1412,17 +1332,6 @@
 
         try {
           if (this.isUriLikeType(this.type) && this.parsedTasks.length > 0) {
-            this._historyUrlSet = this.buildHistoryUrlSet()
-            const duplicateCount = this.parsedTasks.filter(t => {
-              if (!t || !t.url) return false
-              if (t.renamed) return false
-              const normalized = sanitizeLink(t.url)
-              return normalized && this._historyUrlSet.has(normalized)
-            }).length
-            if (duplicateCount > 0) {
-              this.$msg.warning(this.$t('task.duplicate-history-links-message', { count: duplicateCount }))
-              return
-            }
             const buckets = {}
             const prios = []
             this.parsedTasks.forEach(item => {
