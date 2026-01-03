@@ -72,6 +72,9 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Build application
+        run: npm run build:github
+
       - name: Build and publish Windows
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -119,6 +122,9 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Build application
+        run: npm run build:github
+
       - name: Install fpm (Linux)
         run: |
           sudo apt-get update
@@ -145,6 +151,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+
+      - name: Build application
+        run: npm run build:github
 
       - name: Build and publish macOS
         env:
