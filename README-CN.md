@@ -12,9 +12,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MochengCK/LinkCore-Download-Manager">
-    <img src="https://img.shields.io/github/stars/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub Stars" />
-  </a>
   <a href="https://github.com/MochengCK/LinkCore-Download-Manager/releases">
     <img src="https://img.shields.io/github/v/release/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="GitHub release" />
   </a>
@@ -26,12 +23,6 @@
   </a>
   <a href="https://github.com/MochengCK/LinkCore-Download-Manager/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/MochengCK/LinkCore-Download-Manager.svg?style=for-the-badge" alt="License" />
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/MochengCK/LinkCore-Download-Manager">
-    <img src="https://img.shields.io/github/stars/MochengCK/LinkCore-Download-Manager?style=social" alt="Star History" />
   </a>
 </p>
 
