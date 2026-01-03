@@ -29,10 +29,14 @@ jobs:
             } catch (e) {
               core.info(`skip delete: ${e.message}`)
             }
-
-  release-windows:
+  build-and-release:
     needs: pre-clean
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,8 +46,8 @@ jobs:
         with:
           node-version: '16'
           cache: 'npm'
-
       - name: Prepare ffmpeg dependency (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
           $ErrorActionPreference = 'Stop'
           $ffmpegUrl = 'https://github.com/GyanD/codexffmpeg/releases/download/8.0.1/ffmpeg-8.0.1-essentials_build.zip'
@@ -54,48 +58,8 @@ jobs:
           }
           Expand-Archive -Path $ffmpegZip -DestinationPath . -Force
 
-      - name: Setup Python for video engine build (Windows)
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Build bilibili parser engine (Windows)
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pyinstaller
-          python -m PyInstaller static/parsers/bilibili_parser.py --onefile --name bilibili_parser
-          if (-not (Test-Path 'static\parsers')) {
-            New-Item -ItemType Directory -Path 'static\parsers' -Force | Out-Null
-          }
-          Copy-Item -Path 'dist\bilibili_parser.exe' -Destination 'static\parsers\bilibili_parser.exe' -Force
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Build application
-        run: npm run build:github
-
-      - name: Build and publish Windows
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          SKIP_NOTARIZE: 'true'
-        run: npx electron-builder --win --x64
-
-  release-linux:
-    needs: pre-clean
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '16'
-          cache: 'npm'
-
       - name: Prepare ffmpeg dependency (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           set -e
           sudo apt-get update
@@ -106,12 +70,31 @@ jobs:
           mkdir -p ffmpeg-8.0.1-essentials_build/bin
           cp ffmpeg-*-static/ffmpeg ffmpeg-8.0.1-essentials_build/bin/ffmpeg
 
+      - name: Setup Python for video engine build (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build bilibili parser engine (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m PyInstaller static/parsers/bilibili_parser.py --onefile --name bilibili_parser
+          if (-not (Test-Path 'static\parsers')) {
+            New-Item -ItemType Directory -Path 'static\parsers' -Force | Out-Null
+          }
+          Copy-Item -Path 'dist\bilibili_parser.exe' -Destination 'static\parsers\bilibili_parser.exe' -Force
+
       - name: Setup Python for video engine build (Linux)
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Build bilibili parser engine (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
@@ -122,41 +105,16 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build application
-        run: npm run build:github
-
       - name: Install fpm (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby ruby-dev rubygems build-essential
           sudo gem install fpm
 
-      - name: Build and publish Linux
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --linux
-
-  release-macos:
-    needs: pre-clean
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '16'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Build application
-        run: npm run build:github
-
-      - name: Build and publish macOS
+      - name: Build and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npx electron-builder --mac
+          SKIP_NOTARIZE: 'true'
+        run: npm run release
