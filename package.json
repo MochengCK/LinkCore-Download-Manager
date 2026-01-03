@@ -14,36 +14,6 @@
   },
   "license": "GPL-3.0",
   "main": "./dist/electron/main.js",
-  "build": {
-    "files": [
-      "dist/**/*",
-      "package.json",
-      "extensions/**/*",
-      "static/**/*",
-      "!**/*.md",
-      "!**/test/**",
-      "!**/tests/**",
-      "!**/*.spec.js",
-      "!**/*.spec.ts",
-      "!node_modules/**/*",
-      "!.electron-vue/**/*",
-      "!**/.*"
-    ],
-    "directories": {
-      "output": "release"
-    },
-    "asar": true,
-    "asarUnpack": [
-      "static/parsers/**/*"
-    ],
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Utility"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/MochengCK/LinkCore-Download-Manager.git"
